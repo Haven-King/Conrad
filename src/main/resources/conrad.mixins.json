@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "dev.hephaestus.conrad.impl.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "server.MinecraftServerConfig"
+  ],
+  "client": [
+    "client.GameMenuScreenButton",
+    "client.ServerInfoConfig"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

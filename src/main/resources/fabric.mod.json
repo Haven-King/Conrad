@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "conrad",
+  "version": "${version}",
+  "name": "Conrad",
+  "authors": [
+    "Haven King"
+  ],
+  "license": "CC0-1.0",
+  "icon": "assets/conrad/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "preLaunch": [
+      "dev.hephaestus.conrad.impl.entrypoints.ConradPreLaunch"
+    ],
+    "conrad": [
+      "dev.hephaestus.conrad.test.ServerConfig",
+      "dev.hephaestus.conrad.test.ClientConfig",
+      "dev.hephaestus.conrad.test.ClientConfig2",
+      "dev.hephaestus.conrad.test.ClientConfig3"
+    ]
+  },
+  "mixins": [
+    "conrad.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.8.9+build.203",
+    "fabric": "*",
+    "minecraft": "1.16.1"
+  }
+}
