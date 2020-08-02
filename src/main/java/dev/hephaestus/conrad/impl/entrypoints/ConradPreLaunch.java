@@ -3,6 +3,7 @@ package dev.hephaestus.conrad.impl.entrypoints;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.annotation.SaveName;
 import dev.hephaestus.conrad.api.annotation.SaveType;
+import dev.hephaestus.conrad.impl.compat.ModMenuCompat;
 import dev.hephaestus.conrad.impl.ConradUtils;
 import dev.hephaestus.conrad.impl.config.ConfigManager;
 import dev.hephaestus.conrad.impl.config.RootConfigManager;
@@ -20,7 +21,12 @@ public class ConradPreLaunch implements PreLaunchEntrypoint {
 
 		for (EntrypointContainer<Config> container : containers) {
 			try {
-				processConfigObject(container.getProvider().getMetadata().getId(), container.getEntrypoint());
+				String modid = container.getProvider().getMetadata().getId();
+				Config config = processConfig(modid, container.getEntrypoint());
+
+				if (FabricLoader.getInstance().isModLoaded("modmenu")) {
+					ModMenuCompat.processConfig(container.getProvider(), config);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -28,10 +34,14 @@ public class ConradPreLaunch implements PreLaunchEntrypoint {
 
 		RootConfigManager.initialize();
 
+		if (FabricLoader.getInstance().isModLoaded("modmenu")) {
+			ModMenuCompat.complete();
+		}
+
 		ConradUtils.LOG.info("Registered {} configs", ConfigManager.keyCount());
 	}
 
-	private static void processConfigObject(String modid, Config config) throws IllegalClassFormatException {
+	private static Config processConfig(String modid, Config config) throws IllegalClassFormatException {
 		if (ConfigManager.isRegistered(config.getClass())) {
 			throw new IllegalArgumentException(String.format("Class %s already registered with key %s", config.getClass(), ConfigManager.getKey(config.getClass())));
 		}
@@ -53,5 +63,7 @@ public class ConradPreLaunch implements PreLaunchEntrypoint {
 
 		ConfigManager.putKey(config.getClass(), key);
 		ConfigManager.putMod(modid);
+
+		return config;
 	}
 }

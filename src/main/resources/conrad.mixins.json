@@ -6,7 +6,6 @@
     "server.MinecraftServerConfig"
   ],
   "client": [
-    "client.GameMenuScreenButton",
     "client.ServerInfoConfig"
   ],
   "injectors": {

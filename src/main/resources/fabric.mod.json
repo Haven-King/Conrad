@@ -18,6 +18,9 @@
       "dev.hephaestus.conrad.test.ClientConfig",
       "dev.hephaestus.conrad.test.ClientConfig2",
       "dev.hephaestus.conrad.test.ClientConfig3"
+    ],
+    "modmenu": [
+      "dev.hephaestus.conrad.impl.compat.ModMenuCompat"
     ]
   },
   "mixins": [
