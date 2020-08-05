@@ -5,6 +5,7 @@ import dev.hephaestus.conrad.api.Conrad;
 import dev.hephaestus.conrad.impl.client.WidgetProviderRegistry;
 import dev.hephaestus.conrad.impl.config.RootConfigManager;
 import dev.hephaestus.conrad.impl.data.ConfigSerializer;
+import dev.hephaestus.conrad.impl.data.NetworkedConfigSerializer;
 import dev.hephaestus.conrad.impl.mixin.server.MinecraftServerAccessor;
 import io.github.prospector.modmenu.api.ConfigScreenFactory;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
@@ -47,7 +48,8 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 		for (Config rootConfig : RootConfigManager.INSTANCE.getConfigs(this.modid)) {
 			Config.SaveType.Type saveType = rootConfig.getClass().getAnnotation(Config.SaveType.class).value();
 
-			if ((saveType == Config.SaveType.Type.CLIENT || (!MinecraftClient.getInstance().isIntegratedServerRunning()) && MinecraftClient.getInstance().getCurrentServerEntry() == null) ||
+			if (saveType == Config.SaveType.Type.CLIENT || MinecraftClient.getInstance().isIntegratedServerRunning() ||
+				MinecraftClient.getInstance().getCurrentServerEntry() == null ||
 				(saveType == Config.SaveType.Type.LEVEL && MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.hasPermissionLevel(4))) {
 				Config config = Conrad.getConfig(rootConfig.getClass());
 
@@ -86,7 +88,13 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 			}
 		}
 
-		builder.setSavingRunnable(() -> configs.forEach(ConfigSerializer::save));
+		builder.setSavingRunnable(() -> configs.forEach(config -> {
+			ConfigSerializer.save(config);
+
+			if (config.getClass().getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.CLIENT) {
+				NetworkedConfigSerializer.INSTANCE.serialize(config);
+			}
+		}));
 
 		AbstractConfigScreen configScreen = (AbstractConfigScreen) builder.build();
 
@@ -111,9 +119,11 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 
 				category.addEntry(subCategoryBuilder.build());
 			} else {
-				AbstractConfigListEntry<?> entry = (field.isAnnotationPresent(Config.Widget.class)
-						? WidgetProviderRegistry.get(field.getAnnotation(Config.Widget.class).value())
+				AbstractConfigListEntry<?> entry = (field.isAnnotationPresent(Config.Entry.Widget.class)
+						? WidgetProviderRegistry.get(field.getAnnotation(Config.Entry.Widget.class).value())
 						: WidgetProviderRegistry.get(field.getType())).getWidget(builder.entryBuilder(), key, config, field);
+
+				entry.setRequiresRestart(field.isAnnotationPresent(Config.Entry.RequiresRestart.class));
 
 				if (entry != null) {
 					category.addEntry(entry);
@@ -138,7 +148,11 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 
 				category.add(subCategoryBuilder.build());
 			} else {
-				AbstractConfigListEntry<?> entry = WidgetProviderRegistry.get(field.getType()).getWidget(builder.entryBuilder(), key, config, field);
+				AbstractConfigListEntry<?> entry = (field.isAnnotationPresent(Config.Entry.Widget.class)
+						? WidgetProviderRegistry.get(field.getAnnotation(Config.Entry.Widget.class).value())
+						: WidgetProviderRegistry.get(field.getType())).getWidget(builder.entryBuilder(), key, config, field);
+
+				entry.setRequiresRestart(field.isAnnotationPresent(Config.Entry.RequiresRestart.class));
 
 				if (entry != null) {
 					category.add(entry);

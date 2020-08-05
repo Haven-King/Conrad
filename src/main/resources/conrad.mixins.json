@@ -3,7 +3,8 @@
   "package": "dev.hephaestus.conrad.impl.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "server.MinecraftServerConfig"
+    "server.MinecraftServerConfig",
+    "server.PlayerManagerMixin"
   ],
   "client": [
     "client.ClientPlayNetworkHandlerMixin",

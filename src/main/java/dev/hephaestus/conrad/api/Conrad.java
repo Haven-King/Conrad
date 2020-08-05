@@ -1,20 +1,24 @@
 package dev.hephaestus.conrad.api;
 
 import dev.hephaestus.conrad.impl.ConradUtils;
-import dev.hephaestus.conrad.impl.config.RootConfigManager;
-import dev.hephaestus.conrad.impl.config.server.LevelConfigManager;
 import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.network.ServerPlayerEntity;
+
+import java.util.Optional;
 
 public class Conrad {
 	public static <T extends Config> T getConfig(Class<T> configClass) {
 		return ConradUtils.getConfigManager(configClass.getAnnotation(Config.SaveType.class).value()).getConfig(configClass);
 	}
 
-	public static <T extends Config> T getConfig(Class<T> configClass, ServerPlayerEntity playerEntity) {
+	/**
+	 * Gets a player's client-side config values if they exist.
+	 * @param configClass
+	 * @param playerEntity
+	 * @param <T>
+	 * @return
+	 */
+	public static <T extends Config> Optional<T> getConfig(Class<T> configClass, ServerPlayerEntity playerEntity) {
 		Config.SaveType.Type saveType = configClass.getAnnotation(Config.SaveType.class).value();
 
 		if (saveType == Config.SaveType.Type.CLIENT && playerEntity.getServer() != null) {

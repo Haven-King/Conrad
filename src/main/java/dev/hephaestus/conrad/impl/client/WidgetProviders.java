@@ -113,7 +113,7 @@ public class WidgetProviders {
     };
 
     public static final ConfigWidgetProvider<Integer> INT_SLIDER = (builder, key, config, field) -> {
-        Config.Bounds.Discrete bounds = field.getAnnotation(Config.Bounds.Discrete.class);
+        Config.Entry.Bounds.Discrete bounds = field.getAnnotation(Config.Entry.Bounds.Discrete.class);
 
         IntSliderBuilder intSliderBuilder = builder.startIntSlider(
                 new TranslatableText(key),
@@ -151,7 +151,7 @@ public class WidgetProviders {
     };
 
     public static final ConfigWidgetProvider<Long> LONG_SLIDER = (builder, key, config, field) -> {
-        Config.Bounds.Discrete bounds = field.getAnnotation(Config.Bounds.Discrete.class);
+        Config.Entry.Bounds.Discrete bounds = field.getAnnotation(Config.Entry.Bounds.Discrete.class);
 
         LongSliderBuilder longSliderBuilder = builder.startLongSlider(
                 new TranslatableText(key),

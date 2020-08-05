@@ -1,16 +1,19 @@
 package dev.hephaestus.conrad.impl.config;
 
+import com.google.common.collect.HashBiMap;
 import dev.hephaestus.conrad.api.Config;
 
 import java.util.*;
 
 public abstract class ConfigManager implements Iterable<Config> {
 	private static final LinkedHashSet<String> MODS = new LinkedHashSet<>();
+	private static final LinkedList<String> KEY_LIST = new LinkedList<>();
 
-	protected static final HashMap<Class<? extends Config>, String> KEYS = new HashMap<>();
+	protected static final HashBiMap<Class<? extends Config>, String> KEYS = HashBiMap.create();
 
 	public static void putKey(Class<? extends Config> configClass, String key) {
 		KEYS.put(configClass, key);
+		KEY_LIST.add(key);
 	}
 
 	public static <T extends Config> String getKey(Class<T> configClass) {
@@ -36,19 +39,19 @@ public abstract class ConfigManager implements Iterable<Config> {
 	public abstract <T extends Config> T getConfig(Class<T> configClass);
 	public abstract void putConfig(Config config);
 
-	public Collection<Config> getConfigs(String modid) {
+	public final Collection<Config> getConfigs(String modid) {
 		LinkedList<Config> configs = new LinkedList<>();
 
-		for (Config config : this) {
-			if (getKey(config.getClass()).split("\\.")[0].equals(modid)) {
-				configs.add(config);
+		for (String key : KEY_LIST) {
+			if (key.split("\\.")[0].equals(modid)) {
+				configs.add(this.getConfig(KEYS.inverse().get(key)));
 			}
 		}
 
 		return configs;
 	}
 
-	public Config getFirst(String modid) {
+	public final Config getFirst(String modid) {
 		for (Config config : this) {
 			if (getKey(config.getClass()).split("\\.")[0].equals(modid)) {
 				return config;

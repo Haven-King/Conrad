@@ -34,22 +34,28 @@ public interface Config {
         }
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Widget {
-        String value();
-    }
-
-    class Bounds {
+    class Entry {
         @Retention(RetentionPolicy.RUNTIME)
-        public @interface Discrete {
-            long min() default Long.MIN_VALUE;
-            long max() default Long.MAX_VALUE;
+        public @interface Widget {
+            String value();
+        }
+
+        public static class Bounds {
+            @Retention(RetentionPolicy.RUNTIME)
+            public @interface Discrete {
+                long min() default Long.MIN_VALUE;
+                long max() default Long.MAX_VALUE;
+            }
+
+            @Retention(RetentionPolicy.RUNTIME)
+            public @interface Floating {
+                double min() default Double.MIN_VALUE;
+                double max() default Double.MAX_VALUE;
+            }
         }
 
         @Retention(RetentionPolicy.RUNTIME)
-        public @interface Floating {
-            double min() default Double.MIN_VALUE;
-            double max() default Double.MAX_VALUE;
+        public @interface RequiresRestart {
         }
     }
 }

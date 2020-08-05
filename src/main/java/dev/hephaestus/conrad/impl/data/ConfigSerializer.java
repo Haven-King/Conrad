@@ -67,5 +67,6 @@ public interface ConfigSerializer {
 
 	static void save(Config config) {
 		getInstance(config.getClass().getAnnotation(Config.SaveType.class).value()).serialize(config);
+		NetworkedConfigSerializer.INSTANCE.serialize(config);
 	}
 }

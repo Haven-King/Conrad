@@ -20,7 +20,7 @@ public class ConradPreLaunch implements PreLaunchEntrypoint {
 		for (EntrypointContainer<Config> container : containers) {
 			try {
 				String modid = container.getProvider().getMetadata().getId();
-				Config config = processConfig(modid, container.getEntrypoint());
+				processConfig(modid, container.getEntrypoint());
 
 				if (FabricLoader.getInstance().isModLoaded("modmenu")) {
 					ModMenuCompat.processConfig(container.getProvider());
