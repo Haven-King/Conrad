@@ -6,7 +6,9 @@
     "server.MinecraftServerConfig"
   ],
   "client": [
-    "client.ServerInfoConfig"
+    "client.ClientPlayNetworkHandlerMixin",
+    "client.ServerInfoConfig",
+    "server.MinecraftServerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

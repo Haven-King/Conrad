@@ -1,11 +1,10 @@
 package dev.hephaestus.conrad.impl.config.server;
 
 import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.api.annotation.SaveType;
 import dev.hephaestus.conrad.impl.config.ConfigManager;
 import dev.hephaestus.conrad.impl.config.RootConfigManager;
 import dev.hephaestus.conrad.impl.data.ConfigSerializer;
-import dev.hephaestus.conrad.impl.data.WorldConfigSerializer;
+import dev.hephaestus.conrad.impl.data.LevelConfigSerializer;
 import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
 import net.minecraft.client.MinecraftClient;
 
@@ -14,13 +13,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class WorldConfigManager extends ConfigManager {
+public class LevelConfigManager extends ConfigManager {
 	private final HashMap<String, Config> configs = new HashMap<>();
 
-	public WorldConfigManager() {
+	public LevelConfigManager() {
 		for (Map.Entry<Class<? extends Config>, String> entry : ConfigManager.KEYS.entrySet()) {
-			if (entry.getKey().getAnnotation(SaveType.class).value() == SaveType.Type.SERVER) {
-				this.configs.put(entry.getValue(), WorldConfigSerializer.INSTANCE.deserialize(entry.getKey()));
+			if (entry.getKey().getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.LEVEL) {
+				this.configs.put(entry.getValue(), LevelConfigSerializer.INSTANCE.deserialize(entry.getKey()));
 			}
 		}
 	}
@@ -48,7 +47,7 @@ public class WorldConfigManager extends ConfigManager {
 
 	@Override
 	protected void save(Config config) {
-		ConfigSerializer.getInstance(config.getClass().getAnnotation(SaveType.class).value()).serialize(config);
+		ConfigSerializer.getInstance(config.getClass().getAnnotation(Config.SaveType.class).value()).serialize(config);
 	}
 
 	@Override

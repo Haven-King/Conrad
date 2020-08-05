@@ -1,5 +1,7 @@
 plugins {
     id 'fabric-loom' version '0.4-SNAPSHOT'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'java'
     id 'maven-publish'
 }
 
@@ -14,6 +16,7 @@ minecraft {
 }
 
 repositories {
+    mavenLocal()
     maven {
         url = "https://www.cursemaven.com"
     }
@@ -25,6 +28,7 @@ dependencies {
     modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "io.github.prospector:modmenu:${project.modmenu_version}"
+
     modImplementation "me.shedaniel.cloth:config-2:${project.cloth_version}"
     modImplementation "curse.maven:sodium:3003093"
 
@@ -33,7 +37,7 @@ dependencies {
     modCompile "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${project.jackson_version}"
-    include "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${project.jackson_version}"
+    shadow "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${project.jackson_version}"
 }
 
 processResources {
@@ -64,8 +68,27 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
+shadowJar {
+    relocate 'com.fasterxml', 'dev.hephaestus.conrad.com.fasterxml'
+    configurations = [project.configurations.shadow]
+    classifier = "shadow"
+}
+
 jar {
     from "LICENSE"
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "${project.group}.${project.archivesBaseName}.shadow"
+}
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
+remapJar {
+    dependsOn shadowJar
+    input.set shadowJar.archiveFile.get()
 }
 
 // configure the maven publication
@@ -85,6 +108,6 @@ publishing {
     // select the repositories you want to publish to
     repositories {
         // uncomment to publish to the local maven
-        // mavenLocal()
+         mavenLocal()
     }
 }

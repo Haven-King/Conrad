@@ -13,9 +13,8 @@ public class ModMenuCompat implements ModMenuApi {
 	private static final HashMap<String, ConradModMenuEntrypoint> ENTRY_POINTS = new HashMap<>();
 	private static Map<String, ConfigScreenFactory<?>> SCREEN_FACTORIES = null;
 
-	public static void processConfig(ModContainer modContainer, Config config) {
-		String modid = modContainer.getMetadata().getId();
-		ENTRY_POINTS.computeIfAbsent(modid, ConradModMenuEntrypoint::new).add(config);
+	public static void processConfig(ModContainer modContainer) {
+		ENTRY_POINTS.computeIfAbsent(modContainer.getMetadata().getId(), ConradModMenuEntrypoint::new);
 	}
 
 	public static void complete() {

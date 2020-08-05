@@ -3,7 +3,7 @@ package dev.hephaestus.conrad.impl.mixin.server;
 import dev.hephaestus.conrad.impl.config.ConfigManager;
 import dev.hephaestus.conrad.impl.config.RootConfigManager;
 import dev.hephaestus.conrad.impl.config.server.PlayerConfigManager;
-import dev.hephaestus.conrad.impl.config.server.WorldConfigManager;
+import dev.hephaestus.conrad.impl.config.server.LevelConfigManager;
 import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -22,7 +22,7 @@ public class MinecraftServerConfig implements ConfigManagerProvider {
 	@Inject(method = "loadWorld", at = @At("TAIL"))
 	private void initializeConfigManagers(CallbackInfo ci) {
 		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-			configManager = new WorldConfigManager();
+			configManager = new LevelConfigManager();
 		} else {
 			configManager = RootConfigManager.INSTANCE;
 		}

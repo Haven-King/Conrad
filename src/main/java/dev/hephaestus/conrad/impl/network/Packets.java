@@ -1,13 +1,11 @@
 package dev.hephaestus.conrad.impl.network;
 
-import dev.hephaestus.conrad.impl.ConradUtils;
 import dev.hephaestus.conrad.impl.network.packets.c2s.ConfigInfoC2SPacket;
 import dev.hephaestus.conrad.impl.network.packets.c2s.ConfigSaveC2SPacket;
 import dev.hephaestus.conrad.impl.network.packets.c2s.PingC2SPacket;
 import dev.hephaestus.conrad.impl.network.packets.s2c.ConfigInfoS2CPacket;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
-import net.minecraft.util.Identifier;
 
 public class Packets {
 	public static void registerServerListeners() {

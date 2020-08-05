@@ -1,7 +1,6 @@
 package dev.hephaestus.conrad.impl.config;
 
 import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.api.annotation.SaveType;
 import dev.hephaestus.conrad.impl.data.ConfigSerializer;
 import dev.hephaestus.conrad.impl.data.RootConfigSerializer;
 
@@ -38,7 +37,7 @@ public class RootConfigManager extends ConfigManager {
 
 	@Override
 	protected void save(Config config) {
-		ConfigSerializer.getInstance(config.getClass().getAnnotation(SaveType.class).value()).serialize(config);
+		ConfigSerializer.getInstance(config.getClass().getAnnotation(Config.SaveType.class).value()).serialize(config);
 	}
 
 	@Override

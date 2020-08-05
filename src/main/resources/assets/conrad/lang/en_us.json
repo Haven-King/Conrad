@@ -1,5 +1,9 @@
 {
   "conrad.save": "Save",
-  "conrad.client": "Client",
-  "conrad.server": "Server"
+  "conrad.environment.client": "Save Type: Client",
+  "conrad.environment.level": "Save Type: Level",
+  "conrad.saveType.default.0": "Editing default configs (these will be",
+  "conrad.saveType.default.1": "used when you create a new world)",
+  "conrad.saveType.level": "Editing configs for world: %s",
+  "conrad.saveType.server": "Editing configs for server: %s"
 }

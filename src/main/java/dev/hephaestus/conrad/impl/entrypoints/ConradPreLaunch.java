@@ -1,8 +1,6 @@
 package dev.hephaestus.conrad.impl.entrypoints;
 
 import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.api.annotation.SaveName;
-import dev.hephaestus.conrad.api.annotation.SaveType;
 import dev.hephaestus.conrad.impl.compat.ModMenuCompat;
 import dev.hephaestus.conrad.impl.ConradUtils;
 import dev.hephaestus.conrad.impl.config.ConfigManager;
@@ -25,7 +23,7 @@ public class ConradPreLaunch implements PreLaunchEntrypoint {
 				Config config = processConfig(modid, container.getEntrypoint());
 
 				if (FabricLoader.getInstance().isModLoaded("modmenu")) {
-					ModMenuCompat.processConfig(container.getProvider(), config);
+					ModMenuCompat.processConfig(container.getProvider());
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -46,13 +44,13 @@ public class ConradPreLaunch implements PreLaunchEntrypoint {
 			throw new IllegalArgumentException(String.format("Class %s already registered with key %s", config.getClass(), ConfigManager.getKey(config.getClass())));
 		}
 
-		if (!config.getClass().isAnnotationPresent(SaveType.class)) {
+		if (!config.getClass().isAnnotationPresent(Config.SaveType.class)) {
 			throw new IllegalClassFormatException(String.format("Class %s does not have the SaveType annotation.", config.getClass()));
 		}
 
 		String key;
-		if (config.getClass().isAnnotationPresent(SaveName.class)) {
-			key = modid + "." + config.getClass().getAnnotation(SaveName.class).value();
+		if (config.getClass().isAnnotationPresent(Config.SaveName.class)) {
+			key = modid + "." + config.getClass().getAnnotation(Config.SaveName.class).value();
 		} else {
 			key = modid + ".config";
 		}
