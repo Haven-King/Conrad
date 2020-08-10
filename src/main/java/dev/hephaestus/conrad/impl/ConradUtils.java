@@ -1,24 +1,32 @@
 package dev.hephaestus.conrad.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
+
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.config.ConfigManager;
 import dev.hephaestus.conrad.impl.config.RootConfigManager;
 import dev.hephaestus.conrad.impl.config.server.LevelConfigManager;
 import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.HashMap;
 
 public class ConradUtils {
 	public static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
@@ -30,6 +38,7 @@ public class ConradUtils {
 
 	private static final HashMap<Class<? extends Config>, Config> DEFAULT_CONFIGS = new HashMap<>();
 
+	@SuppressWarnings("unchecked")
 	public static <T extends Config> T getDefault(Class<T> configClass) {
 		if (!DEFAULT_CONFIGS.containsKey(configClass)) {
 			try {
@@ -76,65 +85,65 @@ public class ConradUtils {
 	}
 
 	public static void write(PacketByteBuf buf, Config config) {
-	    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
-	    try {
-	        ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
-	        objectStream.writeObject(config);
-	        objectStream.flush();
+		try {
+			ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
+			objectStream.writeObject(config);
+			objectStream.flush();
 
-	        buf.writeString(config.getClass().getName());
-	        buf.writeByteArray(byteStream.toByteArray());
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    } finally {
-	        try {
-	            byteStream.close();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	    }
+			buf.writeString(config.getClass().getName());
+			buf.writeByteArray(byteStream.toByteArray());
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				byteStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public static Config read(PacketByteBuf buf) {
-	    try {
-	        Class<? extends Config> configClass = (Class<? extends Config>) Class.forName(buf.readString(32767));
-	        ByteArrayInputStream byteStream = new ByteArrayInputStream(buf.readByteArray());
-	        ObjectInput in = null;
+		try {
+			Class<? extends Config> configClass = (Class<? extends Config>) Class.forName(buf.readString(32767));
+			ByteArrayInputStream byteStream = new ByteArrayInputStream(buf.readByteArray());
+			ObjectInput in = null;
 
-	        try {
-	            in = new ObjectInputStream(byteStream);
-	            return configClass.cast(in.readObject());
-	        } finally {
-	            try {
-	                if (in != null) {
-	                    in.close();
-	                }
-	            } catch (IOException e) {
-	                e.printStackTrace();
-	            }
-	        }
-	    } catch (ClassNotFoundException | IOException e) {
-	        e.printStackTrace();
-	    }
+			try {
+				in = new ObjectInputStream(byteStream);
+				return configClass.cast(in.readObject());
+			} finally {
+				try {
+					if (in != null) {
+						in.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
 
-	    return null;
+		return null;
 	}
 
 	public static void setValue(Config config, Field field, Object value) {
-	    try {
-	        field.set(config, value);
-	    } catch (IllegalAccessException e) {
-	        e.printStackTrace();
-	    }
+		try {
+			field.set(config, value);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static Object getValue(Config config, Field field) {
-	    try {
-	        return field.get(config);
-	    } catch (IllegalAccessException e) {
-	        return null;
-	    }
+		try {
+			return field.get(config);
+		} catch (IllegalAccessException e) {
+			return null;
+		}
 	}
 }

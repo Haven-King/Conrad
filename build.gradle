@@ -2,6 +2,7 @@ plugins {
     id 'fabric-loom' version '0.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id 'java'
+    id 'checkstyle'
     id 'maven-publish'
 }
 
@@ -88,6 +89,14 @@ tasks.shadowJar.dependsOn tasks.relocateShadowJar
 remapJar {
     dependsOn shadowJar
     input.set shadowJar.archiveFile.get()
+}
+
+allprojects {
+    apply plugin: 'checkstyle'
+    checkstyle {
+        configFile = rootProject.file("checkstyle.xml")
+        toolVersion = '8.31'
+    }
 }
 
 // configure the maven publication

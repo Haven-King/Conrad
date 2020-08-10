@@ -1,12 +1,13 @@
 package dev.hephaestus.conrad.impl.config.server;
 
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.config.ConfigManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
+
+import net.minecraft.server.network.ServerPlayerEntity;
+
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.impl.config.ConfigManager;
 
 public class PlayerConfigManager {
 	private final HashMap<UUID, HashMap<String, Config>> configs = new HashMap<>();

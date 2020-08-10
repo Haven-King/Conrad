@@ -1,15 +1,16 @@
 package dev.hephaestus.conrad.impl.data;
 
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.ConradUtils;
-import dev.hephaestus.conrad.impl.config.ConfigManager;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
+
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.impl.ConradUtils;
+import dev.hephaestus.conrad.impl.config.ConfigManager;
 
 public interface ConfigSerializer {
 	<T extends Config> void serialize(T config);
@@ -28,6 +29,7 @@ public interface ConfigSerializer {
 
 		if (!configFile.exists()) {
 			Files.createDirectories(configFolder);
+
 			if (configFile.createNewFile()) {
 				serialize(configFile, configClass.newInstance());
 			}
@@ -46,18 +48,14 @@ public interface ConfigSerializer {
 	static ConfigSerializer getInstance(Config.SaveType.Type saveType) {
 		EnvType envType = FabricLoader.getInstance().getEnvironmentType();
 
-		if ((saveType == Config.SaveType.Type.CLIENT && envType == EnvType.CLIENT) ||
-			(saveType == Config.SaveType.Type.LEVEL && envType == EnvType.SERVER)) {
+		if ((saveType == Config.SaveType.Type.CLIENT && envType == EnvType.CLIENT)
+				|| (saveType == Config.SaveType.Type.LEVEL && envType == EnvType.SERVER)) {
 			return RootConfigSerializer.INSTANCE;
 		} else if (saveType == Config.SaveType.Type.LEVEL && envType == EnvType.CLIENT) {
 			return ClientConfigDeterminer.getInstance();
 		} else {
+			// If SaveType is CLIENT and EnvType is SERVER, we don't save the client configs
 			return VoidConfigSerializer.INSTANCE;
 		}
-	}
-
-	static void save(Config config) {
-		getInstance(config.getClass().getAnnotation(Config.SaveType.class).value()).serialize(config);
-		NetworkedConfigSerializer.INSTANCE.serialize(config);
 	}
 }

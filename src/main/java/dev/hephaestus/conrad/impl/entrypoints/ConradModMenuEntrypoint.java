@@ -1,12 +1,10 @@
-package dev.hephaestus.conrad.impl.compat;
+package dev.hephaestus.conrad.impl.entrypoints;
 
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.api.Conrad;
-import dev.hephaestus.conrad.impl.client.WidgetProviderRegistry;
-import dev.hephaestus.conrad.impl.config.RootConfigManager;
-import dev.hephaestus.conrad.impl.data.ConfigSerializer;
-import dev.hephaestus.conrad.impl.data.NetworkedConfigSerializer;
-import dev.hephaestus.conrad.impl.mixin.server.MinecraftServerAccessor;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import io.github.prospector.modmenu.api.ConfigScreenFactory;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -15,8 +13,7 @@ import me.shedaniel.clothconfig2.api.Tooltip;
 import me.shedaniel.clothconfig2.gui.AbstractConfigScreen;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import me.shedaniel.math.Point;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.LiteralText;
@@ -25,10 +22,16 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.api.Conrad;
+import dev.hephaestus.conrad.impl.client.WidgetProviderRegistry;
+import dev.hephaestus.conrad.impl.config.RootConfigManager;
+import dev.hephaestus.conrad.impl.data.ConfigSerializer;
+import dev.hephaestus.conrad.impl.data.NetworkedConfigSerializer;
+import dev.hephaestus.conrad.mixin.server.MinecraftServerAccessor;
 
 public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 	private final String modid;
@@ -45,12 +48,15 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 		builder.setTitle(new TranslatableText("conrad." + this.modid));
 
 		List<Config> configs = new ArrayList<>();
+
 		for (Config rootConfig : RootConfigManager.INSTANCE.getConfigs(this.modid)) {
 			Config.SaveType.Type saveType = rootConfig.getClass().getAnnotation(Config.SaveType.class).value();
 
-			if (saveType == Config.SaveType.Type.CLIENT || MinecraftClient.getInstance().isIntegratedServerRunning() ||
-				MinecraftClient.getInstance().getCurrentServerEntry() == null ||
-				(saveType == Config.SaveType.Type.LEVEL && MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.hasPermissionLevel(4))) {
+			if (saveType == Config.SaveType.Type.CLIENT
+					|| MinecraftClient.getInstance().isIntegratedServerRunning()
+					|| MinecraftClient.getInstance().getCurrentServerEntry() == null
+					|| (saveType == Config.SaveType.Type.LEVEL && MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().player.hasPermissionLevel(4))
+			) {
 				Config config = Conrad.getConfig(rootConfig.getClass());
 
 				ConfigCategory category = builder.getOrCreateCategory(new TranslatableText("conrad." + this.modid + "." + config.getClass().getSimpleName()));
@@ -67,6 +73,7 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 						((MutableText) tooltips[2]).styled((style -> style.withColor(Formatting.GRAY).withItalic(true)));
 					} else {
 						tooltips = new Text[2];
+
 						if (MinecraftClient.getInstance().isIntegratedServerRunning() && MinecraftClient.getInstance().getServer() != null) {
 							tooltips[1] = new TranslatableText("conrad.saveType.level", ((MinecraftServerAccessor) MinecraftClient.getInstance().getServer()).getSession().getDirectoryName());
 						} else if (MinecraftClient.getInstance().getCurrentServerEntry() != null) {
@@ -91,8 +98,9 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 		builder.setSavingRunnable(() -> configs.forEach(config -> {
 			ConfigSerializer.getInstance(config.getClass().getAnnotation(Config.SaveType.class).value()).serialize(config);
 
-			if (config.getClass().getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.CLIENT &&
-				MinecraftClient.getInstance().getCurrentServerEntry() != null) {
+			if (config.getClass().getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.CLIENT
+					&& MinecraftClient.getInstance().getCurrentServerEntry() != null
+			) {
 				NetworkedConfigSerializer.INSTANCE.serialize(config);
 			}
 		}));
@@ -126,9 +134,7 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 
 				entry.setRequiresRestart(field.isAnnotationPresent(Config.Entry.RequiresRestart.class));
 
-				if (entry != null) {
-					category.addEntry(entry);
-				}
+				category.addEntry(entry);
 			}
 		}
 	}
@@ -155,9 +161,7 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 
 				entry.setRequiresRestart(field.isAnnotationPresent(Config.Entry.RequiresRestart.class));
 
-				if (entry != null) {
-					category.add(entry);
-				}
+				category.add(entry);
 			}
 		}
 	}

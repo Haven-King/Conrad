@@ -1,21 +1,23 @@
 package dev.hephaestus.conrad.impl.network.packets.all;
 
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.ConradUtils;
-import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
-import dev.hephaestus.conrad.impl.network.packets.ConradPacket;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-public class ConfigInfoPacket extends ConradPacket {
-	public static final Identifier ID = ConradUtils.id("packet", "all", "info");
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.network.PacketContext;
 
-	public ConfigInfoPacket(Config config) {
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.impl.ConradUtils;
+import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
+import dev.hephaestus.conrad.impl.network.packets.ConradPacket;
+
+public class ConfigDataPacket extends ConradPacket {
+	public static final Identifier ID = ConradUtils.id("packet", "all", "data");
+
+	public ConfigDataPacket(Config config) {
 		super(ID, Type.ALL);
 		ConradUtils.write(this, config);
 	}

@@ -1,13 +1,13 @@
 package dev.hephaestus.conrad.impl.config;
 
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.data.ConfigSerializer;
-import dev.hephaestus.conrad.impl.data.RootConfigSerializer;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.impl.data.ConfigSerializer;
+import dev.hephaestus.conrad.impl.data.RootConfigSerializer;
 
 public class RootConfigManager extends ConfigManager {
 	public static final RootConfigManager INSTANCE = new RootConfigManager();

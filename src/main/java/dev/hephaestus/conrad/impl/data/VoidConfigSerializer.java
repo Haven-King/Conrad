@@ -7,7 +7,6 @@ public class VoidConfigSerializer implements ConfigSerializer {
 
 	@Override
 	public <T extends Config> void serialize(T config) {
-
 	}
 
 	@Override

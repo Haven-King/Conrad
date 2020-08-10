@@ -1,11 +1,13 @@
 package dev.hephaestus.conrad.api;
 
-import dev.hephaestus.conrad.impl.ConradUtils;
-import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.Optional;
 
+import net.minecraft.server.network.ServerPlayerEntity;
+
+import dev.hephaestus.conrad.impl.ConradUtils;
+import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
+
+@SuppressWarnings("unused")
 public class Conrad {
 	/**
 	 * Gets a config object of the given configClass.

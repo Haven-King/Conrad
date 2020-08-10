@@ -1,14 +1,15 @@
 package dev.hephaestus.conrad.impl.data;
 
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.ConradUtils;
-import dev.hephaestus.conrad.impl.config.ConfigManager;
-import net.fabricmc.loader.api.FabricLoader;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import net.fabricmc.loader.api.FabricLoader;
+
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.impl.ConradUtils;
+import dev.hephaestus.conrad.impl.config.ConfigManager;
 
 public class RootConfigSerializer implements ConfigSerializer {
 	public static final RootConfigSerializer INSTANCE = new RootConfigSerializer();
@@ -47,6 +48,6 @@ public class RootConfigSerializer implements ConfigSerializer {
 
 	static <T extends Config> Path getRootSaveDirectory(Class<T> configClass) throws IOException {
 		String key = ConfigManager.getKey(configClass);
-		return Files.createDirectories(FabricLoader.getInstance().getConfigDirectory().toPath().normalize().resolve(key.substring(0, key.lastIndexOf("."))));
+		return Files.createDirectories(FabricLoader.getInstance().getConfigDir().normalize().resolve(key.substring(0, key.lastIndexOf("."))));
 	}
 }

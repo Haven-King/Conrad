@@ -1,9 +1,12 @@
 package dev.hephaestus.conrad.impl.config;
 
-import com.google.common.collect.HashBiMap;
-import dev.hephaestus.conrad.api.Config;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
-import java.util.*;
+import com.google.common.collect.HashBiMap;
+
+import dev.hephaestus.conrad.api.Config;
 
 public abstract class ConfigManager implements Iterable<Config> {
 	private static final LinkedHashSet<String> MODS = new LinkedHashSet<>();
@@ -32,6 +35,10 @@ public abstract class ConfigManager implements Iterable<Config> {
 		MODS.add(modid);
 	}
 
+	/**
+	 * @return a list of mod id's with registered configs.
+	 */
+	@SuppressWarnings("unused")
 	public static Collection<String> getModIds() {
 		return MODS;
 	}
@@ -49,16 +56,6 @@ public abstract class ConfigManager implements Iterable<Config> {
 		}
 
 		return configs;
-	}
-
-	public final Config getFirst(String modid) {
-		for (Config config : this) {
-			if (getKey(config.getClass()).split("\\.")[0].equals(modid)) {
-				return config;
-			}
-		}
-
-		return new Config() {};
 	}
 
 	protected abstract void save(Config config);

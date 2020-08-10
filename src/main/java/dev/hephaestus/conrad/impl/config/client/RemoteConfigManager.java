@@ -6,6 +6,5 @@ import dev.hephaestus.conrad.impl.config.RootConfigManager;
 public class RemoteConfigManager extends RootConfigManager {
 	@Override
 	protected void save(Config config) {
-
 	}
 }

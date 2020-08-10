@@ -1,13 +1,14 @@
 package dev.hephaestus.conrad.impl.data;
 
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.ConradUtils;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.WorldSavePath;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.WorldSavePath;
+
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.impl.ConradUtils;
 
 public class LevelConfigSerializer implements ConfigSerializer {
 	public static final LevelConfigSerializer INSTANCE = new LevelConfigSerializer();
@@ -37,7 +38,7 @@ public class LevelConfigSerializer implements ConfigSerializer {
 			} else {
 				return RootConfigSerializer.INSTANCE.deserialize(configClass);
 			}
-		} catch (IOException | IllegalAccessException | InstantiationException e) {
+		} catch (IOException e) {
 			ConradUtils.LOG.warn("Failed to deserialize config \"{}\": {}", configClass.getName(), e.getMessage());
 			e.printStackTrace();
 		}
@@ -51,15 +52,15 @@ public class LevelConfigSerializer implements ConfigSerializer {
 		}
 	}
 
-	@SuppressWarnings({"MethodCallSideOnly", "LocalVariableDeclarationSideOnly"})
+	@SuppressWarnings({"MethodCallSideOnly", "LocalVariableDeclarationSideOnly", "ConstantConditions"})
 	private File getSaveFile(Class<? extends Config> configClass) throws IllegalAccessException, IOException, InstantiationException {
 		MinecraftClient client = MinecraftClient.getInstance();
 		Path configFolder = client.getServer().getSavePath(WorldSavePath.ROOT).normalize().resolve("config");
 		return ConfigSerializer.getConfigFile(configFolder, configClass);
 	}
 
-	@SuppressWarnings({"MethodCallSideOnly", "LocalVariableDeclarationSideOnly"})
-	private File getSaveFileLocation(Class<? extends Config> configClass) throws IllegalAccessException, IOException, InstantiationException {
+	@SuppressWarnings({"MethodCallSideOnly", "LocalVariableDeclarationSideOnly", "ConstantConditions"})
+	private File getSaveFileLocation(Class<? extends Config> configClass) {
 		MinecraftClient client = MinecraftClient.getInstance();
 		Path configFolder = client.getServer().getSavePath(WorldSavePath.ROOT).normalize().resolve("config");
 		return ConfigSerializer.getConfigFileLocation(configFolder, configClass);

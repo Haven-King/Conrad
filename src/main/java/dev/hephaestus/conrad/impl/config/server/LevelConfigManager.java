@@ -1,17 +1,18 @@
 package dev.hephaestus.conrad.impl.config.server;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import net.minecraft.client.MinecraftClient;
+
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.config.ConfigManager;
 import dev.hephaestus.conrad.impl.config.RootConfigManager;
 import dev.hephaestus.conrad.impl.data.ConfigSerializer;
 import dev.hephaestus.conrad.impl.data.LevelConfigSerializer;
 import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
-import net.minecraft.client.MinecraftClient;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Consumer;
 
 public class LevelConfigManager extends ConfigManager {
 	private final HashMap<String, Config> configs = new HashMap<>();

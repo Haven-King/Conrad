@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "dev.hephaestus.conrad.impl.mixin",
+  "package": "dev.hephaestus.conrad.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "server.MinecraftServerConfig",

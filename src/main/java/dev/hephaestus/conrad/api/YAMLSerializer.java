@@ -1,11 +1,13 @@
-package dev.hephaestus.conrad.impl.data;
+package dev.hephaestus.conrad.api;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import dev.hephaestus.conrad.api.Config;
-
-import java.io.*;
 
 public class YAMLSerializer implements Config.Serializer {
 	public static Config.Serializer INSTANCE = new YAMLSerializer();

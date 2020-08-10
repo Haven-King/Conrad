@@ -1,190 +1,184 @@
 package dev.hephaestus.conrad.impl.client;
 
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.ConradUtils;
-import me.shedaniel.clothconfig2.impl.builders.*;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import me.shedaniel.clothconfig2.impl.builders.BooleanToggleBuilder;
+import me.shedaniel.clothconfig2.impl.builders.ColorFieldBuilder;
+import me.shedaniel.clothconfig2.impl.builders.DoubleFieldBuilder;
+import me.shedaniel.clothconfig2.impl.builders.FloatFieldBuilder;
+import me.shedaniel.clothconfig2.impl.builders.IntFieldBuilder;
+import me.shedaniel.clothconfig2.impl.builders.IntSliderBuilder;
+import me.shedaniel.clothconfig2.impl.builders.LongFieldBuilder;
+import me.shedaniel.clothconfig2.impl.builders.LongSliderBuilder;
+import me.shedaniel.clothconfig2.impl.builders.StringFieldBuilder;
+
 import net.minecraft.text.TranslatableText;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.impl.ConradUtils;
+
 @Environment(EnvType.CLIENT)
+@SuppressWarnings("ConstantConditions")
 public class WidgetProviders {
-    public static final ConfigWidgetProvider<Boolean> BOOLEAN_BUTTON = (builder, key, config, field) -> {
-        BooleanToggleBuilder booleanToggleBuilder = builder.startBooleanToggle(
-                new TranslatableText(key),
-                (Boolean) ConradUtils.getValue(config, field)
-        );
+	public static final ConfigWidgetProvider<Boolean> BOOLEAN_BUTTON = (builder, key, config, field) -> {
+		BooleanToggleBuilder booleanToggleBuilder = builder.startBooleanToggle(
+				new TranslatableText(key),
+				(Boolean) ConradUtils.getValue(config, field)
+		);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        if (defaultValue instanceof Boolean) {
-            booleanToggleBuilder.setDefaultValue((Boolean) defaultValue);
-        }
+		if (defaultValue instanceof Boolean) {
+			booleanToggleBuilder.setDefaultValue((Boolean) defaultValue);
+		}
 
-        booleanToggleBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
+		booleanToggleBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        return booleanToggleBuilder.build();
-    };
+		return booleanToggleBuilder.build();
+	};
 
-    public static final ConfigWidgetProvider<Integer> COLOR_FIELD = (builder, key, config, field) -> {
-        ColorFieldBuilder colorFieldBuilder = builder.startColorField(
-                new TranslatableText(key),
-                (Integer) ConradUtils.getValue(config, field)
-        );
+	public static final ConfigWidgetProvider<Integer> COLOR_FIELD = (builder, key, config, field) -> {
+		ColorFieldBuilder colorFieldBuilder = builder.startColorField(
+				new TranslatableText(key),
+				(Integer) ConradUtils.getValue(config, field)
+		);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        if (defaultValue instanceof Integer) {
-            colorFieldBuilder.setDefaultValue((Integer) defaultValue);
-        }
+		if (defaultValue instanceof Integer) {
+			colorFieldBuilder.setDefaultValue((Integer) defaultValue);
+		}
 
-        colorFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
+		colorFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        return colorFieldBuilder.build();
-    };
+		return colorFieldBuilder.build();
+	};
 
-    public static final ConfigWidgetProvider<Double> DOUBLE_FIELD = (builder, key, config, field) -> {
-        DoubleFieldBuilder doubleFieldBuilder = builder.startDoubleField(
-                new TranslatableText(key),
-                (Double) ConradUtils.getValue(config, field)
-        );
+	public static final ConfigWidgetProvider<Double> DOUBLE_FIELD = (builder, key, config, field) -> {
+		DoubleFieldBuilder doubleFieldBuilder = builder.startDoubleField(
+				new TranslatableText(key),
+				(Double) ConradUtils.getValue(config, field)
+		);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        if (defaultValue instanceof Double) {
-            doubleFieldBuilder.setDefaultValue((Double) defaultValue);
-        }
+		if (defaultValue instanceof Double) {
+			doubleFieldBuilder.setDefaultValue((Double) defaultValue);
+		}
 
-        doubleFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
+		doubleFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        return doubleFieldBuilder.build();
-    };
+		return doubleFieldBuilder.build();
+	};
 
-//    @SuppressWarnings("unchecked")
-//    public static final ConfigWidgetProvider<List<Double>> DOUBLE_LIST = (builder, key, config, field) -> {
-//        DoubleListBuilder doubleListBuilder = builder.startDoubleList(
-//                new TranslatableText(key),
-//                (List<Double>) config.get(field)
-//        );
-//
-//        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
-//
-//        if (defaultValue != null) {
-//            doubleListBuilder.setDefaultValue((List<Double>) defaultValue);
-//        }
-//
-//        doubleListBuilder.setSaveConsumer(value -> config.set(field, value));
-//
-//        return doubleListBuilder.build();
-//    };
+	public static final ConfigWidgetProvider<Float> FLOAT_FIELD = (builder, key, config, field) -> {
+		FloatFieldBuilder floatFieldBuilder = builder.startFloatField(
+				new TranslatableText(key),
+				(Float) ConradUtils.getValue(config, field)
+		);
 
-    public static final ConfigWidgetProvider<Float> FLOAT_FIELD = (builder, key, config, field) -> {
-        FloatFieldBuilder floatFieldBuilder = builder.startFloatField(
-                new TranslatableText(key),
-                (Float) ConradUtils.getValue(config, field)
-        );
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		if (defaultValue instanceof Float) {
+			floatFieldBuilder.setDefaultValue((Float) defaultValue);
+		}
 
-        if (defaultValue instanceof Float) {
-            floatFieldBuilder.setDefaultValue((Float) defaultValue);
-        }
+		floatFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        floatFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
+		return floatFieldBuilder.build();
+	};
 
-        return floatFieldBuilder.build();
-    };
+	public static final ConfigWidgetProvider<Integer> INT_FIELD = (builder, key, config, field) -> {
+		IntFieldBuilder intFieldBuilder = builder.startIntField(
+				new TranslatableText(key),
+				(Integer) ConradUtils.getValue(config, field)
+		);
 
-    public static final ConfigWidgetProvider<Integer> INT_FIELD = (builder, key, config, field) -> {
-        IntFieldBuilder intFieldBuilder = builder.startIntField(
-                new TranslatableText(key),
-                (Integer) ConradUtils.getValue(config, field)
-        );
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		if (defaultValue instanceof Integer) {
+			intFieldBuilder.setDefaultValue((Integer) defaultValue);
+		}
 
-        if (defaultValue instanceof Integer) {
-            intFieldBuilder.setDefaultValue((Integer) defaultValue);
-        }
+		intFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        intFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
+		return intFieldBuilder.build();
+	};
 
-        return intFieldBuilder.build();
-    };
+	public static final ConfigWidgetProvider<Integer> INT_SLIDER = (builder, key, config, field) -> {
+		Config.Entry.Bounds.Discrete bounds = field.getAnnotation(Config.Entry.Bounds.Discrete.class);
 
-    public static final ConfigWidgetProvider<Integer> INT_SLIDER = (builder, key, config, field) -> {
-        Config.Entry.Bounds.Discrete bounds = field.getAnnotation(Config.Entry.Bounds.Discrete.class);
+		IntSliderBuilder intSliderBuilder = builder.startIntSlider(
+				new TranslatableText(key),
+				(Integer) ConradUtils.getValue(config, field),
+				(int) bounds.min(),
+				(int) bounds.max()
+		);
 
-        IntSliderBuilder intSliderBuilder = builder.startIntSlider(
-                new TranslatableText(key),
-                (Integer) ConradUtils.getValue(config, field),
-                (int) bounds.min(),
-                (int) bounds.max()
-        );
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		if (defaultValue instanceof Integer) {
+			intSliderBuilder.setDefaultValue((Integer) defaultValue);
+		}
 
-        if (defaultValue instanceof Integer) {
-            intSliderBuilder.setDefaultValue((Integer) defaultValue);
-        }
+		intSliderBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        intSliderBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
+		return intSliderBuilder.build();
+	};
 
-        return intSliderBuilder.build();
-    };
+	public static final ConfigWidgetProvider<Long> LONG_FIELD = (builder, key, config, field) -> {
+		LongFieldBuilder longFieldBuilder = builder.startLongField(
+				new TranslatableText(key),
+				(Long) ConradUtils.getValue(config, field)
+		);
 
-    public static final ConfigWidgetProvider<Long> LONG_FIELD = (builder, key, config, field) -> {
-        LongFieldBuilder longFieldBuilder = builder.startLongField(
-                new TranslatableText(key),
-                (Long) ConradUtils.getValue(config, field)
-        );
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		if (defaultValue instanceof Long) {
+			longFieldBuilder.setDefaultValue((Long) defaultValue);
+		}
 
-        if (defaultValue instanceof Long) {
-            longFieldBuilder.setDefaultValue((Long) defaultValue);
-        }
+		longFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        longFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
+		return longFieldBuilder.build();
+	};
 
-        return longFieldBuilder.build();
-    };
+	public static final ConfigWidgetProvider<Long> LONG_SLIDER = (builder, key, config, field) -> {
+		Config.Entry.Bounds.Discrete bounds = field.getAnnotation(Config.Entry.Bounds.Discrete.class);
 
-    public static final ConfigWidgetProvider<Long> LONG_SLIDER = (builder, key, config, field) -> {
-        Config.Entry.Bounds.Discrete bounds = field.getAnnotation(Config.Entry.Bounds.Discrete.class);
+		LongSliderBuilder longSliderBuilder = builder.startLongSlider(
+				new TranslatableText(key),
+				(Long) ConradUtils.getValue(config, field),
+				bounds.min(),
+				bounds.max()
+		);
 
-        LongSliderBuilder longSliderBuilder = builder.startLongSlider(
-                new TranslatableText(key),
-                (Long) ConradUtils.getValue(config, field),
-                bounds.min(),
-                bounds.max()
-        );
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		if (defaultValue instanceof Long) {
+			longSliderBuilder.setDefaultValue((Long) defaultValue);
+		}
 
-        if (defaultValue instanceof Long) {
-            longSliderBuilder.setDefaultValue((Long) defaultValue);
-        }
+		longSliderBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        longSliderBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
+		return longSliderBuilder.build();
+	};
 
-        return longSliderBuilder.build();
-    };
+	public static final ConfigWidgetProvider<String> STRING_FIELD = (builder, key, config, field) -> {
+		StringFieldBuilder stringFieldBuilder = builder.startStrField(
+				new TranslatableText(key),
+				(String) ConradUtils.getValue(config, field)
+		);
 
-    public static final ConfigWidgetProvider<String> STRING_FIELD = (builder, key, config, field) -> {
-        StringFieldBuilder stringFieldBuilder = builder.startStrField(
-                new TranslatableText(key),
-                (String) ConradUtils.getValue(config, field)
-        );
+		Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
 
-        Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
+		if (defaultValue instanceof String) {
+			stringFieldBuilder.setDefaultValue((String) defaultValue);
+		}
 
-        if (defaultValue instanceof String) {
-            stringFieldBuilder.setDefaultValue((String) defaultValue);
-        }
+		stringFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
-        stringFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
-
-        return stringFieldBuilder.build();
-    };
+		return stringFieldBuilder.build();
+	};
 }

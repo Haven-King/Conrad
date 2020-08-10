@@ -1,13 +1,15 @@
 package dev.hephaestus.conrad.impl.compat;
 
-import com.google.common.collect.ImmutableMap;
-import dev.hephaestus.conrad.api.Config;
-import io.github.prospector.modmenu.api.ConfigScreenFactory;
-import io.github.prospector.modmenu.api.ModMenuApi;
-import net.fabricmc.loader.api.ModContainer;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+import io.github.prospector.modmenu.api.ConfigScreenFactory;
+import io.github.prospector.modmenu.api.ModMenuApi;
+
+import net.fabricmc.loader.api.ModContainer;
+
+import dev.hephaestus.conrad.impl.entrypoints.ConradModMenuEntrypoint;
 
 public class ModMenuCompat implements ModMenuApi {
 	private static final HashMap<String, ConradModMenuEntrypoint> ENTRY_POINTS = new HashMap<>();
