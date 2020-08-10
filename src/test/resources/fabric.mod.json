@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "dummy",
+  "version": "${version}",
+  "name": "Dummy",
+  "license": "CC0-1.0",
+  "icon": "assets/dummy/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.hephaestus.dummy.Dummy"
+    ],
+    "conrad": [
+      "dev.hephaestus.dummy.DummyClientConfig",
+      "dev.hephaestus.dummy.DummyServerConfig"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.9.0+build.204",
+    "fabric": "*",
+    "minecraft": "1.16.1"
+  }
+}
