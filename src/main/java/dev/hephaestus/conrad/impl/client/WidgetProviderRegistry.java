@@ -12,10 +12,22 @@ public class WidgetProviderRegistry {
 	private static final HashMap<Class<?>, ConfigWidgetProvider<?>> DEFAULT_PROVIDERS = new HashMap<>();
 	private static final HashMap<String, ConfigWidgetProvider<?>> ALTERNATE_PROVIDERS = new HashMap<>();
 
+	/**
+	 * Registers the default widget provider for a given field type.
+	 * Does NOT override existing default providers. Use {@link WidgetProviderRegistry#set(Class, ConfigWidgetProvider)}
+	 * if you wish to replace the default widget for ALL fields of the given type.
+	 * @param configValueType the type of the field
+	 * @param widgetProvider the widget provider
+	 */
 	public static void register(Class<?> configValueType, ConfigWidgetProvider<?> widgetProvider) {
 		DEFAULT_PROVIDERS.putIfAbsent(configValueType, widgetProvider);
 	}
 
+	/**
+	 * Registers an alternate widget provider for use with {@link dev.hephaestus.conrad.api.Config.Entry.Widget}.
+	 * @param configWidgetType the String identifier of the {@link ConfigWidgetProvider}
+	 * @param widgetProvider the widget provider
+	 */
 	public static void register(String configWidgetType, ConfigWidgetProvider<?> widgetProvider) {
 		ALTERNATE_PROVIDERS.putIfAbsent(configWidgetType, widgetProvider);
 	}

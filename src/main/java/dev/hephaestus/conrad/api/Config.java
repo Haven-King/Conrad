@@ -7,6 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import dev.hephaestus.conrad.impl.client.ConfigWidgetProvider;
 
 @SuppressWarnings("unused")
 public interface Config extends Serializable {
@@ -15,10 +16,22 @@ public interface Config extends Serializable {
 		return YAMLSerializer.INSTANCE;
 	}
 
+	/**
+	 * Specifies the save name (not including file type) of this config file.
+	 * Required on all config objects.
+	 */
 	@Retention(RetentionPolicy.RUNTIME) @interface SaveName {
 		String value();
 	}
 
+	/**
+	 * Determines how this config option should be saved. Required on all config objects.
+	 * Config "A" will be available on the server with SaveType CLIENT if the class of "A"
+	 * is defined on both the client and server in question.
+	 * Config "B" will be available on the client with SaveType LEVEL if the class of "B"
+	 * is defined on both the client and server in question, AND either the player is a
+	 * level 4 operator OR the server is a local integrated server.
+	 */
 	@Retention(RetentionPolicy.RUNTIME) @interface SaveType {
 		Type value();
 
@@ -29,6 +42,11 @@ public interface Config extends Serializable {
 	}
 
 	class Entry {
+		/**
+		 * Specifies an alternate widget to the default for the type of the field.
+		 * Three of these are registered by default in {@link dev.hephaestus.conrad.impl.client.WidgetProviderRegistry}
+		 * and more can be registered with {@link dev.hephaestus.conrad.impl.client.WidgetProviderRegistry#register(String, ConfigWidgetProvider)}
+		 */
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Widget {
 			String value();
