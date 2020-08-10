@@ -1,21 +1,22 @@
-package dev.hephaestus.conrad.api;
+package dev.hephaestus.conrad.impl.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import dev.hephaestus.conrad.api.Config;
 
 import java.io.*;
 
-public class YAMLConfigSerializer implements ConfigSerializer {
-	public static ConfigSerializer INSTANCE = new YAMLConfigSerializer();
+public class YAMLSerializer implements Config.Serializer {
+	public static Config.Serializer INSTANCE = new YAMLSerializer();
 
 	private final ObjectMapper mapper;
 
-	public YAMLConfigSerializer(YAMLFactory factory) {
+	public YAMLSerializer(YAMLFactory factory) {
 		this.mapper = new ObjectMapper(factory);
 	}
 
-	public YAMLConfigSerializer() {
+	public YAMLSerializer() {
 		this(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
 	}
 

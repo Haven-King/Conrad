@@ -17,12 +17,12 @@ public class ConfigInfoPacket extends ConradPacket {
 
 	public ConfigInfoPacket(Config config) {
 		super(ID, Type.ALL);
-		Config.write(this, config);
+		ConradUtils.write(this, config);
 	}
 
 	@Environment(EnvType.CLIENT)
 	public static void acceptOnClient(PacketContext context, PacketByteBuf buf) {
-		Config config = Config.read(buf);
+		Config config = ConradUtils.read(buf);
 
 		context.getTaskQueue().execute(() -> {
 			ConfigManagerProvider provider = ConfigManagerProvider.of(MinecraftClient.getInstance().getCurrentServerEntry());
@@ -34,7 +34,7 @@ public class ConfigInfoPacket extends ConradPacket {
 	}
 
 	public static void acceptOnServer(PacketContext context, PacketByteBuf buf) {
-		Config config = Config.read(buf);
+		Config config = ConradUtils.read(buf);
 
 		context.getTaskQueue().execute(() -> {
 			ConfigManagerProvider provider = ConfigManagerProvider.of(context.getPlayer().getServer());

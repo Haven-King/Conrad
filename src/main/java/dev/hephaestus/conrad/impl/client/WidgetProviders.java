@@ -12,7 +12,7 @@ public class WidgetProviders {
     public static final ConfigWidgetProvider<Boolean> BOOLEAN_BUTTON = (builder, key, config, field) -> {
         BooleanToggleBuilder booleanToggleBuilder = builder.startBooleanToggle(
                 new TranslatableText(key),
-                (Boolean) config.get(field)
+                (Boolean) ConradUtils.getValue(config, field)
         );
 
         Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
@@ -21,7 +21,7 @@ public class WidgetProviders {
             booleanToggleBuilder.setDefaultValue((Boolean) defaultValue);
         }
 
-        booleanToggleBuilder.setSaveConsumer(value -> config.set(field, value));
+        booleanToggleBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return booleanToggleBuilder.build();
     };
@@ -29,7 +29,7 @@ public class WidgetProviders {
     public static final ConfigWidgetProvider<Integer> COLOR_FIELD = (builder, key, config, field) -> {
         ColorFieldBuilder colorFieldBuilder = builder.startColorField(
                 new TranslatableText(key),
-                (Integer) config.get(field)
+                (Integer) ConradUtils.getValue(config, field)
         );
 
         Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
@@ -38,7 +38,7 @@ public class WidgetProviders {
             colorFieldBuilder.setDefaultValue((Integer) defaultValue);
         }
 
-        colorFieldBuilder.setSaveConsumer(value -> config.set(field, value));
+        colorFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return colorFieldBuilder.build();
     };
@@ -46,7 +46,7 @@ public class WidgetProviders {
     public static final ConfigWidgetProvider<Double> DOUBLE_FIELD = (builder, key, config, field) -> {
         DoubleFieldBuilder doubleFieldBuilder = builder.startDoubleField(
                 new TranslatableText(key),
-                (Double) config.get(field)
+                (Double) ConradUtils.getValue(config, field)
         );
 
         Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
@@ -55,7 +55,7 @@ public class WidgetProviders {
             doubleFieldBuilder.setDefaultValue((Double) defaultValue);
         }
 
-        doubleFieldBuilder.setSaveConsumer(value -> config.set(field, value));
+        doubleFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return doubleFieldBuilder.build();
     };
@@ -81,7 +81,7 @@ public class WidgetProviders {
     public static final ConfigWidgetProvider<Float> FLOAT_FIELD = (builder, key, config, field) -> {
         FloatFieldBuilder floatFieldBuilder = builder.startFloatField(
                 new TranslatableText(key),
-                (Float) config.get(field)
+                (Float) ConradUtils.getValue(config, field)
         );
 
         Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
@@ -90,7 +90,7 @@ public class WidgetProviders {
             floatFieldBuilder.setDefaultValue((Float) defaultValue);
         }
 
-        floatFieldBuilder.setSaveConsumer(value -> config.set(field, value));
+        floatFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return floatFieldBuilder.build();
     };
@@ -98,7 +98,7 @@ public class WidgetProviders {
     public static final ConfigWidgetProvider<Integer> INT_FIELD = (builder, key, config, field) -> {
         IntFieldBuilder intFieldBuilder = builder.startIntField(
                 new TranslatableText(key),
-                (Integer) config.get(field)
+                (Integer) ConradUtils.getValue(config, field)
         );
 
         Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
@@ -107,7 +107,7 @@ public class WidgetProviders {
             intFieldBuilder.setDefaultValue((Integer) defaultValue);
         }
 
-        intFieldBuilder.setSaveConsumer(value -> config.set(field, value));
+        intFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return intFieldBuilder.build();
     };
@@ -117,7 +117,7 @@ public class WidgetProviders {
 
         IntSliderBuilder intSliderBuilder = builder.startIntSlider(
                 new TranslatableText(key),
-                (Integer) config.get(field),
+                (Integer) ConradUtils.getValue(config, field),
                 (int) bounds.min(),
                 (int) bounds.max()
         );
@@ -128,7 +128,7 @@ public class WidgetProviders {
             intSliderBuilder.setDefaultValue((Integer) defaultValue);
         }
 
-        intSliderBuilder.setSaveConsumer(value -> config.set(field, value));
+        intSliderBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return intSliderBuilder.build();
     };
@@ -136,7 +136,7 @@ public class WidgetProviders {
     public static final ConfigWidgetProvider<Long> LONG_FIELD = (builder, key, config, field) -> {
         LongFieldBuilder longFieldBuilder = builder.startLongField(
                 new TranslatableText(key),
-                (Long) config.get(field)
+                (Long) ConradUtils.getValue(config, field)
         );
 
         Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
@@ -145,7 +145,7 @@ public class WidgetProviders {
             longFieldBuilder.setDefaultValue((Long) defaultValue);
         }
 
-        longFieldBuilder.setSaveConsumer(value -> config.set(field, value));
+        longFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return longFieldBuilder.build();
     };
@@ -155,7 +155,7 @@ public class WidgetProviders {
 
         LongSliderBuilder longSliderBuilder = builder.startLongSlider(
                 new TranslatableText(key),
-                (Long) config.get(field),
+                (Long) ConradUtils.getValue(config, field),
                 bounds.min(),
                 bounds.max()
         );
@@ -166,7 +166,7 @@ public class WidgetProviders {
             longSliderBuilder.setDefaultValue((Long) defaultValue);
         }
 
-        longSliderBuilder.setSaveConsumer(value -> config.set(field, value));
+        longSliderBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return longSliderBuilder.build();
     };
@@ -174,7 +174,7 @@ public class WidgetProviders {
     public static final ConfigWidgetProvider<String> STRING_FIELD = (builder, key, config, field) -> {
         StringFieldBuilder stringFieldBuilder = builder.startStrField(
                 new TranslatableText(key),
-                (String) config.get(field)
+                (String) ConradUtils.getValue(config, field)
         );
 
         Object defaultValue = ConradUtils.getDefault(config.getClass(), field);
@@ -183,7 +183,7 @@ public class WidgetProviders {
             stringFieldBuilder.setDefaultValue((String) defaultValue);
         }
 
-        stringFieldBuilder.setSaveConsumer(value -> config.set(field, value));
+        stringFieldBuilder.setSaveConsumer(value -> ConradUtils.setValue(config, field, value));
 
         return stringFieldBuilder.build();
     };

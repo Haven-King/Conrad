@@ -13,12 +13,12 @@ public class ConfigSaveC2SPacket extends ConradPacket {
 
 	public ConfigSaveC2SPacket(Config config) {
 		super(ID, Type.C2S);
-		Config.write(this, config);
+		ConradUtils.write(this, config);
 	}
 
 	public static void accept(PacketContext context, PacketByteBuf buf) {
 		if (context.getPlayer().hasPermissionLevel(4)) {
-			Config config = Config.read(buf);
+			Config config = ConradUtils.read(buf);
 
 			context.getTaskQueue().execute(() -> {
 				ConfigManagerProvider provider = ConfigManagerProvider.of(context.getPlayer().getServer());
