@@ -28,7 +28,7 @@ public class ConradUtils {
 
 	private static final HashMap<Class<? extends Config>, Config> DEFAULT_CONFIGS = new HashMap<>();
 
-	public static Object getDefault(Class<? extends Config> configClass, Field field) {
+	public static <T extends Config> T getDefault(Class<T> configClass) {
 		if (!DEFAULT_CONFIGS.containsKey(configClass)) {
 			try {
 				DEFAULT_CONFIGS.putIfAbsent(configClass, configClass.newInstance());
@@ -37,9 +37,13 @@ public class ConradUtils {
 			}
 		}
 
+		return (T) DEFAULT_CONFIGS.get(configClass);
+	}
+
+	public static Object getDefault(Class<? extends Config> configClass, Field field) {
 		if (DEFAULT_CONFIGS.containsKey(configClass)) {
 			try {
-				return field.get(DEFAULT_CONFIGS.get(configClass));
+				return field.get(getDefault(configClass));
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}

@@ -1,6 +1,5 @@
 package dev.hephaestus.conrad.impl.network.packets;
 
-import dev.hephaestus.conrad.impl.network.NetworkingException;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
@@ -25,7 +24,7 @@ public abstract class ConradPacket extends PacketByteBuf {
     }
 
     public final void send() {
-        if (this.type == Type.C2S) {
+        if (this.type != Type.S2C) {
             if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
                 ClientSidePacketRegistry.INSTANCE.sendToServer(this.id, this);
             } else {
@@ -37,7 +36,7 @@ public abstract class ConradPacket extends PacketByteBuf {
     }
 
     public final void send(ServerPlayerEntity player) {
-        if (this.type == Type.S2C) {
+        if (this.type != Type.C2S) {
             ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, this.id, this);
         } else {
             LOGGER.error("Cannot send S2C packet to a player");
@@ -45,6 +44,7 @@ public abstract class ConradPacket extends PacketByteBuf {
     }
 
     protected enum Type {
+        ALL,
         C2S,
         S2C
     }

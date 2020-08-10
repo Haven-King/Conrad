@@ -4,6 +4,7 @@ import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.ConradUtils;
 import dev.hephaestus.conrad.impl.duck.ConfigManagerProvider;
 import dev.hephaestus.conrad.impl.network.packets.ConradPacket;
+import dev.hephaestus.conrad.impl.network.packets.all.ConfigInfoPacket;
 import dev.hephaestus.conrad.impl.network.packets.s2c.ConfigInfoS2CPacket;
 import net.fabricmc.fabric.api.network.PacketContext;
 import net.minecraft.network.PacketByteBuf;
@@ -23,7 +24,7 @@ public class PingC2SPacket extends ConradPacket {
 		context.getTaskQueue().execute(() -> {
 			if (playerEntity.hasPermissionLevel(4)) {
 				for (Config config : ConfigManagerProvider.of(playerEntity.server).getConfigManager()) {
-					new ConfigInfoS2CPacket(config).send(playerEntity);
+					new ConfigInfoPacket(config).send(playerEntity);
 				}
 			}
 		});

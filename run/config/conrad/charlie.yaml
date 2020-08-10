@@ -1,7 +1,0 @@
-integerValue: 5
-booleanValue: false
-floatValue: 0.151
-doubleValue: 0.133133331
-innerTestConfig:
-  integerValue: 10
-  booleanValue: true

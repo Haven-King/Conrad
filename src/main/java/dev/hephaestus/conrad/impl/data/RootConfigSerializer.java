@@ -22,7 +22,7 @@ public class RootConfigSerializer implements ConfigSerializer {
 
 			ConfigSerializer.serialize(configFile, config);
 		} catch (IllegalAccessException | InstantiationException | IOException e) {
-			ConradUtils.LOG.warn("Failed to deserialize config \"{}\": {}", config.getClass().getName(), e.getMessage());
+			ConradUtils.LOG.warn("Failed to serialize config \"{}\": {}", config.getClass().getName(), e.getMessage());
 		}
 	}
 

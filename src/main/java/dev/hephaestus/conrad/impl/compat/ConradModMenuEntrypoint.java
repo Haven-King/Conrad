@@ -89,9 +89,10 @@ public class ConradModMenuEntrypoint implements ConfigScreenFactory<Screen> {
 		}
 
 		builder.setSavingRunnable(() -> configs.forEach(config -> {
-			ConfigSerializer.save(config);
+			ConfigSerializer.getInstance(config.getClass().getAnnotation(Config.SaveType.class).value()).serialize(config);
 
-			if (config.getClass().getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.CLIENT) {
+			if (config.getClass().getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.CLIENT &&
+				MinecraftClient.getInstance().getCurrentServerEntry() != null) {
 				NetworkedConfigSerializer.INSTANCE.serialize(config);
 			}
 		}));

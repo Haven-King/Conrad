@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.config.RootConfigManager;
 import dev.hephaestus.conrad.impl.network.NetworkingException;
+import dev.hephaestus.conrad.impl.network.packets.all.ConfigInfoPacket;
 import dev.hephaestus.conrad.impl.network.packets.c2s.ConfigInfoC2SPacket;
 import dev.hephaestus.conrad.impl.network.packets.c2s.PingC2SPacket;
 import net.fabricmc.api.EnvType;
@@ -24,7 +25,7 @@ public class ClientPlayNetworkHandlerMixin {
 
         for (Config config : RootConfigManager.INSTANCE) {
             if (config.getClass().getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.CLIENT) {
-                new ConfigInfoC2SPacket(config).send();
+                new ConfigInfoPacket(config).send();
             }
         }
     }

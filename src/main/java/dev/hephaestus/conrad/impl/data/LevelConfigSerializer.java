@@ -20,7 +20,8 @@ public class LevelConfigSerializer implements ConfigSerializer {
 
 			ConfigSerializer.serialize(configFile, config);
 		} catch (IllegalAccessException | InstantiationException | IOException e) {
-			ConradUtils.LOG.warn("Failed to deserialize config \"{}\": {}", config.getClass().getName(), e.getMessage());
+			ConradUtils.LOG.warn("Failed to serialize config \"{}\": {}", config.getClass().getName(), e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
@@ -38,12 +39,14 @@ public class LevelConfigSerializer implements ConfigSerializer {
 			}
 		} catch (IOException | IllegalAccessException | InstantiationException e) {
 			ConradUtils.LOG.warn("Failed to deserialize config \"{}\": {}", configClass.getName(), e.getMessage());
+			e.printStackTrace();
 		}
 
 		try {
 			return configClass.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
 			ConradUtils.LOG.warn("Failed to create new instance of config \"{}\": {}", configClass.getName(), e.getMessage());
+			e.printStackTrace();
 			return null;
 		}
 	}
