@@ -18,7 +18,8 @@ public interface Config extends Serializable {
 
 	/**
 	 * Specifies the save name (not including file type) of this config file.
-	 * Required on all config objects.
+	 * If not present, the default name is "config". This will cause problems
+	 * if you have multiple configs registered that don't provide a SaveName.
 	 */
 	@Retention(RetentionPolicy.RUNTIME) @interface SaveName {
 		String value();
