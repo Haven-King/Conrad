@@ -1,4 +1,4 @@
-# <img src="Dhttps://github.com/Hephaestus-Dev/Conrad/blob/master/Conrad.png" width=100px style="display: inline-block;"></img> Conrad
+# <img src="https://raw.githubusercontent.com/Hephaestus-Dev/Conrad/master/Conrad.png" width=100px style="display: inline-block;"></img> Conrad
 Conrad is a highly flexible config library for the [Fabric modding platform](https://fabricmc.net/).
 
 ## Setup
