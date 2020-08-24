@@ -1,0 +1,8 @@
+{
+  "conrad.save": "Save",
+  "conrad.environment.user": "Save Type: User",
+  "conrad.environment.level": "Save Type: Level",
+  "conrad.saveType.default": "Editing default configs (these will be used when you create a new world)",
+  "conrad.saveType.level": "Editing configs for world: %s",
+  "conrad.saveType.server": "Editing configs for server: %s"
+}

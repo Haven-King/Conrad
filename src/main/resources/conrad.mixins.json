@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "dev.hephaestus.conrad.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "server.AddLevelValueContainer"
+  ],
+  "client": [
+    "client.AddRemoteValueContainer",
+    "client.SendConfigValues",
+    "server.MinecraftServerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
