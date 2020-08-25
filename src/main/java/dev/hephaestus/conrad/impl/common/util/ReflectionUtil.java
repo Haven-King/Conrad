@@ -3,6 +3,7 @@ package dev.hephaestus.conrad.impl.common.util;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.api.Conrad;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 
 import java.lang.invoke.MethodHandles;
@@ -124,7 +125,7 @@ public class ReflectionUtil {
 
 	public static Object invokeDefault(Method method) throws Throwable {
 		return invokeDefault(
-				Proxy.newProxyInstance(method.getDeclaringClass().getClassLoader(), new Class[] {method.getDeclaringClass()}, ValueContainer.ROOT),
+				Conrad.getConfig((Class<? extends Config>) method.getDeclaringClass()),
 				method,
 				null
 		);

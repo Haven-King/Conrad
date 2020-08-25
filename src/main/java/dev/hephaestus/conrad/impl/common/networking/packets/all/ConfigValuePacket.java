@@ -23,7 +23,7 @@ public class ConfigValuePacket extends ConradPacket {
 		ValueKey.WRITER.write(this, valueKey);
 
 		this.writeString(value.getClass().getName());
-		NetworkSerializerRegistry.getWriter(value.getClass()).write(this, value);
+		NetworkSerializerRegistry.write(this, value);
 	}
 
 	private static Object read(PacketByteBuf buf) {
@@ -37,7 +37,7 @@ public class ConfigValuePacket extends ConradPacket {
 			return null;
 		}
 
-		return NetworkSerializerRegistry.getReader(clazz).read(buf);
+		return NetworkSerializerRegistry.read(buf, clazz);
 	}
 
 	public static void saveUserInfo(PacketContext context, PacketByteBuf buf) {

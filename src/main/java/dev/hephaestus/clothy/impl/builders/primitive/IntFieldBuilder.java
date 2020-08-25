@@ -1,6 +1,7 @@
-package dev.hephaestus.clothy.impl.builders;
+package dev.hephaestus.clothy.impl.builders.primitive;
 
 import dev.hephaestus.clothy.gui.entries.IntegerListEntry;
+import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;

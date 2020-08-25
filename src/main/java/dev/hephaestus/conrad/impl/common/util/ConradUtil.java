@@ -51,4 +51,8 @@ public class ConradUtil {
 			throw new AssertionError();
 		}
 	}
+
+	public static <T> T either(T t1, T t2) {
+		return t1 == null ? t2 : t1;
+	}
 }

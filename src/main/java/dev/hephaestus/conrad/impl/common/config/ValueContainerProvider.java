@@ -27,7 +27,7 @@ public interface ValueContainerProvider {
 		if (saveType == Config.SaveType.Type.LEVEL && envType == EnvType.SERVER) {
 			return ROOT;
 		} else if (envType == EnvType.CLIENT) {
-			return ClientUtil.getLevelValueContainerProvider();
+			return ClientUtil.getValueContainerProvider();
 		} else if (saveType == Config.SaveType.Type.USER && envType == EnvType.SERVER) {
 			return (ValueContainerProvider) FabricLoader.getInstance().getGameInstance();
 		}

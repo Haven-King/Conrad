@@ -15,6 +15,8 @@ import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 import net.fabricmc.loader.api.metadata.CustomValue;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class ConradPreLaunchEntrypoint implements PreLaunchEntrypoint {
 	@Override
@@ -45,24 +47,26 @@ public class ConradPreLaunchEntrypoint implements PreLaunchEntrypoint {
 
 	@SuppressWarnings("unchecked")
 	private static void process(String modId, String className) throws ClassNotFoundException {
-		Class<?> configClass = Class.forName(className);
+		Class<? extends Config> configClass = (Class<? extends Config>) Class.forName(className);
 
 		ConradUtil.prove(configClass.getInterfaces()[0] == Config.class);
 		ConradUtil.prove(configClass.isAnnotationPresent(Config.SaveName.class));
 		ConradUtil.prove(configClass.isAnnotationPresent(Config.SaveType.class));
 
-		ConradUtil.put((Class<? extends Config>) configClass, modId);
-		KeyRing.put(KeyRing.get(configClass), (Class<? extends Config>) configClass);
+		ConradUtil.put(configClass, modId);
+		KeyRing.put(KeyRing.get(configClass), configClass);
 
-		Config config = Conrad.getConfig((Class<? extends Config>) configClass);
+		Config config = Conrad.getConfig(configClass);
 		ConradModMenuEntrypoint.processConfig(modId);
 
 		try {
 			ConfigSerializer<?, ?> serializer = config.serializer();
-			File file = SerializationUtil.saveFolder(FabricLoader.getInstance().getConfigDir(), (Class<? extends Config>) configClass).resolve(SerializationUtil.saveName((Class<? extends Config>) configClass) + "." + serializer.fileExtension()).toFile();
+			Path file = SerializationUtil.saveFolder(FabricLoader.getInstance().getConfigDir(), configClass).resolve(SerializationUtil.saveName(configClass) + "." + serializer.fileExtension());
 
-			if (file.exists()) {
-				serializer.deserialize(config, serializer.read(new FileInputStream(file)));
+			if (Files.exists(file)) {
+				serializer.deserialize(config, serializer.read(Files.newInputStream(file)));
+			} else {
+				serializer.writeValue(serializer.serialize(config), Files.newOutputStream(file));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

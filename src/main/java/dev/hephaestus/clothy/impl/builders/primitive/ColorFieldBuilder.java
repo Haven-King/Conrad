@@ -1,19 +1,12 @@
-package dev.hephaestus.clothy.impl.builders;
+package dev.hephaestus.clothy.impl.builders.primitive;
 
 import dev.hephaestus.clothy.gui.entries.ColorEntry;
+import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import dev.hephaestus.math.impl.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
 import dev.hephaestus.conrad.annotations.NotNull;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class ColorFieldBuilder extends FieldBuilder<Color, ColorEntry> {

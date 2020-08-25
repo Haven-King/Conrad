@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 
 public class ConradTestEntrypoint implements ClientModInitializer, ModInitializer {
@@ -31,14 +32,14 @@ public class ConradTestEntrypoint implements ClientModInitializer, ModInitialize
 	@Override
 	public void onInitialize() {
 		ServerTickEvents.START_SERVER_TICK.register((minecraftServer -> {
-			minecraftServer.getPlayerManager().getPlayerList().forEach(playerEntity -> {
-				UserTestConfig config = Conrad.getConfig(UserTestConfig.class, playerEntity);
+			for (ServerPlayerEntity player : minecraftServer.getPlayerManager().getPlayerList()) {
+				UserTestConfig config = Conrad.getConfig(UserTestConfig.class, player);
 
 				if (config != null) {
-					playerEntity.sendMessage(new LiteralText("Power Level: " + config.getInnerTestConfig().getInner().getLeet()), true);
+					player.sendMessage(new LiteralText("Power Level: " + config.getInnerTestConfig().getInner().getLeet()), true);
 //					config.setNumber(config.getNumber() - 1);
 				}
-			});
+			}
 		}));
 	}
 }

@@ -1,9 +1,13 @@
 package dev.hephaestus.conrad.impl.client;
 
 import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.api.gui.FieldBuilderProviderRegistry;
+import dev.hephaestus.conrad.impl.common.config.ValueContainer;
+import dev.hephaestus.conrad.impl.common.config.ValueContainerProvider;
 import dev.hephaestus.conrad.impl.common.keys.ConfigKey;
 import dev.hephaestus.conrad.impl.common.keys.KeyRing;
 import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import dev.hephaestus.conrad.mixin.server.MinecraftServerAccessor;
 import io.github.prospector.modmenu.api.ConfigScreenFactory;
 import dev.hephaestus.clothy.api.ConfigBuilder;
@@ -41,16 +45,21 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 		Deque<ConfigKey> keyDeque = new ArrayDeque<>();
 
 		for (ConfigKey configKey : KeyRing.getConfigKeys(this.modId)) {
+			Class<? extends Config> configClass = KeyRing.get(configKey.root());
+			Config.SaveType.Type saveType = configClass.getAnnotation(Config.SaveType.class).value();
+			ValueContainer valueContainer = ValueContainerProvider.getInstance(saveType).getValueContainer();
+
 			EntryContainer entryContainer = containers.computeIfAbsent(configKey, key -> {
 				keyDeque.addLast(key);
 				EntryContainer container =  key.isRoot()
 						? builder.getOrCreateCategory(of(key))
 						: builder.entryBuilder().startSubCategory(of(key));
 
+
+
 				if (container instanceof ConfigCategory) {
+
 					ArrayList<Text> tooltips = new ArrayList<>();
-					Class<? extends Config> configClass = KeyRing.get(configKey.root());
-					Config.SaveType.Type saveType = configClass.getAnnotation(Config.SaveType.class).value();
 					tooltips.add(new TranslatableText("conrad.environment." + saveType.name().toLowerCase()).styled(style -> style.withColor(Formatting.YELLOW)));
 
 					MutableText saveTypeText;
@@ -98,7 +107,11 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 
 			for (ValueKey valueKey : KeyRing.getValueKeys(configKey)) {
 				if (!Config.class.isAssignableFrom(KeyRing.get(valueKey).getReturnType())) {
-					entryContainer.addEntry(builder.entryBuilder().startIntField(of(valueKey), 0).build());
+					if (FieldBuilderProviderRegistry.contains(KeyRing.get(valueKey).getReturnType())) {
+						entryContainer.addEntry(FieldBuilderProviderRegistry.getEntry(builder, valueContainer, valueKey).build());
+					} else {
+						ConradUtil.LOG.warn("Issue building config entry for {}: a provider has not been registered.", valueKey.toString());
+					}
 				}
 			}
 		}

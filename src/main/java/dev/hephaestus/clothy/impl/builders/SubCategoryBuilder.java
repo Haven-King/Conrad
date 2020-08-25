@@ -11,7 +11,6 @@ import dev.hephaestus.conrad.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class SubCategoryBuilder extends FieldBuilder<Object, SubCategoryListEntry> implements List<AbstractConfigListEntry>, EntryContainer {

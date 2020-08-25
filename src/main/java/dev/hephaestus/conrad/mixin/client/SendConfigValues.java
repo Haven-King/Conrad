@@ -24,7 +24,7 @@ public class SendConfigValues {
 	@Inject(method = "onGameJoin", at = @At("TAIL"))
 	private void sendConfigValues(GameJoinS2CPacket packet, CallbackInfo ci) {
 		for (Map.Entry<ValueKey, Object> value : ValueContainer.ROOT) {
-			if (NetworkSerializerRegistry.getWriter(value.getValue().getClass()) != null && ReflectionUtil.getRoot(KeyRing.get(value.getKey().getConfig())).getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.USER) {
+			if (NetworkSerializerRegistry.contains(value.getValue().getClass()) && ReflectionUtil.getRoot(KeyRing.get(value.getKey().getConfig())).getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.USER) {
 				new ConfigValuePacket(ConfigValuePacket.INFO, value.getKey(), value.getValue()).send();
 			}
 		}

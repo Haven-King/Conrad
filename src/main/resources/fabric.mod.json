@@ -15,6 +15,7 @@
     ],
     "client": [
       "dev.hephaestus.conrad.impl.client.PacketListeners",
+      "dev.hephaestus.conrad.impl.client.gui.DefaultFieldBuilderProviders",
       "dev.hephaestus.conrad.test.ConradTestEntrypoint"
     ],
     "main": [

@@ -5,20 +5,17 @@ import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.SelectionCellCreator;
 import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.SelectionTopCellElement;
 import dev.hephaestus.clothy.impl.ConfigEntryBuilderImpl;
 import dev.hephaestus.clothy.impl.builders.*;
-import dev.hephaestus.clothy.impl.builders.DropdownMenuBuilder.TopCellElementBuilder;
+import dev.hephaestus.clothy.impl.builders.compound.*;
+import dev.hephaestus.clothy.impl.builders.compound.DropdownMenuBuilder.TopCellElementBuilder;
+import dev.hephaestus.clothy.impl.builders.primitive.*;
 import dev.hephaestus.math.impl.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.options.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 @Environment(EnvType.CLIENT)
@@ -63,9 +60,7 @@ public interface ConfigEntryBuilder {
     default ColorFieldBuilder startAlphaColorField(Text fieldNameKey, Color color) {
         return startColorField(fieldNameKey, color);
     }
-    
-    TextFieldBuilder startTextField(Text fieldNameKey, String value);
-    
+
     TextDescriptionBuilder startTextDescription(Text value);
     
     <T extends Enum<?>> EnumSelectorBuilder<T> startEnumSelector(Text fieldNameKey, Class<T> clazz, T value);

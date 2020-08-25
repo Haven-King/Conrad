@@ -2,10 +2,11 @@ package dev.hephaestus.clothy.impl;
 
 import dev.hephaestus.clothy.api.AbstractConfigListEntry;
 import dev.hephaestus.clothy.api.ConfigEntryBuilder;
-import dev.hephaestus.clothy.api.ModifierKey;
 import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.SelectionCellCreator;
 import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.SelectionTopCellElement;
 import dev.hephaestus.clothy.impl.builders.*;
+import dev.hephaestus.clothy.impl.builders.compound.*;
+import dev.hephaestus.clothy.impl.builders.primitive.*;
 import dev.hephaestus.math.impl.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -98,11 +99,6 @@ public class ConfigEntryBuilderImpl implements ConfigEntryBuilder {
     @Override
     public ColorFieldBuilder startColorField(Text fieldNameKey, Color value) {
         return new ColorFieldBuilder(resetButtonKey, fieldNameKey, value);
-    }
-    
-    @Override
-    public TextFieldBuilder startTextField(Text fieldNameKey, String value) {
-        return new TextFieldBuilder(resetButtonKey, fieldNameKey, value);
     }
     
     @Override

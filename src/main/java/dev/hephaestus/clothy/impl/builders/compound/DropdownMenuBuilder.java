@@ -1,10 +1,11 @@
-package dev.hephaestus.clothy.impl.builders;
+package dev.hephaestus.clothy.impl.builders.compound;
 
 import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry;
 import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.DefaultSelectionCellCreator;
 import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.DefaultSelectionTopCellElement;
 import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.SelectionCellCreator;
 import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.SelectionTopCellElement;
+import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;

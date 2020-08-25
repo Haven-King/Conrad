@@ -12,14 +12,14 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class KeyRing {
-	private static final BiMap<Class<? extends Config>, ConfigKey> KEYS = HashBiMap.create();
+	private static final BiMap<Class<? extends Config>, ConfigKey> CONFIG_KEY_MAP = HashBiMap.create();
 	private static final Map<Config.Entry.MethodType, HashBiMap<ValueKey, Method>> METHODS = new HashMap<>();
 	private static final Map<String, Collection<ConfigKey>> MOD_ID_TO_CONFIG_KEY_MAP = new TreeMap<>();
 	private static final Map<ConfigKey, Collection<ValueKey>> CONFIG_KEY_VALUE_MAP = new TreeMap<>();
 
 	@SuppressWarnings("unchecked")
 	public static void put(ConfigKey configKey, Class<? extends Config> configClass) {
-		KEYS.putIfAbsent(configClass, configKey);
+		CONFIG_KEY_MAP.putIfAbsent(configClass, configKey);
 
 		for (Method method: configClass.getDeclaredMethods()) {
 			Config.Entry.MethodType type = ConradUtil.methodType(method);
@@ -45,16 +45,16 @@ public class KeyRing {
 	public static ConfigKey get(Class<?> configClass) {
 		ConradUtil.prove(Config.class.isAssignableFrom(configClass));
 
-		return KEYS.computeIfAbsent((Class<? extends Config>) configClass, c ->
+		return CONFIG_KEY_MAP.computeIfAbsent((Class<? extends Config>) configClass, c ->
 				ConfigKey.of(ConradUtil.getModId(c), c.getAnnotation(Config.SaveName.class).value())
 		);
 	}
 
 	public static Class<? extends Config> get(ConfigKey configKey) {
-		ConradUtil.prove(KEYS.inverse().containsKey(configKey));
-		ConradUtil.prove(Config.class.isAssignableFrom(KEYS.inverse().get(configKey)));
+		ConradUtil.prove(CONFIG_KEY_MAP.inverse().containsKey(configKey));
+		ConradUtil.prove(Config.class.isAssignableFrom(CONFIG_KEY_MAP.inverse().get(configKey)));
 
-		return KEYS.inverse().get(configKey);
+		return CONFIG_KEY_MAP.inverse().get(configKey);
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class KeyRing {
 	}
 
 	public static boolean contains(Class<?> configClass) {
-		return KEYS.containsKey(ReflectionUtil.getDeclared((Class<? extends Config>) configClass));
+		return CONFIG_KEY_MAP.containsKey(ReflectionUtil.getDeclared((Class<? extends Config>) configClass));
 	}
 
 	public static String methodName(Method method) {
@@ -93,6 +93,10 @@ public class KeyRing {
 		} else {
 			throw new ConradException("Method '" + method.getName() + "' does not follow name scheme or provide SaveName annotation!");
 		}
+	}
+
+	public static Collection<Class<? extends Config>> getConfigClasses() {
+		return CONFIG_KEY_MAP.keySet();
 	}
 
 	public static Collection<ConfigKey> getConfigKeys(String modId) {

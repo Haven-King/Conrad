@@ -5,7 +5,7 @@ import net.minecraft.client.MinecraftClient;
 
 public class ClientUtil {
 	@SuppressWarnings("MethodCallSideOnly")
-	public static ValueContainerProvider getLevelValueContainerProvider() {
+	public static ValueContainerProvider getValueContainerProvider() {
 		if (MinecraftClient.getInstance() == null) {
 			return ValueContainerProvider.ROOT;
 		} else if (MinecraftClient.getInstance().isIntegratedServerRunning() && MinecraftClient.getInstance().getServer() != null) {

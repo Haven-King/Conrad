@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>>, InvocationHandler {
+public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 	public static final ValueContainer ROOT = new ValueContainer();
 
 	private static final HashMap<ValueKey, Object> DEFAULT_VALUES = new HashMap<>();
@@ -46,7 +46,7 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>>, In
 	}
 
 	public ValueContainer() {
-		this(FabricLoader.getInstance().getConfigDir());
+		this(FabricLoader.getInstance().getConfigDir().normalize());
 	}
 
 	public boolean containsDefault(ValueKey key) {
@@ -83,30 +83,6 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>>, In
 	@Override
 	public Iterator<Map.Entry<ValueKey, Object>> iterator() {
 		return this.values.entrySet().iterator();
-	}
-
-	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		Config.Entry.MethodType methodType = ConradUtil.methodType(method);
-		if (methodType == Config.Entry.MethodType.UTIL) return ReflectionUtil.invokeDefault(proxy, method, args);
-
-		ValueKey key = KeyRing.get(method);
-
-		if (methodType == Config.Entry.MethodType.SETTER) {
-			throw new ConradException(method.getName());
-		} else {
-			if (!DEFAULT_VALUES.containsKey(key)) {
-				if (method.isDefault()) {
-					this.put(key, ReflectionUtil.invokeDefault(proxy, method, args));
-				} else if (Config.class.isAssignableFrom(method.getReturnType())) {
-					this.put(key, Proxy.newProxyInstance(method.getReturnType().getClassLoader(), new Class[] {method.getReturnType()}, this));
-				} else {
-					throw new ConradException("Method '" + method.getName() + "' must be default or return an object that extends Config!");
-				}
-			}
-
-			return this.get(key);
-		}
 	}
 
 	public static class Remote extends ValueContainer {

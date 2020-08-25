@@ -14,7 +14,7 @@ public class NetworkSerializerRegistry {
 	private static final HashMap<Class<?>, NetworkedObjectReader<?>> READERS = new HashMap<>();
 	private static final HashMap<Class<?>, NetworkedObjectWriter<?>> WRITERS = new HashMap<>();
 
-	public static <T> void put(Class<T> clazz, NetworkedObjectReader<T> reader, NetworkedObjectWriter<T> writer) {
+	public static <T> void register(Class<T> clazz, NetworkedObjectReader<T> reader, NetworkedObjectWriter<T> writer) {
 		for (Class<?> otherClazz : ReflectionUtil.getClasses(clazz)) {
 			READERS.put(otherClazz, reader);
 			WRITERS.put(otherClazz, writer);
@@ -31,23 +31,18 @@ public class NetworkSerializerRegistry {
 	}
 
 	public static void init() {
-		NetworkSerializerRegistry.put(ConfigKey.class, ConfigKey.READER, ConfigKey.WRITER);
-		NetworkSerializerRegistry.put(ValueKey.class, ValueKey.READER, ValueKey.WRITER);
-		NetworkSerializerRegistry.put(Integer.class, (PacketByteBuf::readVarInt), ((buf, value) -> buf.writeVarInt((Integer) value)));
-		NetworkSerializerRegistry.put(Long.class, (PacketByteBuf::readVarLong), ((buf, value) -> buf.writeVarLong((Long) value)));
-		NetworkSerializerRegistry.put(Float.class, (PacketByteBuf::readFloat), ((buf, value) -> buf.writeFloat((Float) value)));
-		NetworkSerializerRegistry.put(Double.class, (PacketByteBuf::readDouble), ((buf, value) -> buf.writeDouble((Double) value)));
-		NetworkSerializerRegistry.put(String.class, (buf -> buf.readString(32767)), ((buf, value) -> buf.writeString((String) value)));
-		NetworkSerializerRegistry.put(Text.class, (PacketByteBuf::readText), ((buf, value) -> buf.writeText((Text) value)));
-		NetworkSerializerRegistry.put(Identifier.class, (PacketByteBuf::readIdentifier), ((buf, value) -> buf.writeIdentifier((Identifier) value)));
-		NetworkSerializerRegistry.put(Date.class, (PacketByteBuf::readDate), ((buf, value) -> buf.writeDate((Date) value)));
+		NetworkSerializerRegistry.register(ConfigKey.class, ConfigKey.READER, ConfigKey.WRITER);
+		NetworkSerializerRegistry.register(ValueKey.class, ValueKey.READER, ValueKey.WRITER);
+		NetworkSerializerRegistry.register(Boolean.class, (PacketByteBuf::readBoolean), ((buf, value) -> buf.writeBoolean((Boolean) value)));
+		NetworkSerializerRegistry.register(Integer.class, (PacketByteBuf::readVarInt), ((buf, value) -> buf.writeVarInt((Integer) value)));
+		NetworkSerializerRegistry.register(Long.class, (PacketByteBuf::readVarLong), ((buf, value) -> buf.writeVarLong((Long) value)));
+		NetworkSerializerRegistry.register(Float.class, (PacketByteBuf::readFloat), ((buf, value) -> buf.writeFloat((Float) value)));
+		NetworkSerializerRegistry.register(Double.class, (PacketByteBuf::readDouble), ((buf, value) -> buf.writeDouble((Double) value)));
+		NetworkSerializerRegistry.register(String.class, (buf -> buf.readString(32767)), ((buf, value) -> buf.writeString((String) value)));
+		NetworkSerializerRegistry.register(Identifier.class, (PacketByteBuf::readIdentifier), ((buf, value) -> buf.writeIdentifier((Identifier) value)));
 	}
 
-	public static NetworkedObjectReader<?> getReader(Class<?> clazz) {
-		return READERS.get(clazz);
-	}
-
-	public static NetworkedObjectWriter<?> getWriter(Class<?> clazz) {
-		return WRITERS.get(clazz);
+	public static boolean contains(Class<?> aClass) {
+		return READERS.containsKey(aClass) && WRITERS.containsKey(aClass);
 	}
 }
