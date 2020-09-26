@@ -26,7 +26,7 @@ package dev.hephaestus.clothy.api;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.hephaestus.clothy.ClothConfigInitializer;
-import dev.hephaestus.clothy.gui.widget.DynamicEntryListWidget;
+import dev.hephaestus.clothy.impl.gui.widget.DynamicEntryListWidget;
 import dev.hephaestus.clothy.impl.EasingMethod;
 import dev.hephaestus.math.impl.Rectangle;
 import dev.hephaestus.math.impl.PointHelper;

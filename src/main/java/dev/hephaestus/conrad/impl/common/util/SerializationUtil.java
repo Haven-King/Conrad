@@ -8,14 +8,11 @@ import java.nio.file.Path;
 public class SerializationUtil {
 	public static Path saveFolder(Path path, Class<? extends Config> configClass) {
 		path = path.normalize().resolve(KeyRing.get(configClass).getNamespace());
+		String[] saveName = configClass.getAnnotation(Config.Options.class).name();
 
-		if (configClass.isAnnotationPresent(Config.SaveName.class)) {
-			String[] saveName = configClass.getAnnotation(Config.SaveName.class).value();
-
-			if (saveName.length > 1) {
-				for (int i = 0; i < saveName.length - 1; ++i) {
-					path = path.resolve(saveName[i]);
-				}
+		if (saveName.length > 1) {
+			for (int i = 0; i < saveName.length - 1; ++i) {
+				path = path.resolve(saveName[i]);
 			}
 		}
 
@@ -23,11 +20,7 @@ public class SerializationUtil {
 	}
 
 	public static String saveName(Class<? extends Config> configClass) {
-		if (configClass.isAnnotationPresent(Config.SaveName.class)) {
-			String[] saveName = configClass.getAnnotation(Config.SaveName.class).value();
-			return saveName[saveName.length - 1];
-		}
-
-		return "config";
+		String[] saveName = configClass.getAnnotation(Config.Options.class).name();
+		return saveName[saveName.length - 1];
 	}
 }

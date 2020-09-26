@@ -1,10 +1,10 @@
 package dev.hephaestus.clothy.impl.builders;
 
-import dev.hephaestus.clothy.gui.entries.TextListEntry;
+import dev.hephaestus.clothy.impl.gui.entries.TextListEntry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
-import dev.hephaestus.conrad.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 @Environment(EnvType.CLIENT)
 public class TextDescriptionBuilder extends FieldBuilder<Text, TextListEntry> {

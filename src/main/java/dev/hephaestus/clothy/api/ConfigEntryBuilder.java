@@ -1,8 +1,8 @@
 package dev.hephaestus.clothy.api;
 
-import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.DefaultSelectionCellCreator;
-import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.SelectionCellCreator;
-import dev.hephaestus.clothy.gui.entries.DropdownBoxEntry.SelectionTopCellElement;
+import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.DefaultSelectionCellCreator;
+import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.SelectionCellCreator;
+import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.SelectionTopCellElement;
 import dev.hephaestus.clothy.impl.ConfigEntryBuilderImpl;
 import dev.hephaestus.clothy.impl.builders.*;
 import dev.hephaestus.clothy.impl.builders.compound.*;

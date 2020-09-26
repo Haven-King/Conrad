@@ -1,16 +1,15 @@
 package dev.hephaestus.clothy.api;
 
-import dev.hephaestus.conrad.annotations.ApiStatus;
-import dev.hephaestus.clothy.gui.AbstractConfigScreen;
-import dev.hephaestus.clothy.gui.widget.DynamicElementListWidget;
+import dev.hephaestus.clothy.impl.gui.AbstractConfigScreen;
+import dev.hephaestus.clothy.impl.gui.widget.DynamicElementListWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import dev.hephaestus.conrad.annotations.NotNull;
-import dev.hephaestus.conrad.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +40,6 @@ public abstract class AbstractConfigEntry<T> extends DynamicElementListWidget.El
     }
 
     @Nullable
-    @ApiStatus.Internal
     public final List<ReferenceProvider<?>> getReferenceProviderEntries() {
         return referencableEntries;
     }
@@ -96,7 +94,6 @@ public abstract class AbstractConfigEntry<T> extends DynamicElementListWidget.El
     
     public void updateSelected(boolean isSelected) {}
     
-    @ApiStatus.Internal
     public final void setScreen(AbstractConfigScreen screen) {
         this.screen = screen;
     }

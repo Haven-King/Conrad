@@ -2,7 +2,7 @@ package dev.hephaestus.clothy.api;
 
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Identifier;
-import dev.hephaestus.conrad.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 

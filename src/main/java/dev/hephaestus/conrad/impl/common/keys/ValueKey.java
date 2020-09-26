@@ -1,8 +1,8 @@
 package dev.hephaestus.conrad.impl.common.keys;
 
+import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.networking.NetworkedObjectReader;
 import dev.hephaestus.conrad.api.networking.NetworkedObjectWriter;
-import net.minecraft.network.PacketByteBuf;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -13,26 +13,37 @@ public final class ValueKey implements Comparable<ValueKey> {
 
 	private final ConfigKey config;
 	private final String fieldName;
+	private final Config.Sync synced;
 
-	private ValueKey(ConfigKey config, String fieldName) {
-		this.config = config;
+	private ValueKey(ConfigKey configKey, String fieldName, Config.Sync synced) {
+		this.config = configKey;
 		this.fieldName = fieldName;
+		this.synced = synced;
 	}
 
 	public ConfigKey getConfig() {
 		return config;
 	}
 
-	static ValueKey of(ConfigKey config, String key) {
-		return IDENTIFIERS.computeIfAbsent(new ValueKey(config, key), id -> id);
+	static ValueKey of(ConfigKey configKey, String fieldName, Config.Sync synced) {
+		return IDENTIFIERS.computeIfAbsent(
+				new ValueKey(
+						configKey,
+						fieldName,
+						synced
+				), id -> id);
 	}
 
 	static ValueKey of(Method method) {
-		return ValueKey.of(KeyRing.get(method.getDeclaringClass()), KeyRing.methodName(method));
+		return ValueKey.of(KeyRing.get(method.getDeclaringClass()), KeyRing.methodName(method), isSynced(method));
 	}
 
 	public String getName() {
 		return this.fieldName;
+	}
+
+	public boolean isSynced() {
+		return this.synced == Config.Sync.DEFAULT ? this.config.isSynced() : this.synced.getAsBoolean();
 	}
 
 	@Override
@@ -55,12 +66,12 @@ public final class ValueKey implements Comparable<ValueKey> {
 	}
 
 	public static NetworkedObjectReader<ValueKey> READER = (buf) -> {
-		return ValueKey.of(ConfigKey.READER.read(buf), buf.readString(32767));
+		return ValueKey.of(ConfigKey.READER.read(buf), buf.readString(32767), buf.readEnumConstant(Config.Sync.class));
 	};
 
 	public static NetworkedObjectWriter<ValueKey> WRITER = (buf, value) -> {
 		ConfigKey.WRITER.write(buf, ((ValueKey) value).config);
-		return buf.writeString(((ValueKey) value).fieldName);
+		return buf.writeString(((ValueKey) value).fieldName).writeEnumConstant(((ValueKey) value).synced);
 	};
 
 	@Override
@@ -72,5 +83,13 @@ public final class ValueKey implements Comparable<ValueKey> {
 		}
 
 		return i;
+	}
+
+	private static Config.Sync isSynced(Method method) {
+		if (method.isAnnotationPresent(Config.Value.Options.class)) {
+			return method.getAnnotation(Config.Value.Options.class).synced();
+		} else {
+			return Config.Sync.DEFAULT;
+		}
 	}
 }

@@ -3,7 +3,6 @@ package dev.hephaestus.conrad.impl.common.keys;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.common.util.ConradException;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 
@@ -13,7 +12,7 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 public class KeyRing {
 	private static final BiMap<Class<? extends Config>, ConfigKey> CONFIG_KEY_MAP = HashBiMap.create();
-	private static final Map<Config.Entry.MethodType, HashBiMap<ValueKey, Method>> METHODS = new HashMap<>();
+	private static final Map<Config.Value.MethodType, HashBiMap<ValueKey, Method>> METHODS = new HashMap<>();
 	private static final Map<String, Collection<ConfigKey>> MOD_ID_TO_CONFIG_KEY_MAP = new TreeMap<>();
 	private static final Map<ConfigKey, Collection<ValueKey>> CONFIG_KEY_VALUE_MAP = new TreeMap<>();
 
@@ -22,11 +21,11 @@ public class KeyRing {
 		CONFIG_KEY_MAP.putIfAbsent(configClass, configKey);
 
 		for (Method method: configClass.getDeclaredMethods()) {
-			Config.Entry.MethodType type = ConradUtil.methodType(method);
+			Config.Value.MethodType type = ConradUtil.methodType(method);
 
-			if (type != Config.Entry.MethodType.UTIL) {
-				if (type == Config.Entry.MethodType.GETTER && Config.class.isAssignableFrom(method.getReturnType())) {
-					put(ConfigKey.of(configKey, methodName(method)), (Class<? extends Config>) method.getReturnType());
+			if (type != Config.Value.MethodType.UTIL) {
+				if (type == Config.Value.MethodType.GETTER && Config.class.isAssignableFrom(method.getReturnType())) {
+					put(ConfigKey.of(configKey, Config.Sync.of(configKey.isSynced()), methodName(method)), (Class<? extends Config>) method.getReturnType());
 				}
 
 				ValueKey valueKey = ValueKey.of(method);
@@ -45,9 +44,10 @@ public class KeyRing {
 	public static ConfigKey get(Class<?> configClass) {
 		ConradUtil.prove(Config.class.isAssignableFrom(configClass));
 
-		return CONFIG_KEY_MAP.computeIfAbsent((Class<? extends Config>) configClass, c ->
-				ConfigKey.of(ConradUtil.getModId(c), c.getAnnotation(Config.SaveName.class).value())
-		);
+		return CONFIG_KEY_MAP.computeIfAbsent((Class<? extends Config>) configClass, c -> {
+			Config.Options options = c.getAnnotation(Config.Options.class);
+			return ConfigKey.of(ConradUtil.getModId(c), options.synced(), options.name());
+		});
 	}
 
 	public static Class<? extends Config> get(ConfigKey configKey) {
@@ -68,31 +68,26 @@ public class KeyRing {
 		ConradUtil.prove(Config.class.isAssignableFrom(method.getDeclaringClass()));
 		ConradUtil.prove(KeyRing.contains(ReflectionUtil.getDeclared(method).getDeclaringClass()));
 
-		return METHODS.computeIfAbsent(ConradUtil.methodType(method), methodType -> HashBiMap.create()).inverse().computeIfAbsent(method, m -> {
-			ValueKey valueKey = ValueKey.of(m);
-			return valueKey;
-		});
+		return METHODS.computeIfAbsent(ConradUtil.methodType(method), methodType -> HashBiMap.create()).inverse().computeIfAbsent(method, ValueKey::of);
 	}
 
 	public static Method get(ValueKey key) {
-		return METHODS.get(Config.Entry.MethodType.GETTER).get(key);
+		return METHODS.get(Config.Value.MethodType.GETTER).get(key);
 	}
 
 	public static boolean contains(Class<?> configClass) {
-		return CONFIG_KEY_MAP.containsKey(ReflectionUtil.getDeclared((Class<? extends Config>) configClass));
+		return CONFIG_KEY_MAP.containsKey(ReflectionUtil.getDeclared(configClass));
 	}
 
 	public static String methodName(Method method) {
 		method = ReflectionUtil.getDeclared(method);
 
-		if (method.isAnnotationPresent(Config.Entry.SaveName.class)) {
-			return method.getAnnotation(Config.Entry.SaveName.class).value();
-		} else if (method.getName().startsWith("set") || method.getName().startsWith("get")) {
-			String name = method.getName();
-			return Character.toLowerCase(name.charAt(3)) + name.substring(4);
-		} else {
-			throw new ConradException("Method '" + method.getName() + "' does not follow name scheme or provide SaveName annotation!");
+		if (method.isAnnotationPresent(Config.Value.Options.class)) {
+			String name = method.getAnnotation(Config.Value.Options.class).name();
+			if (!name.equals("")) return name;
 		}
+
+		return method.getName();
 	}
 
 	public static Collection<Class<? extends Config>> getConfigClasses() {

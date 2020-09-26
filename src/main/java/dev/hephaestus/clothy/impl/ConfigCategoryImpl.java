@@ -1,6 +1,6 @@
 package dev.hephaestus.clothy.impl;
 
-import dev.hephaestus.conrad.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.clothy.api.AbstractConfigListEntry;
 import dev.hephaestus.clothy.api.ConfigCategory;
 import dev.hephaestus.clothy.api.EntryContainer;

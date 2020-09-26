@@ -1,12 +1,12 @@
 package dev.hephaestus.clothy.impl.builders.compound;
 
-import dev.hephaestus.clothy.gui.entries.FloatListListEntry;
+import dev.hephaestus.clothy.impl.gui.entries.FloatListListEntry;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import dev.hephaestus.conrad.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;

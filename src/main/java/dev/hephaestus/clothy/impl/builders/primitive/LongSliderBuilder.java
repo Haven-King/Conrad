@@ -1,11 +1,11 @@
 package dev.hephaestus.clothy.impl.builders.primitive;
 
-import dev.hephaestus.clothy.gui.entries.LongSliderEntry;
+import dev.hephaestus.clothy.impl.gui.entries.LongSliderEntry;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
-import dev.hephaestus.conrad.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;

@@ -9,8 +9,6 @@ import org.apache.logging.log4j.Logger;
 
 @Environment(EnvType.CLIENT)
 public class ClothConfigInitializer {
-    public static final Logger LOGGER = LogManager.getFormatterLogger("ClothConfig");
-
     public static EasingMethod getEasingMethod() {
         return EasingMethodImpl.NONE;
     }

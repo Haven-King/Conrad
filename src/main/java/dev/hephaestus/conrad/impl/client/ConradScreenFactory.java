@@ -3,7 +3,6 @@ package dev.hephaestus.conrad.impl.client;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.gui.FieldBuilderProviderRegistry;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.config.ValueContainerProvider;
 import dev.hephaestus.conrad.impl.common.keys.ConfigKey;
 import dev.hephaestus.conrad.impl.common.keys.KeyRing;
 import dev.hephaestus.conrad.impl.common.keys.ValueKey;
@@ -46,8 +45,10 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 
 		for (ConfigKey configKey : KeyRing.getConfigKeys(this.modId)) {
 			Class<? extends Config> configClass = KeyRing.get(configKey.root());
-			Config.SaveType.Type saveType = configClass.getAnnotation(Config.SaveType.class).value();
-			ValueContainer valueContainer = ValueContainerProvider.getInstance(saveType).getValueContainer();
+			Config.SaveType saveType = configClass.getAnnotation(Config.Options.class).type();
+			ValueContainer valueContainer = saveType == Config.SaveType.LEVEL
+					? ValueContainer.getInstance()
+					: ValueContainer.ROOT;
 
 			EntryContainer entryContainer = containers.computeIfAbsent(configKey, key -> {
 				keyDeque.addLast(key);
@@ -55,15 +56,13 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 						? builder.getOrCreateCategory(of(key))
 						: builder.entryBuilder().startSubCategory(of(key));
 
-
-
 				if (container instanceof ConfigCategory) {
 
 					ArrayList<Text> tooltips = new ArrayList<>();
 					tooltips.add(new TranslatableText("conrad.environment." + saveType.name().toLowerCase()).styled(style -> style.withColor(Formatting.YELLOW)));
 
 					MutableText saveTypeText;
-					if (saveType == Config.SaveType.Type.USER) {
+					if (saveType == Config.SaveType.USER) {
 						saveTypeText = null;
 					} else {
 						if (MinecraftClient.getInstance().world == null) {
@@ -83,20 +82,14 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 						tooltips.add(saveTypeText.styled((style -> style.withColor(Formatting.GRAY).withItalic(true))));
 					}
 
-					if (configClass.isAnnotationPresent(Config.Tooltip.class)) {
-						String[] configTooltips = configClass.getAnnotation(Config.Tooltip.class).value();
+					int tooltipCount = configClass.getAnnotation(Config.Options.class).tooltips();
 
-						if (configTooltips.length > 0) {
-							tooltips.add(NEW_LINE);
-						}
+					if (tooltipCount > 0) {
+						tooltips.add(NEW_LINE);
+					}
 
-						if (configTooltips.length == 1) {
-							tooltips.add(new TranslatableText(configTooltips[0]));
-						} else {
-							for (String string : configTooltips) {
-								tooltips.add(new TranslatableText(string));
-							}
-						}
+					for (int i = 0; i < tooltipCount; ++i) {
+						tooltips.add(new TranslatableText(configKey.toString() + ".tooltip." + i));
 					}
 
 					((ConfigCategory) container).setTooltipSupplier(() -> Optional.of(tooltips));
@@ -125,27 +118,8 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 			}
 		}
 
-//		for (ValueKey valueKey : KeyRing.getValueKeys(this.modId)) {
-//			if (!Config.class.isAssignableFrom(KeyRing.get(valueKey, Config.Entry.MethodType.GETTER).getReturnType())) {
-//				categories.computeIfAbsent(valueKey.getConfig().root(), key -> this.builder.getOrCreateCategory(of(key)));
-//				process(valueKey);
-//			}
-//		}
-
 		return builder.build();
 	}
-//
-//	private EntryContainer process(ConfigKey configKey) {
-//		EntryContainer parent = categories.computeIfAbsent(configKey.parent(), this::process);
-//		EntryContainer container = this.builder.entryBuilder().startSubCategory(of(configKey));
-//		categories.put(configKey, container);
-//
-//		return container;
-//	}
-//
-//	private EntryContainer process(ValueKey valueKey) {
-//		EntryContainer container = process(valueKey.getConfig());
-//	}
 
 	private static TranslatableText of(Object object) {
 		return new TranslatableText(object.toString());

@@ -1,6 +1,7 @@
 package dev.hephaestus.conrad.impl.common.serialization;
 
 import com.google.gson.*;
+import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
 import dev.hephaestus.conrad.api.serialization.ValueSerializer;
@@ -28,7 +29,7 @@ public class GsonSerializer extends ConfigSerializer<JsonElement, JsonObject> {
 	}
 
 	@Override
-	protected <R extends JsonElement> void add(JsonObject object, String key, R representation) {
+	protected <R extends JsonElement> void add(JsonObject object, String key, R representation, @Nullable String comment) {
 		object.add(key, representation);
 	}
 

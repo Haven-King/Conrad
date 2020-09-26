@@ -1,13 +1,10 @@
 package dev.hephaestus.clothy.impl;
 
 import com.google.common.collect.Lists;
-import dev.hephaestus.clothy.ClothConfigInitializer;
 import dev.hephaestus.clothy.api.ScissorsHandler;
 import dev.hephaestus.math.impl.Rectangle;
-import dev.hephaestus.math.api.Executor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;
 import org.lwjgl.opengl.GL11;
@@ -19,22 +16,6 @@ import java.util.List;
 public final class ScissorsHandlerImpl implements ScissorsHandler {
     
     public static final ScissorsHandler INSTANCE = new ScissorsHandlerImpl();
-    
-    static {
-        Executor.runIf(() -> FabricLoader.getInstance().isModLoaded("notenoughcrashes"), () -> () -> {
-            try {
-                Class.forName("fudge.notenoughcrashes.api.NotEnoughCrashesApi").getDeclaredMethod("onEveryCrash", Runnable.class).invoke(null, (Runnable) () -> {
-                    try {
-                        ScissorsHandler.INSTANCE.clearScissors();
-                    } catch (Throwable t) {
-                        ClothConfigInitializer.LOGGER.error("[ClothConfig] Failed clear scissors on game crash!", t);
-                    }
-                });
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
-    }
     
     private final List<Rectangle> scissorsAreas;
     

@@ -4,5 +4,11 @@
   "conrad.environment.level": "Save Type: Level",
   "conrad.saveType.default": "Editing default configs (these will be used when you create a new world)",
   "conrad.saveType.level": "Editing configs for world: %s",
-  "conrad.saveType.server": "Editing configs for server: %s"
+  "conrad.saveType.server": "Editing configs for server: %s",
+  "conrad:test.myName.tooltip.1": "\nTest\n",
+  "conrad:test.myName.tooltip.4": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Scelerisque fermentum dui faucibus in ornare quam viverra orci. Massa id neque aliquam vestibulum morbi blandit cursus risus. Consectetur adipiscing elit duis tristique sollicitudin nibh sit. Tortor id aliquet lectus proin nibh. Interdum posuere lorem ipsum dolor sit amet consectetur adipiscing. Bibendum enim facilisis gravida neque. Aliquam ultrices sagittis orci a scelerisque purus semper eget duis. Cursus risus at ultrices mi. Diam vulputate ut pharetra sit. Porta nibh venenatis cras sed felis eget velit.\n\nNisi est sit amet facilisis magna. Semper viverra nam libero justo laoreet. Sit amet mattis vulputate enim nulla. Sodales neque sodales ut etiam sit amet nisl. Et ligula ullamcorper malesuada proin libero nunc consequat interdum. Scelerisque purus semper eget duis at. Est placerat in egestas erat imperdiet sed euismod. Ornare arcu odio ut sem nulla pharetra diam sit. Faucibus a pellentesque sit amet porttitor eget. Rhoncus dolor purus non enim praesent elementum facilisis leo. Posuere lorem ipsum dolor sit amet consectetur adipiscing. Nulla aliquet enim tortor at auctor urna nunc id. Netus et malesuada fames ac turpis egestas. Id porta nibh venenatis cras sed. Sollicitudin tempor id eu nisl nunc mi ipsum faucibus vitae.",
+  "conrad:test.myName.tooltip.8": "\nTest 2\n",
+  "conrad:test/innerTestConfig.myBAC.tooltip.0": "This is the amount of alcohol running through your system.",
+  "conrad:test/innerTestConfig.myBAC.tooltip.1": "Default value is zero, but feel free to change it. You could probably live with up to 0.40, but I would recommend staying safely below 0.10.",
+  "conrad:test/innerTestConfig.myBAC.tooltip.2": "(But I'm not your dad, you do you)"
 }

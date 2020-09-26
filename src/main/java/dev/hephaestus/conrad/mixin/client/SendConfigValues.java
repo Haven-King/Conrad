@@ -2,6 +2,7 @@ package dev.hephaestus.conrad.mixin.client;
 
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.networking.NetworkSerializerRegistry;
+import dev.hephaestus.conrad.impl.client.util.ClientUtil;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.keys.KeyRing;
 import dev.hephaestus.conrad.impl.common.keys.ValueKey;
@@ -24,8 +25,8 @@ public class SendConfigValues {
 	@Inject(method = "onGameJoin", at = @At("TAIL"))
 	private void sendConfigValues(GameJoinS2CPacket packet, CallbackInfo ci) {
 		for (Map.Entry<ValueKey, Object> value : ValueContainer.ROOT) {
-			if (NetworkSerializerRegistry.contains(value.getValue().getClass()) && ReflectionUtil.getRoot(KeyRing.get(value.getKey().getConfig())).getAnnotation(Config.SaveType.class).value() == Config.SaveType.Type.USER) {
-				new ConfigValuePacket(ConfigValuePacket.INFO, value.getKey(), value.getValue()).send();
+			if (NetworkSerializerRegistry.contains(value.getValue().getClass()) && ReflectionUtil.getRoot(KeyRing.get(value.getKey().getConfig())).getAnnotation(Config.Options.class).type() == Config.SaveType.USER) {
+				ClientUtil.sendValue(value.getKey(), value.getValue());
 			}
 		}
 	}

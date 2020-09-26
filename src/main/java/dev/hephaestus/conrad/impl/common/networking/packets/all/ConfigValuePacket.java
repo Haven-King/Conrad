@@ -1,8 +1,7 @@
 package dev.hephaestus.conrad.impl.common.networking.packets.all;
 
-import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.networking.NetworkSerializerRegistry;
-import dev.hephaestus.conrad.impl.common.config.ValueContainerProvider;
+import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import dev.hephaestus.conrad.impl.common.networking.packets.ConradPacket;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
@@ -11,7 +10,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-import java.io.*;
+import java.io.IOException;
 
 public class ConfigValuePacket extends ConradPacket {
 	public static final Identifier INFO = ConradUtil.id("packet", "all", "value", "info");
@@ -46,12 +45,10 @@ public class ConfigValuePacket extends ConradPacket {
 
 		context.getTaskQueue().execute(() -> {
 			try {
-				ValueContainerProvider.getInstance(
-						Config.SaveType.Type.USER
-				).getPlayerValueContainers().put(
-						(ServerPlayerEntity) context.getPlayer(),
+				ValueContainer.getInstance((ServerPlayerEntity) context.getPlayer()).put(
 						valueKey,
-						value
+						value,
+						false
 				);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -65,11 +62,10 @@ public class ConfigValuePacket extends ConradPacket {
 
 		context.getTaskQueue().execute(() -> {
 			try {
-				ValueContainerProvider.getInstance(
-						Config.SaveType.Type.LEVEL
-				).getValueContainer().put(
+				ValueContainer.getInstance().put(
 						valueKey,
-						value
+						value,
+						true
 				);
 			} catch (IOException e) {
 				e.printStackTrace();

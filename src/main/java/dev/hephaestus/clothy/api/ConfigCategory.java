@@ -1,10 +1,10 @@
 package dev.hephaestus.clothy.api;
 
-import dev.hephaestus.conrad.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;

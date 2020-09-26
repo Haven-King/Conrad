@@ -1,8 +1,8 @@
 package dev.hephaestus.conrad.impl.common.keys;
 
+import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.networking.NetworkedObjectReader;
 import dev.hephaestus.conrad.api.networking.NetworkedObjectWriter;
-import net.minecraft.network.PacketByteBuf;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,10 +12,12 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 
 	private final String namespace;
 	private final String[] path;
+	private final Config.Sync synced;
 
-	private ConfigKey(String namespace, String... path) {
+	private ConfigKey(String namespace, Config.Sync synced, String... path) {
 		this.namespace = namespace;
 		this.path = path;
+		this.synced = synced;
 	}
 
 	public String getNamespace() {
@@ -23,7 +25,7 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 	}
 
 	public ConfigKey root() {
-		return ConfigKey.of(this.namespace, this.path[0]);
+		return ConfigKey.of(this.namespace, Config.Sync.FALSE, this.path[0]);
 	}
 
 	public boolean isRoot() {
@@ -35,11 +37,15 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 
 		String[] path = new String[this.path.length - 1];
 
-		for (int i = 0; i < path.length; ++i) {
-			path[i] = this.path[i];
-		}
+		if (path.length >= 0) System.arraycopy(this.path, 0, path, 0, path.length);
 
-		return ConfigKey.of(this.namespace, path);
+		return ConfigKey.of(this.namespace, Config.Sync.FALSE, path);
+	}
+
+	public boolean isSynced() {
+		return this.synced == Config.Sync.DEFAULT
+				? !this.isRoot() && this.parent().isSynced()
+				: this.synced.getAsBoolean();
 	}
 
 	@Override
@@ -61,11 +67,11 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 		return this.namespace + ":" + String.join("/", this.path);
 	}
 
-	static ConfigKey of(String namespace, String... path) {
-		return IDENTIFIERS.computeIfAbsent(new ConfigKey(namespace, path), id -> id);
+	static ConfigKey of(String namespace, Config.Sync synced, String... path) {
+		return IDENTIFIERS.computeIfAbsent(new ConfigKey(namespace, synced, path), id -> id);
 	}
 
-	static ConfigKey of(ConfigKey id, String... path) {
+	static ConfigKey of(ConfigKey id, Config.Sync synced, String... path) {
 		String[] newPath = new String[id.path.length + path.length];
 
 		for (int i = 0; i < newPath.length; ++i) {
@@ -73,30 +79,24 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 			newPath[i] = (first ? id.path : path)[first ? i : i - id.path.length];
 		}
 
-		return ConfigKey.of(id.namespace, newPath);
-	}
-
-	public static ConfigKey fromString(String string) {
-		String[] split = string.split(":");
-		return ConfigKey.of(
-				split[0],
-				split[1].split("/")
-		);
+		return ConfigKey.of(id.namespace, synced, newPath);
 	}
 
 	public static NetworkedObjectReader<ConfigKey> READER = (buf) -> {
 		String namespace = buf.readString(32767);
+		Config.Sync synced = buf.readEnumConstant(Config.Sync.class);
 		String[] path = new String[buf.readVarInt()];
 
 		for (int i = 0; i < path.length; ++i) {
 			path[i] = buf.readString(32767);
 		}
 
-		return ConfigKey.of(namespace, path);
+		return ConfigKey.of(namespace, synced, path);
 	};
 
 	public static NetworkedObjectWriter<ConfigKey> WRITER = (buf, value) -> {
 		buf.writeString(((ConfigKey) value).namespace);
+		buf.writeEnumConstant(((ConfigKey) value).synced);
 		buf.writeVarInt(((ConfigKey) value).path.length);
 
 		for (String string : ((ConfigKey) value).path) {

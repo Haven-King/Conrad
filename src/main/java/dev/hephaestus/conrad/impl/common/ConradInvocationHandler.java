@@ -2,7 +2,6 @@ package dev.hephaestus.conrad.impl.common;
 
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.config.ValueContainerProvider;
 import dev.hephaestus.conrad.impl.common.keys.KeyRing;
 import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import dev.hephaestus.conrad.impl.common.util.ConradException;
@@ -29,21 +28,21 @@ public class ConradInvocationHandler implements InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		Config.Entry.MethodType methodType = ConradUtil.methodType(method);
-		if (methodType == Config.Entry.MethodType.UTIL) return ReflectionUtil.invokeDefault(proxy, method, args);
+		Config.Value.MethodType methodType = ConradUtil.methodType(method);
+		if (methodType == Config.Value.MethodType.UTIL) return ReflectionUtil.invokeDefault(proxy, method, args);
 
 		ValueKey key = KeyRing.get(method);
-		Config.SaveType.Type saveType = KeyRing.get(key.getConfig().root()).getAnnotation(Config.SaveType.class).value();
-		ValueContainer valueContainer = ConradUtil.either(this.valueContainer, ValueContainerProvider.getInstance(saveType).getValueContainer());
+		Config.SaveType saveType = KeyRing.get(key.getConfig().root()).getAnnotation(Config.Options.class).type();
+		ValueContainer valueContainer = saveType == Config.SaveType.LEVEL
+				? ConradUtil.either(this.valueContainer, ValueContainer.getInstance())
+				: ValueContainer.ROOT;
 
-		if (methodType == Config.Entry.MethodType.SETTER) {
-			throw new ConradException(method.getName());
-		} else {
+		if (methodType == Config.Value.MethodType.GETTER) {
 			if (!valueContainer.containsDefault(key)) {
 				if (method.isDefault()) {
-					valueContainer.put(key, ReflectionUtil.invokeDefault(proxy, method, args));
+					valueContainer.put(key, ReflectionUtil.invokeDefault(proxy, method, args), false);
 				} else if (Config.class.isAssignableFrom(method.getReturnType())) {
-					valueContainer.put(key, Proxy.newProxyInstance(method.getReturnType().getClassLoader(), new Class[] {method.getReturnType()}, this));
+					valueContainer.put(key, Proxy.newProxyInstance(method.getReturnType().getClassLoader(), new Class[] {method.getReturnType()}, this), false);
 				} else {
 					throw new ConradException("Method '" + method.getName() + "' must be default or return an object that extends Config!");
 				}
@@ -51,6 +50,8 @@ public class ConradInvocationHandler implements InvocationHandler {
 
 			return valueContainer.get(key);
 		}
+
+		throw new ConradException("Unexpected method type: " + methodType);
 	}
 
 	private static Class<?>[] of(Collection<Class<? extends Config>> collection) {

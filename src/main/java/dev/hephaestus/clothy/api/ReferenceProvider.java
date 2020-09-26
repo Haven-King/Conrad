@@ -1,6 +1,6 @@
 package dev.hephaestus.clothy.api;
 
-import dev.hephaestus.conrad.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 public interface ReferenceProvider<T> {
     @NotNull

@@ -1,7 +1,5 @@
 package dev.hephaestus.conrad.api.serialization;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 public interface ValueSerializer<E, R extends E, V> {
 	R serialize(V value);
 

@@ -1,16 +1,18 @@
 package dev.hephaestus.conrad.test;
 
 import dev.hephaestus.conrad.api.Conrad;
+import dev.hephaestus.conrad.api.SaveCallback;
+import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Identifier;
 
 public class ConradTestEntrypoint implements ClientModInitializer, ModInitializer {
 	@Override
@@ -18,26 +20,23 @@ public class ConradTestEntrypoint implements ClientModInitializer, ModInitialize
 	public void onInitializeClient() {
 		HudRenderCallback.EVENT.register(((matrixStack, v) -> {
 			UserTestConfig config = Conrad.getConfig(UserTestConfig.class);
-			MinecraftClient.getInstance().textRenderer.draw(matrixStack, config.getMyName() + " - " + config.getMyFavoriteNumber(), 3, 3, 0xFFFF8888);
-			MinecraftClient.getInstance().textRenderer.draw(matrixStack, String.valueOf(config.getInnerTestConfig().getMyBAC()), 3, 13, 0xFF8888FF);
+			MinecraftClient.getInstance().textRenderer.draw(matrixStack, config.as123asdasd123asdasd1() + " - " + config.myFavoriteNumber(), 3, 3, 0xFFFF8888);
+			MinecraftClient.getInstance().textRenderer.draw(matrixStack, String.valueOf(config.innerTestConfig().myBAC()), 3, 13, 0xFF8888FF);
 		}));
-
-		ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
-			UserTestConfig config = Conrad.getConfig(UserTestConfig.class);
-//			config.setMyFavoriteNumber(config.getMyFavoriteNumber() + 1);
-//			config.getInnerTestConfig().setMyBAC((float) Math.random());
-		});
 	}
 
 	@Override
 	public void onInitialize() {
+		Conrad.registerCallback(new Identifier("meth", "head"), (SaveCallback<Integer>) (valueKey, oldValue, newValue) -> {
+			System.out.printf("Value changed from %d to %d", oldValue, newValue);
+		});
+
 		ServerTickEvents.START_SERVER_TICK.register((minecraftServer -> {
 			for (ServerPlayerEntity player : minecraftServer.getPlayerManager().getPlayerList()) {
 				UserTestConfig config = Conrad.getConfig(UserTestConfig.class, player);
 
 				if (config != null) {
-					player.sendMessage(new LiteralText("Power Level: " + config.getInnerTestConfig().getInner().getLeet()), true);
-//					config.setNumber(config.getNumber() - 1);
+					player.sendMessage(new LiteralText("Power Level: " + config.innerTestConfig().innerTestConfig().leet()), true);
 				}
 			}
 		}));

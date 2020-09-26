@@ -1,16 +1,14 @@
 package dev.hephaestus.conrad.impl.client.gui;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import dev.hephaestus.conrad.api.gui.FieldBuilderProvider;
 import dev.hephaestus.conrad.api.gui.FieldBuilderProviderRegistry;
-import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.TranslatableText;
 
-import java.io.IOException;
+import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class DefaultFieldBuilderProviders implements ClientModInitializer {
@@ -41,21 +39,11 @@ public class DefaultFieldBuilderProviders implements ClientModInitializer {
 
 	public static final FieldBuilderProvider<String> STRING = (configBuilder, valueContainer, valueKey) -> {
 		FieldBuilder<String, ?> fieldBuilder = configBuilder.entryBuilder().startStrField(new TranslatableText(valueKey.toString()), valueContainer.get(valueKey));
-
-		fieldBuilder.setDefaultValue((String) valueContainer.get(valueKey));
-		fieldBuilder.setSaveConsumer(value -> {
-			try {
-				valueContainer.put(valueKey, value);
-			} catch (IOException e) {
-				ConradUtil.LOG.warn("Exception while saving config value {}: {}", valueKey.getName(), e.getMessage());
-			}
-		});
-
-		return fieldBuilder;
+		return FieldBuilderProvider.initialize(fieldBuilder, valueContainer, valueKey);
 	};
 
 	// TODO
-//	public static final FieldBuilderProvider<Identifier> TEXT = (configBuilder, valueContainer, valueKey) -> {
+//	public static final FieldBuilderProvider<Identifier> IDENTIFIER = (configBuilder, valueContainer, valueKey) -> {
 //		FieldBuilder<Identifier, ?> fieldBuilder = configBuilder.entryBuilder().start(new TranslatableText(valueKey.toString()), valueContainer.get(valueKey));
 //		return FieldBuilderProvider.initialize(fieldBuilder, valueContainer, valueKey);
 //	};

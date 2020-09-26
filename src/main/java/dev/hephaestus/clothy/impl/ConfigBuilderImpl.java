@@ -2,14 +2,11 @@ package dev.hephaestus.clothy.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import dev.hephaestus.conrad.annotations.ApiStatus;
 import dev.hephaestus.clothy.api.ConfigBuilder;
 import dev.hephaestus.clothy.api.ConfigCategory;
-import dev.hephaestus.clothy.api.Expandable;
 import dev.hephaestus.clothy.api.TabbedConfigScreen;
-import dev.hephaestus.clothy.gui.AbstractConfigScreen;
-import dev.hephaestus.clothy.gui.ClothConfigScreen;
-import dev.hephaestus.clothy.gui.GlobalizedClothConfigScreen;
+import dev.hephaestus.clothy.impl.gui.AbstractConfigScreen;
+import dev.hephaestus.clothy.impl.gui.ClothConfigScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawableHelper;
@@ -24,13 +21,10 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
-@ApiStatus.Internal
 public class ConfigBuilderImpl implements ConfigBuilder {
     private Runnable savingRunnable;
     private Screen parent;
     private Text title = new TranslatableText("text.cloth-config.config");
-    private boolean globalized = false;
-    private boolean globalizedExpanded = true;
     private boolean editable = true;
     private boolean tabsSmoothScroll = true;
     private boolean listSmoothScroll = true;
@@ -44,19 +38,8 @@ public class ConfigBuilderImpl implements ConfigBuilder {
     private Text fallbackCategory = null;
     private boolean alwaysShowTabs = false;
     
-    @ApiStatus.Internal
     public ConfigBuilderImpl() {
         
-    }
-    
-    @Override
-    public void setGlobalized(boolean globalized) {
-        this.globalized = globalized;
-    }
-    
-    @Override
-    public void setGlobalizedExpanded(boolean globalizedExpanded) {
-        this.globalizedExpanded = globalizedExpanded;
     }
     
     @Override
@@ -218,11 +201,7 @@ public class ConfigBuilderImpl implements ConfigBuilder {
         if (dataMap.isEmpty() || fallbackCategory == null)
             throw new NullPointerException("There cannot be no categories or fallback category!");
         AbstractConfigScreen screen;
-        if (globalized) {
-            screen = new GlobalizedClothConfigScreen(parent, title, dataMap, defaultBackground);
-        } else {
-            screen = new ClothConfigScreen(parent, title, dataMap, categoryMap, defaultBackground);
-        }
+        screen = new ClothConfigScreen(parent, title, dataMap, categoryMap, defaultBackground);
         screen.setSavingRunnable(savingRunnable);
         screen.setEditable(editable);
         screen.setFallbackCategory(fallbackCategory);
@@ -230,10 +209,7 @@ public class ConfigBuilderImpl implements ConfigBuilder {
         screen.setAlwaysShowTabs(alwaysShowTabs);
         screen.setConfirmSave(doesConfirmSave);
         screen.setAfterInitConsumer(afterInitConsumer);
-        if (screen instanceof Expandable)
-            ((Expandable) screen).setExpanded(globalizedExpanded);
-        if (screen instanceof TabbedConfigScreen)
-            categoryBackground.forEach(((TabbedConfigScreen) screen)::registerCategoryBackground);
+        categoryBackground.forEach(((TabbedConfigScreen) screen)::registerCategoryBackground);
         return screen;
     }
     

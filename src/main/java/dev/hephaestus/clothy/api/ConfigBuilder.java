@@ -82,11 +82,7 @@ public interface ConfigBuilder {
     default ConfigBuilder alwaysShowTabs() {
         return setAlwaysShowTabs(true);
     }
-    
-    void setGlobalized(boolean globalized);
-    
-    void setGlobalizedExpanded(boolean globalizedExpanded);
-    
+
     boolean isAlwaysShowTabs();
     
     ConfigBuilder setAlwaysShowTabs(boolean alwaysShowTabs);

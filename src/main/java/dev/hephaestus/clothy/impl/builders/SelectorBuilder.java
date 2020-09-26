@@ -1,10 +1,10 @@
 package dev.hephaestus.clothy.impl.builders;
 
-import dev.hephaestus.clothy.gui.entries.SelectionListEntry;
+import dev.hephaestus.clothy.impl.gui.entries.SelectionListEntry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
-import dev.hephaestus.conrad.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Objects;

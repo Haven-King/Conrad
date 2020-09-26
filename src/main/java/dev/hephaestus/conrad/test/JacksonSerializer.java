@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.*;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
 import dev.hephaestus.conrad.api.serialization.ValueSerializer;
@@ -48,7 +49,7 @@ public class JacksonSerializer extends ConfigSerializer<JsonNode, ObjectNode> {
 	}
 
 	@Override
-	protected <R extends JsonNode> void add(ObjectNode object, String key, R representation) {
+	protected <R extends JsonNode> void add(ObjectNode object, String key, R representation, @Nullable String comment) {
 		object.put(key, representation);
 	}
 

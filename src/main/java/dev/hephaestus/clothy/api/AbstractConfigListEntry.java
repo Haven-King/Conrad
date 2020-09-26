@@ -1,6 +1,6 @@
 package dev.hephaestus.clothy.api;
 
-import dev.hephaestus.clothy.gui.ClothConfigScreen;
+import dev.hephaestus.clothy.impl.gui.ClothConfigScreen;
 import dev.hephaestus.math.impl.Rectangle;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

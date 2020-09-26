@@ -2,12 +2,10 @@ package dev.hephaestus.conrad.api.gui;
 
 import dev.hephaestus.clothy.api.ConfigBuilder;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
-import dev.hephaestus.conrad.impl.client.gui.DefaultFieldBuilderProviders;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.keys.KeyRing;
 import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
-import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 

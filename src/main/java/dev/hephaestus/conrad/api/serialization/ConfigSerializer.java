@@ -1,12 +1,16 @@
 package dev.hephaestus.conrad.api.serialization;
 
+import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.common.config.ValueContainerProvider;
+import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import dev.hephaestus.conrad.impl.common.keys.KeyRing;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
+import dev.hephaestus.conrad.impl.common.util.Translator;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -40,7 +44,7 @@ public abstract class ConfigSerializer<E, O extends E> {
 	public final O serialize(Config config) {
 		O object = this.start(config);
 
-		for (Method method : this.getMethods(config.getClass(), Config.Entry.MethodType.GETTER)) {
+		for (Method method : this.getMethods(config.getClass())) {
 			E value = null;
 			try {
 				Class<?> type = method.getReturnType();
@@ -53,7 +57,19 @@ public abstract class ConfigSerializer<E, O extends E> {
 				e.printStackTrace();
 			}
 
-			this.add(object, KeyRing.methodName(method), value);
+			StringBuilder builder = new StringBuilder();
+
+			ConradUtil.getTooltips(method, text -> {
+				if (builder.length() > 0) {
+					builder.append('\n');
+				}
+
+				String string = text instanceof TranslatableText ? Translator.translate((TranslatableText) text) : text.asString();
+
+				builder.append(string);
+			});
+
+			this.add(object, KeyRing.methodName(method), value, builder.toString());
 		}
 
 		return object;
@@ -61,13 +77,13 @@ public abstract class ConfigSerializer<E, O extends E> {
 
 	@SuppressWarnings("unchecked")
 	public final void deserialize(Config config, Object object) {
-		Config.SaveType.Type saveType = ReflectionUtil.getRoot(config.getClass()).getAnnotation(Config.SaveType.class).value();
+		Config.SaveType saveType = ReflectionUtil.getRoot(config.getClass()).getAnnotation(Config.Options.class).type();
 
-		if (saveType == Config.SaveType.Type.USER && FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+		if (saveType == Config.SaveType.USER && FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
 			return;
 		}
 
-		for (Method method : this.getMethods(config.getClass(), Config.Entry.MethodType.GETTER)) {
+		for (Method method : this.getMethods(config.getClass())) {
 			Class<?> type = method.getReturnType();
 			try {
 				if (Config.class.isAssignableFrom(type)) {
@@ -86,7 +102,7 @@ public abstract class ConfigSerializer<E, O extends E> {
 					}
 
 					if (result != null && !Config.class.isAssignableFrom(result.getClass())) {
-						ValueContainerProvider.getInstance(saveType).getValueContainer().put(KeyRing.get(method), result);
+						ValueContainer.getInstance().put(KeyRing.get(method), result, false);
 					}
 				}
 			} catch (Throwable e) {
@@ -101,7 +117,7 @@ public abstract class ConfigSerializer<E, O extends E> {
 	}
 
 	public abstract O start(Config config);
-	protected abstract <R extends E> void add(O object, String key, R representation);
+	protected abstract <R extends E> void add(O object, String key, R representation, @Nullable String comment);
 	public abstract <V> V get(O object, String key);
 
 	public abstract O read(InputStream in) throws IOException;
@@ -109,20 +125,14 @@ public abstract class ConfigSerializer<E, O extends E> {
 
 	public abstract String fileExtension();
 
-	private Collection<Method> getMethods(Class<?> configClass, Config.Entry.MethodType methodType) {
+	private Collection<Method> getMethods(Class<?> configClass) {
 		TreeSet<Method> primitiveMethods = new TreeSet<>(Comparator.comparing(Method::getName));
 		TreeSet<Method> compoundMethods = new TreeSet<>(Comparator.comparing(Method::getName));
 
 		for (Method method : configClass.getDeclaredMethods()) {
-			if (ConradUtil.methodType(method) == methodType) {
-				if (methodType == Config.Entry.MethodType.UTIL) {
-					primitiveMethods.add(method);
-					continue;
-				}
+			if (ConradUtil.methodType(method) == Config.Value.MethodType.GETTER) {
 
-				Class<?> returnType = methodType == Config.Entry.MethodType.GETTER
-						? method.getReturnType()
-						: method.getParameterTypes()[0];
+				Class<?> returnType = method.getReturnType();
 
 				if (this.canSerialize(returnType)) {
 					ValueSerializer<?, ?, ?> valueSerializer = this.getSerializer(returnType);
@@ -139,8 +149,8 @@ public abstract class ConfigSerializer<E, O extends E> {
 
 		ArrayList<Method> methods = new ArrayList<>();
 
-		for (Method method : primitiveMethods) methods.add(method);
-		for (Method method : compoundMethods) methods.add(method);
+		methods.addAll(primitiveMethods);
+		methods.addAll(compoundMethods);
 
 		return methods;
 	}
