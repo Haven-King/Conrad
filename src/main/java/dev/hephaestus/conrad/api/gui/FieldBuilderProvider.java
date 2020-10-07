@@ -10,6 +10,7 @@ import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -20,29 +21,13 @@ import java.util.Optional;
 @FunctionalInterface
 @Environment(EnvType.CLIENT)
 public interface FieldBuilderProvider<T> {
+	/**
+	 * Returns a {@link FieldBuilder} that will build a widget for the given value.
+	 * @param configBuilder the parent of the {@link FieldBuilder} that is returned
+	 * @param valueContainer the {@link ValueContainer} that stores the current value of the {@link ValueKey}
+	 * @param valueKey the {@link ValueKey} that points to the value this {@link FieldBuilder} will be for
+	 * @return a {@link FieldBuilder} that can be used to make a new widget
+	 */
 	FieldBuilder<T, ?> getBuilder(ConfigBuilder configBuilder, ValueContainer valueContainer, ValueKey valueKey);
 
-	@SuppressWarnings("unchecked")
-	static <T> FieldBuilder<T, ?> initialize(FieldBuilder<T, ?> fieldBuilder, ValueContainer valueContainer, ValueKey valueKey) {
-		fieldBuilder.setDefaultValue((T) ValueContainer.getDefault(valueKey));
-		fieldBuilder.setSaveConsumer(newValue -> {
-			try {
-				valueContainer.put(valueKey, newValue, true);
-			} catch (IOException e) {
-				ConradUtil.LOG.warn("Exception while saving config value {}: {}", valueKey.getName(), e.getMessage());
-			}
-		});
-
-		Method method = KeyRing.get(valueKey);
-
-		List<Text> tooltips = new ArrayList<>();
-
-		ConradUtil.getTooltips(method, tooltips::add);
-
-		if (tooltips.size() > 0) {
-			fieldBuilder.setTooltip(Optional.of(tooltips));
-		}
-
-		return fieldBuilder;
-	}
 }

@@ -43,6 +43,7 @@ public class KeyRing {
 	 */
 	public static ConfigKey get(Class<?> configClass) {
 		ConradUtil.prove(Config.class.isAssignableFrom(configClass));
+		configClass = ReflectionUtil.getDeclared(configClass);
 
 		return CONFIG_KEY_MAP.computeIfAbsent((Class<? extends Config>) configClass, c -> {
 			Config.Options options = c.getAnnotation(Config.Options.class);

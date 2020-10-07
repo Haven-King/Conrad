@@ -3,6 +3,7 @@ package dev.hephaestus.clothy.impl.gui.entries;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.hephaestus.clothy.api.Expandable;
+import dev.hephaestus.conrad.api.StronglyTypedList;
 import dev.hephaestus.math.impl.Rectangle;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -33,9 +34,9 @@ import java.util.stream.Collectors;
  * @implNote See <a href="https://stackoverflow.com/questions/7354740/is-there-a-way-to-refer-to-the-current-type-with-a-type-variable">Is there a way to refer to the current type with a type variable?</href> on Stack Overflow.
  */
 @Environment(EnvType.CLIENT)
-public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends BaseListEntry<T, C, SELF>> extends TooltipListEntry<List<T>> implements Expandable {
+public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends BaseListEntry<T, C, SELF>> extends TooltipListEntry<StronglyTypedList<T>> implements Expandable {
     
-    protected static final Identifier CONFIG_TEX = new Identifier("cloth-config2", "textures/gui/cloth_config.png");
+    protected static final Identifier CONFIG_TEX = new Identifier("clothy", "textures/gui/clothy.png");
     @NotNull
 	protected final List<C> cells;
     @NotNull
@@ -43,26 +44,23 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
     protected boolean expanded;
     protected boolean deleteButtonEnabled;
     protected boolean insertInFront;
-    @Nullable protected Consumer<List<T>> saveConsumer;
     protected ListLabelWidget labelWidget;
     protected AbstractButtonWidget resetWidget;
     @NotNull
 	protected Function<SELF, C> createNewInstance;
-    @NotNull
-	protected Supplier<List<T>> defaultValue;
     @Nullable
-    protected Text addTooltip = new TranslatableText("text.cloth-config.list.add"), removeTooltip = new TranslatableText("text.cloth-config.list.remove");
+    protected Text addTooltip = new TranslatableText("text.clothy.list.add"), removeTooltip = new TranslatableText("text.clothy.list.remove");
     
-    public BaseListEntry(@NotNull Text fieldName, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, @NotNull Supplier<List<T>> defaultValue, @NotNull Function<SELF, C> createNewInstance, @Nullable Consumer<List<T>> saveConsumer, Text resetButtonKey) {
+    public BaseListEntry(@NotNull Text fieldName, @NotNull Function<StronglyTypedList<T>, Optional<List<Text>>> tooltipSupplier, @NotNull Supplier<StronglyTypedList<T>> defaultValue, @NotNull Function<SELF, C> createNewInstance, @Nullable Consumer<StronglyTypedList<T>> saveConsumer, Text resetButtonKey) {
         this(fieldName, tooltipSupplier, defaultValue, createNewInstance, saveConsumer, resetButtonKey, false);
     }
     
-    public BaseListEntry(@NotNull Text fieldName, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, @NotNull Supplier<List<T>> defaultValue, @NotNull Function<SELF, C> createNewInstance, @Nullable Consumer<List<T>> saveConsumer, Text resetButtonKey, boolean requiresRestart) {
+    public BaseListEntry(@NotNull Text fieldName, @NotNull Function<StronglyTypedList<T>, Optional<List<Text>>> tooltipSupplier, @NotNull Supplier<StronglyTypedList<T>> defaultValue, @NotNull Function<SELF, C> createNewInstance, @Nullable Consumer<StronglyTypedList<T>> saveConsumer, Text resetButtonKey, boolean requiresRestart) {
         this(fieldName, tooltipSupplier, defaultValue, createNewInstance, saveConsumer, resetButtonKey, requiresRestart, true, true);
     }
     
-    public BaseListEntry(@NotNull Text fieldName, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, @NotNull Supplier<List<T>> defaultValue, @NotNull Function<SELF, C> createNewInstance, @Nullable Consumer<List<T>> saveConsumer, Text resetButtonKey, boolean requiresRestart, boolean deleteButtonEnabled, boolean insertInFront) {
-        super(fieldName, tooltipSupplier, requiresRestart);
+    public BaseListEntry(@NotNull Text fieldName, @NotNull Function<StronglyTypedList<T>, Optional<List<Text>>> tooltipSupplier, @NotNull Supplier<StronglyTypedList<T>> defaultValue, @NotNull Function<SELF, C> createNewInstance, @Nullable Consumer<StronglyTypedList<T>> saveConsumer, Text resetButtonKey, boolean requiresRestart, boolean deleteButtonEnabled, boolean insertInFront) {
+        super(fieldName, tooltipSupplier, requiresRestart, saveConsumer, defaultValue);
         this.deleteButtonEnabled = deleteButtonEnabled;
         this.insertInFront = insertInFront;
         this.cells = Lists.newArrayList();
@@ -81,9 +79,7 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
             widgets.addAll(cells);
         });
         this.widgets.add(resetWidget);
-        this.saveConsumer = saveConsumer;
         this.createNewInstance = createNewInstance;
-        this.defaultValue = defaultValue;
     }
     
     @Override
@@ -100,8 +96,8 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
     public boolean isEdited() {
         if (super.isEdited()) return true;
         if (cells.stream().anyMatch(BaseListCell::isEdited)) return true;
-        List<T> value = getValue();
-        List<T> defaultValue = this.defaultValue.get();
+        StronglyTypedList<T> value = getValue();
+        StronglyTypedList<T> defaultValue = this.getDefaultValue().get();
         if (value.size() != defaultValue.size()) return true;
         for (int i = 0; i < value.size(); i++) {
             if (!Objects.equals(value.get(i), defaultValue.get(i)))
@@ -153,12 +149,7 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
     public void setRemoveTooltip(@Nullable Text removeTooltip) {
         this.removeTooltip = removeTooltip;
     }
-    
-    @Override
-    public Optional<List<T>> getDefaultValue() {
-        return Optional.ofNullable(defaultValue.get());
-    }
-    
+
     @Override
     public int getItemHeight() {
         if (expanded) {
@@ -185,15 +176,9 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
         List<Text> errors = cells.stream().map(C::getConfigError).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
         
         if (errors.size() > 1)
-            return Optional.of(new TranslatableText("text.cloth-config.multi_error"));
+            return Optional.of(new TranslatableText("text.clothy.multi_error"));
         else
             return errors.stream().findFirst();
-    }
-    
-    @Override
-    public void save() {
-        if (saveConsumer != null)
-            saveConsumer.accept(getValue());
     }
     
     @Override
@@ -219,7 +204,7 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
         if (removeTooltip != null && isInsideDelete(mouseX, mouseY))
             return Optional.of(Collections.singletonList(removeTooltip));
         if (getTooltipSupplier() != null)
-            return getTooltipSupplier().get();
+            return getTooltipSupplier().apply(this.getValue());
         return Optional.empty();
     }
     

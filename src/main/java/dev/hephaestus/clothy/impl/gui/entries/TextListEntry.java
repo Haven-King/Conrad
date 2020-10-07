@@ -1,5 +1,7 @@
 package dev.hephaestus.clothy.impl.gui.entries;
 
+import net.minecraft.text.LiteralText;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -12,28 +14,17 @@ import net.minecraft.text.Text;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 @Environment(EnvType.CLIENT)
-public class TextListEntry extends TooltipListEntry<Object> {
+public class TextListEntry extends TooltipListEntry<Text> {
     
     private int savedWidth = -1;
-    private int color;
-    private Text text;
-    
-    @Deprecated
-    public TextListEntry(Text fieldName, Text text) {
-        this(fieldName, text, -1);
-    }
-    
-    @Deprecated
-    public TextListEntry(Text fieldName, Text text, int color) {
-        this(fieldName, text, color, null);
-    }
-    
-    @Deprecated
-    public TextListEntry(Text fieldName, Text text, int color, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier) {
-        super(fieldName, tooltipSupplier);
+    private final int color;
+    private final Text text;
+
+    public TextListEntry(Text fieldName, Text text, int color, @NotNull Function<Text, Optional<List<Text>>> tooltipSupplier) {
+        super(fieldName, tooltipSupplier, t -> {}, () -> null);
         this.text = text;
         this.color = color;
     }
@@ -59,22 +50,12 @@ public class TextListEntry extends TooltipListEntry<Object> {
             return 0;
         return 15 + strings.size() * 12;
     }
-    
+
     @Override
-    public void save() {
-        
+    public Text getValue() {
+        return LiteralText.EMPTY;
     }
-    
-    @Override
-    public Object getValue() {
-        return null;
-    }
-    
-    @Override
-    public Optional<Object> getDefaultValue() {
-        return Optional.empty();
-    }
-    
+
     @Override
     public List<? extends Element> children() {
         return Collections.emptyList();

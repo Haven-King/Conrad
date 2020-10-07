@@ -6,6 +6,7 @@ import dev.hephaestus.clothy.api.AbstractConfigListEntry;
 import dev.hephaestus.clothy.api.ReferenceProvider;
 import dev.hephaestus.clothy.impl.gui.entries.NestedListListEntry.NestedListCell;
 import dev.hephaestus.clothy.impl.gui.widget.DynamicEntryListWidget;
+import dev.hephaestus.conrad.api.StronglyTypedList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Element;
@@ -29,7 +30,7 @@ import java.util.function.Supplier;
 public final class NestedListListEntry<T, INNER extends AbstractConfigListEntry<T>> extends AbstractListListEntry<T, NestedListCell<T, INNER>, NestedListListEntry<T, INNER>> {
     private final List<ReferenceProvider<?>> referencableEntries = Lists.newArrayList();
     
-    public NestedListListEntry(Text fieldName, List<T> value, boolean defaultExpanded, Supplier<Optional<Text[]>> tooltipSupplier, Consumer<List<T>> saveConsumer, Supplier<List<T>> defaultValue, Text resetButtonKey, boolean deleteButtonEnabled, boolean insertInFront, BiFunction<T, NestedListListEntry<T, INNER>, INNER> createNewCell) {
+    public NestedListListEntry(Text fieldName, StronglyTypedList<T> value, boolean defaultExpanded, Supplier<Optional<Text[]>> tooltipSupplier, Consumer<StronglyTypedList<T>> saveConsumer, Supplier<StronglyTypedList<T>> defaultValue, Text resetButtonKey, boolean deleteButtonEnabled, boolean insertInFront, BiFunction<T, NestedListListEntry<T, INNER>, INNER> createNewCell) {
         super(fieldName, value, defaultExpanded, null, null, defaultValue, resetButtonKey, false, deleteButtonEnabled, insertInFront, (t, nestedListListEntry) -> new NestedListCell<>(t, nestedListListEntry, createNewCell.apply(t, nestedListListEntry)));
         for (NestedListCell<T, INNER> cell : cells) {
             referencableEntries.add(cell.nestedEntry);

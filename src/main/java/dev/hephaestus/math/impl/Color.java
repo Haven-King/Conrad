@@ -112,6 +112,10 @@ public final class Color {
 		return color & 0xFF;
 	}
 
+	public int value() {
+		return this.color;
+	}
+
 	/**
 	 * Returns a brighter color
 	 *

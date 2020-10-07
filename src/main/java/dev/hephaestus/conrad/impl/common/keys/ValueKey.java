@@ -14,28 +14,31 @@ public final class ValueKey implements Comparable<ValueKey> {
 	private final ConfigKey config;
 	private final String fieldName;
 	private final Config.Sync synced;
+	private final int priority;
 
-	private ValueKey(ConfigKey configKey, String fieldName, Config.Sync synced) {
+	private ValueKey(ConfigKey configKey, String fieldName, Config.Sync synced, int priority) {
 		this.config = configKey;
 		this.fieldName = fieldName;
 		this.synced = synced;
+		this.priority = priority;
 	}
 
 	public ConfigKey getConfig() {
 		return config;
 	}
 
-	static ValueKey of(ConfigKey configKey, String fieldName, Config.Sync synced) {
+	static ValueKey of(ConfigKey configKey, String fieldName, Config.Sync synced, int priority) {
 		return IDENTIFIERS.computeIfAbsent(
 				new ValueKey(
 						configKey,
 						fieldName,
-						synced
+						synced,
+						priority
 				), id -> id);
 	}
 
 	static ValueKey of(Method method) {
-		return ValueKey.of(KeyRing.get(method.getDeclaringClass()), KeyRing.methodName(method), isSynced(method));
+		return ValueKey.of(KeyRing.get(method.getDeclaringClass()), KeyRing.methodName(method), isSynced(method), priority(method));
 	}
 
 	public String getName() {
@@ -66,17 +69,21 @@ public final class ValueKey implements Comparable<ValueKey> {
 	}
 
 	public static NetworkedObjectReader<ValueKey> READER = (buf) -> {
-		return ValueKey.of(ConfigKey.READER.read(buf), buf.readString(32767), buf.readEnumConstant(Config.Sync.class));
+		return ValueKey.of(ConfigKey.READER.read(buf), buf.readString(32767), buf.readEnumConstant(Config.Sync.class), buf.readVarInt());
 	};
 
 	public static NetworkedObjectWriter<ValueKey> WRITER = (buf, value) -> {
 		ConfigKey.WRITER.write(buf, ((ValueKey) value).config);
-		return buf.writeString(((ValueKey) value).fieldName).writeEnumConstant(((ValueKey) value).synced);
+		return buf.writeString(((ValueKey) value).fieldName).writeEnumConstant(((ValueKey) value).synced).writeVarInt(((ValueKey) value).priority);
 	};
 
 	@Override
 	public int compareTo(ValueKey o) {
 		int i = this.config.compareTo(o.config);
+
+		if (i == 0) {
+			i = Integer.compare(this.priority, o.priority);
+		}
 
 		if (i == 0) {
 			i = this.fieldName.compareTo(o.fieldName);
@@ -90,6 +97,14 @@ public final class ValueKey implements Comparable<ValueKey> {
 			return method.getAnnotation(Config.Value.Options.class).synced();
 		} else {
 			return Config.Sync.DEFAULT;
+		}
+	}
+
+	private static int priority(Method method) {
+		if (method.isAnnotationPresent(Config.Value.Options.class)) {
+			return method.getAnnotation(Config.Value.Options.class).priority();
+		} else {
+			return 100;
 		}
 	}
 }

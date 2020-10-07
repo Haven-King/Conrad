@@ -2,6 +2,7 @@ package dev.hephaestus.clothy.impl.gui.entries;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.hephaestus.clothy.api.AbstractConfigEntry;
 import dev.hephaestus.clothy.api.AbstractConfigListEntry;
 import dev.hephaestus.clothy.api.Expandable;
 import dev.hephaestus.clothy.impl.gui.widget.DynamicEntryListWidget;
@@ -15,7 +16,6 @@ import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
@@ -24,22 +24,24 @@ import java.util.List;
 import java.util.Optional;
 
 @Environment(EnvType.CLIENT)
-public class SubCategoryListEntry extends TooltipListEntry<List<AbstractConfigListEntry>> implements Expandable {
-    
-    private static final Identifier CONFIG_TEX = new Identifier("cloth-config2", "textures/gui/cloth_config.png");
-    private List<AbstractConfigListEntry> entries;
-    private CategoryLabelWidget widget;
-    private List<Element> children;
+public class SubCategoryListEntry extends TooltipListEntry<List<AbstractConfigListEntry<?>>> implements Expandable {
+    private static final Identifier CONFIG_TEX = new Identifier("clothy", "textures/gui/clothy.png");
+
+    private final List<AbstractConfigListEntry<?>> entries;
+    private final CategoryLabelWidget widget;
+    private final List<Element> children;
     private boolean expanded;
     
-    @Deprecated
-    public SubCategoryListEntry(Text categoryName, List<AbstractConfigListEntry> entries, boolean defaultExpanded) {
-        super(categoryName, null);
+    @SuppressWarnings("unchecked")
+    public SubCategoryListEntry(Text categoryName, List<AbstractConfigListEntry<?>> entries, boolean defaultExpanded) {
+        super(categoryName, null, (list) -> list.forEach(AbstractConfigEntry::save), () -> Collections.EMPTY_LIST);
         this.entries = entries;
         this.expanded = defaultExpanded;
         this.widget = new CategoryLabelWidget();
         this.children = Lists.newArrayList(widget);
         this.children.addAll(entries);
+
+        //noinspection rawtypes
         this.setReferenceProviderEntries((List) entries);
     }
     
@@ -55,9 +57,12 @@ public class SubCategoryListEntry extends TooltipListEntry<List<AbstractConfigLi
     
     @Override
     public boolean isRequiresRestart() {
-        for (AbstractConfigListEntry entry : entries)
-            if (entry.isRequiresRestart())
+        for (AbstractConfigListEntry<?> entry : entries) {
+            if (entry.isRequiresRestart()) {
                 return true;
+            }
+        }
+
         return false;
     }
     
@@ -71,15 +76,10 @@ public class SubCategoryListEntry extends TooltipListEntry<List<AbstractConfigLi
     }
     
     @Override
-    public List<AbstractConfigListEntry> getValue() {
+    public List<AbstractConfigListEntry<?>> getValue() {
         return entries;
     }
-    
-    @Override
-    public Optional<List<AbstractConfigListEntry>> getDefaultValue() {
-        return Optional.empty();
-    }
-    
+
     @Override
     public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
         super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
@@ -88,10 +88,13 @@ public class SubCategoryListEntry extends TooltipListEntry<List<AbstractConfigLi
         RenderSystem.color4f(1, 1, 1, 1);
         drawTexture(matrices, x - 15, y + 5, 24, (widget.rectangle.contains(mouseX, mouseY) ? 18 : 0) + (expanded ? 9 : 0), 9, 9);
         MinecraftClient.getInstance().textRenderer.drawWithShadow(matrices, getDisplayedFieldName().asOrderedText(), x, y + 6, widget.rectangle.contains(mouseX, mouseY) ? 0xffe6fe16 : -1);
+
         for (AbstractConfigListEntry<?> entry : entries) {
+            //noinspection unchecked,rawtypes,rawtypes
             entry.setParent((DynamicEntryListWidget) getParent());
             entry.setScreen(getConfigScreen());
         }
+
         if (expanded) {
             int yy = y + 24;
             for (AbstractConfigListEntry<?> entry : entries) {
@@ -172,28 +175,21 @@ public class SubCategoryListEntry extends TooltipListEntry<List<AbstractConfigLi
     public List<? extends Element> children() {
         return expanded ? children : Collections.singletonList(widget);
     }
-    
-    @Override
-    public void save() {
-        entries.forEach(AbstractConfigListEntry::save);
-    }
-    
+
     @Override
     public Optional<Text> getError() {
-        Text error = null;
         for (AbstractConfigListEntry<?> entry : entries) {
             Optional<Text> configError = entry.getConfigError();
             if (configError.isPresent()) {
-                if (error != null)
-                    return Optional.ofNullable(new TranslatableText("text.cloth-config.multi_error"));
                 return configError;
             }
         }
-        return Optional.ofNullable(error);
+
+        return Optional.empty();
     }
     
     public class CategoryLabelWidget implements Element {
-        private Rectangle rectangle = new Rectangle();
+        private final Rectangle rectangle = new Rectangle();
         
         @Override
         public boolean mouseClicked(double double_1, double double_2, int int_1) {

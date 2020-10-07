@@ -25,7 +25,8 @@ public class Conrad {
 				configClass.getClassLoader(),
 				new Class[] {configClass},
 				ConradInvocationHandler.INSTANCE
-		));	}
+		));
+	}
 
 	public static <T extends Config> T getConfig(Class<T> configClass, ServerPlayerEntity playerEntity) {
 		return (T) PLAYER_PROXIES.computeIfAbsent(playerEntity.getUuid(), id -> new HashMap<>()).computeIfAbsent(configClass, key -> Proxy.newProxyInstance(

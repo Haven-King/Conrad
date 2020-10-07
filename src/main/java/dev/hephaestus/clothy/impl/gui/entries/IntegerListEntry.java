@@ -1,11 +1,8 @@
 package dev.hephaestus.clothy.impl.gui.entries;
 
-import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,8 +11,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
-public class IntegerListEntry extends TextFieldListEntry<Integer> {
-    
+public class IntegerListEntry extends BoundedTextFieldListEntry<Integer> {
     private static final Function<String, String> stripCharacters = s -> {
         StringBuilder builder = new StringBuilder();
         char[] var2 = s.toCharArray();
@@ -27,51 +23,18 @@ public class IntegerListEntry extends TextFieldListEntry<Integer> {
         return builder.toString();
     };
 
-    private int minimum, maximum;
-
-    public IntegerListEntry(Text fieldName, Integer value, Text resetButtonKey, Supplier<Integer> defaultValue, Consumer<Integer> saveConsumer, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
+    public IntegerListEntry(Text fieldName, Integer value, Text resetButtonKey, Supplier<Integer> defaultValue, Consumer<Integer> saveConsumer, Function<Integer, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
         super(fieldName, value, resetButtonKey, defaultValue, saveConsumer, tooltipSupplier, requiresRestart);
-        this.minimum = -Integer.MAX_VALUE;
-        this.maximum = Integer.MAX_VALUE;
     }
-    
+
     @Override
     protected String stripAddText(String s) {
         return stripCharacters.apply(s);
     }
-    
-    @Override
-    protected void textFieldPreRender(TextFieldWidget widget) {
-        try {
-            double i = Integer.parseInt(textFieldWidget.getText());
-            if (i < minimum || i > maximum)
-                widget.setEditableColor(16733525);
-            else
-                widget.setEditableColor(14737632);
-        } catch (NumberFormatException ex) {
-            widget.setEditableColor(16733525);
-        }
-    }
-    
+
     @Override
     protected boolean isMatchDefault(String text) {
-        return getDefaultValue().isPresent() && text.equals(defaultValue.get().toString());
-    }
-    
-    @Override
-    public void save() {
-        if (saveConsumer != null)
-            saveConsumer.accept(getValue());
-    }
-    
-    public IntegerListEntry setMaximum(int maximum) {
-        this.maximum = maximum;
-        return this;
-    }
-    
-    public IntegerListEntry setMinimum(int minimum) {
-        this.minimum = minimum;
-        return this;
+        return getDefaultValue().isPresent() && text.equals(this.getDefaultValue().get().toString());
     }
     
     @Override
@@ -81,19 +44,5 @@ public class IntegerListEntry extends TextFieldListEntry<Integer> {
         } catch (Exception e) {
             return 0;
         }
-    }
-    
-    @Override
-    public Optional<Text> getError() {
-        try {
-            int i = Integer.parseInt(textFieldWidget.getText());
-            if (i > maximum)
-                return Optional.of(new TranslatableText("text.cloth-config.error.too_large", maximum));
-            else if (i < minimum)
-                return Optional.of(new TranslatableText("text.cloth-config.error.too_small", minimum));
-        } catch (NumberFormatException ex) {
-            return Optional.of(new TranslatableText("text.cloth-config.error.not_valid_number_int"));
-        }
-        return super.getError();
     }
 }

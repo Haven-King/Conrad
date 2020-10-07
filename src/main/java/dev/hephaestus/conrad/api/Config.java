@@ -1,7 +1,7 @@
 package dev.hephaestus.conrad.api;
 
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
-import dev.hephaestus.conrad.impl.common.serialization.GsonSerializer;
+import dev.hephaestus.conrad.impl.common.serialization.JanksonSerializer;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.util.version.SemanticVersionImpl;
@@ -15,13 +15,12 @@ import java.util.function.BooleanSupplier;
 
 public interface Config {
 	default ConfigSerializer<?, ?> serializer() {
-		return GsonSerializer.INSTANCE;
+		return JanksonSerializer.INSTANCE;
 	}
 
 	/**
 	 * Allows you to specify the version of a config schema. If an older version is found when a config file is parsed,
 	 * that file will be renamed to {@link Options#name()}-{@return}
-	 * TODO: Make this actually do what it says it does.
 	 */
 	default SemanticVersion version() {
 		try {
@@ -154,6 +153,24 @@ public interface Config {
 			 * the server. Level configs will always be synced to ops so that they can modify the configs from mod menu.
 			 */
 			Config.Sync synced() default Config.Sync.DEFAULT;
+
+			/**
+			 * The priority of this config value in the config file and on the config screen.
+			 * Lower values appear higher up, while higher values appear farther down.
+			 * Methods with the same priority value will be sorted alphabetically by method name.
+			 * Nested configs are always moved to the bottom. Priority can be used for sorting between nested
+			 * config methods.
+			 */
+			int priority() default 100;
+		}
+
+		@Target(ElementType.METHOD)
+		@Retention(RetentionPolicy.RUNTIME)
+		public @interface Widget {
+			/**
+			 * Identifier of a
+			 */
+			String value();
 		}
 
 		public enum MethodType {

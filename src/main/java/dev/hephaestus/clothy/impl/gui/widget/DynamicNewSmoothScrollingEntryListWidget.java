@@ -24,7 +24,7 @@
  */
 package dev.hephaestus.clothy.impl.gui.widget;
 
-import dev.hephaestus.clothy.ClothConfigInitializer;
+import dev.hephaestus.clothy.impl.EasingMethod;
 import dev.hephaestus.math.impl.Rectangle;
 import dev.hephaestus.math.impl.PointHelper;
 import net.fabricmc.api.EnvType;
@@ -106,7 +106,7 @@ public abstract class DynamicNewSmoothScrollingEntryListWidget<E extends Dynamic
             this.scroll = MathHelper.clamp(amount, 0.0D, this.getMaxScroll());
             return true;
         }
-        offset(ClothConfigInitializer.getScrollStep() * -amount, true);
+        offset(16 * -amount, true);
         return true;
     }
     
@@ -115,7 +115,7 @@ public abstract class DynamicNewSmoothScrollingEntryListWidget<E extends Dynamic
     }
     
     public void scrollTo(double value, boolean animated) {
-        scrollTo(value, animated, ClothConfigInitializer.getScrollDuration());
+        scrollTo(value, animated, 0);
     }
     
     public void scrollTo(double value, boolean animated, long duration) {
@@ -180,7 +180,7 @@ public abstract class DynamicNewSmoothScrollingEntryListWidget<E extends Dynamic
     
     public static class Interpolation {
         public static double expoEase(double start, double end, double amount) {
-            return start + (end - start) * ClothConfigInitializer.getEasingMethod().apply(amount);
+            return start + (end - start) * EasingMethod.NONE.apply(amount);
         }
     }
     

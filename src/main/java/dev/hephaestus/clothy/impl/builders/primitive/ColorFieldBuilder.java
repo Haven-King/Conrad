@@ -2,6 +2,8 @@ package dev.hephaestus.clothy.impl.builders.primitive;
 
 import dev.hephaestus.clothy.impl.gui.entries.ColorEntry;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
+import dev.hephaestus.conrad.impl.common.config.ValueContainer;
+import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import dev.hephaestus.math.impl.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -10,33 +12,31 @@ import org.jetbrains.annotations.NotNull;
 
 @Environment(EnvType.CLIENT)
 public class ColorFieldBuilder extends FieldBuilder<Color, ColorEntry> {
-    
-    private final Color value;
     private boolean alpha = false;
     
-    public ColorFieldBuilder(Text resetButtonKey, Text fieldNameKey, Color value) {
+    public ColorFieldBuilder(Text resetButtonKey, Text fieldNameKey) {
         super(resetButtonKey, fieldNameKey);
-        this.value = value;
     }
 
     public ColorFieldBuilder setAlphaMode(boolean withAlpha) {
         this.alpha = withAlpha;
         return this;
     }
-    
-    @NotNull
+
     @Override
-    public ColorEntry build() {
-        ColorEntry entry = new ColorEntry(getFieldNameKey(), value, getResetButtonKey(), defaultValue, saveConsumer, null, isRequireRestart());
+    protected ColorEntry withValue(Color value) {
+        ColorEntry entry = new ColorEntry(getFieldNameKey(), value, getResetButtonKey(), defaultValue, saveConsumer, this.tooltipSupplier, isRequireRestart());
+
         if (this.alpha) {
             entry.withAlpha();
         } else {
             entry.withoutAlpha();
         }
-        entry.setTooltipSupplier(() -> tooltipSupplier.apply(entry.getValue()));
-        if (errorSupplier != null)
+
+        if (errorSupplier != null) {
             entry.setErrorSupplier(() -> errorSupplier.apply(entry.getValue()));
+        }
+
         return entry;
     }
-    
 }

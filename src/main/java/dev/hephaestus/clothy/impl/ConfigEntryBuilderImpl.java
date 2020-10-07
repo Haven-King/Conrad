@@ -1,26 +1,27 @@
 package dev.hephaestus.clothy.impl;
 
-import dev.hephaestus.clothy.api.AbstractConfigListEntry;
 import dev.hephaestus.clothy.api.ConfigEntryBuilder;
-import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.SelectionCellCreator;
-import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.SelectionTopCellElement;
-import dev.hephaestus.clothy.impl.builders.*;
+import dev.hephaestus.clothy.impl.builders.EnumSelectorBuilder;
+import dev.hephaestus.clothy.impl.builders.SelectorBuilder;
+import dev.hephaestus.clothy.impl.builders.SubCategoryBuilder;
+import dev.hephaestus.clothy.impl.builders.TextDescriptionBuilder;
 import dev.hephaestus.clothy.impl.builders.compound.*;
 import dev.hephaestus.clothy.impl.builders.primitive.*;
-import dev.hephaestus.math.impl.Color;
+import dev.hephaestus.clothy.impl.gui.entries.*;
+import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.SelectionCellCreator;
+import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.SelectionTopCellElement;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 
-import java.util.List;
 import java.util.UUID;
 
 @Environment(EnvType.CLIENT)
 public class ConfigEntryBuilderImpl implements ConfigEntryBuilder {
     
-    private Text resetButtonKey = new TranslatableText("text.cloth-config.reset_value");
+    private Text resetButtonKey = new TranslatableText("text.clothy.reset_value");
     
     private ConfigEntryBuilderImpl() {
     }
@@ -50,100 +51,93 @@ public class ConfigEntryBuilderImpl implements ConfigEntryBuilder {
     }
     
     @Override
-    public IntListBuilder startIntList(Text fieldNameKey, List<Integer> value) {
-        return new IntListBuilder(resetButtonKey, fieldNameKey, value);
+    public IntegerListBuilder startIntList(Text fieldNameKey) {
+        return new IntegerListBuilder(resetButtonKey, fieldNameKey, list -> new IntegerListCell(0, list));
     }
     
     @Override
-    public LongListBuilder startLongList(Text fieldNameKey, List<Long> value) {
-        return new LongListBuilder(resetButtonKey, fieldNameKey, value);
+    public LongListBuilder startLongList(Text fieldNameKey) {
+        return new LongListBuilder(resetButtonKey, fieldNameKey, list -> new LongListCell(0L, list));
     }
     
     @Override
-    public FloatListBuilder startFloatList(Text fieldNameKey, List<Float> value) {
-        return new FloatListBuilder(resetButtonKey, fieldNameKey, value);
+    public FloatListBuilder startFloatList(Text fieldNameKey) {
+        return new FloatListBuilder(resetButtonKey, fieldNameKey, list -> new FloatListCell(0F, list));
     }
     
     @Override
-    public DoubleListBuilder startDoubleList(Text fieldNameKey, List<Double> value) {
-        return new DoubleListBuilder(resetButtonKey, fieldNameKey, value);
+    public DoubleListBuilder startDoubleList(Text fieldNameKey) {
+        return new DoubleListBuilder(resetButtonKey, fieldNameKey, list -> new DoubleListCell(0D, list));
     }
     
     @Override
-    public StringListBuilder startStrList(Text fieldNameKey, List<String> value) {
-        return new StringListBuilder(resetButtonKey, fieldNameKey, value);
+    public StringListBuilder startStrList(Text fieldNameKey) {
+        return new StringListBuilder(resetButtonKey, fieldNameKey, list -> new StringListListEntry.StringListCell("", list));
     }
     
     @Override
     public SubCategoryBuilder startSubCategory(Text fieldNameKey) {
         return new SubCategoryBuilder(resetButtonKey, fieldNameKey);
     }
-    
+
     @Override
-    public SubCategoryBuilder startSubCategory(Text fieldNameKey, List<AbstractConfigListEntry> entries) {
-        SubCategoryBuilder builder = new SubCategoryBuilder(resetButtonKey, fieldNameKey);
-        builder.addAll(entries);
-        return builder;
+    public BooleanToggleBuilder startBooleanToggle(Text fieldNameKey) {
+        return new BooleanToggleBuilder(resetButtonKey, fieldNameKey);
     }
     
     @Override
-    public BooleanToggleBuilder startBooleanToggle(Text fieldNameKey, boolean value) {
-        return new BooleanToggleBuilder(resetButtonKey, fieldNameKey, value);
+    public StringFieldBuilder startStrField(Text fieldNameKey) {
+        return new StringFieldBuilder(resetButtonKey, fieldNameKey);
     }
     
     @Override
-    public StringFieldBuilder startStrField(Text fieldNameKey, String value) {
-        return new StringFieldBuilder(resetButtonKey, fieldNameKey, value);
+    public ColorFieldBuilder startColorField(Text fieldNameKey) {
+        return new ColorFieldBuilder(resetButtonKey, fieldNameKey);
     }
     
     @Override
-    public ColorFieldBuilder startColorField(Text fieldNameKey, Color value) {
-        return new ColorFieldBuilder(resetButtonKey, fieldNameKey, value);
+    public TextDescriptionBuilder startTextDescription() {
+        return new TextDescriptionBuilder(resetButtonKey, new LiteralText(UUID.randomUUID().toString()));
     }
     
     @Override
-    public TextDescriptionBuilder startTextDescription(Text value) {
-        return new TextDescriptionBuilder(resetButtonKey, new LiteralText(UUID.randomUUID().toString()), value);
+    public <T extends Enum<?>> EnumSelectorBuilder<T> startEnumSelector(Text fieldNameKey, Class<T> clazz) {
+        return new EnumSelectorBuilder<>(resetButtonKey, fieldNameKey, clazz);
+    }
+
+    @Override
+    public <T> SelectorBuilder<T> startSelector(Text fieldNameKey, T[] valuesArray) {
+        return new SelectorBuilder<>(resetButtonKey, fieldNameKey, valuesArray);
     }
     
     @Override
-    public <T extends Enum<?>> EnumSelectorBuilder<T> startEnumSelector(Text fieldNameKey, Class<T> clazz, T value) {
-        return new EnumSelectorBuilder<>(resetButtonKey, fieldNameKey, clazz, value);
+    public IntegerFieldBuilder startIntField(Text fieldNameKey) {
+        return new IntegerFieldBuilder(resetButtonKey, fieldNameKey);
     }
     
     @Override
-    public <T> SelectorBuilder<T> startSelector(Text fieldNameKey, T[] valuesArray, T value) {
-        return new SelectorBuilder<>(resetButtonKey, fieldNameKey, valuesArray, value);
+    public LongFieldBuilder startLongField(Text fieldNameKey) {
+        return new LongFieldBuilder(resetButtonKey, fieldNameKey);
     }
     
     @Override
-    public IntFieldBuilder startIntField(Text fieldNameKey, int value) {
-        return new IntFieldBuilder(resetButtonKey, fieldNameKey, value);
+    public FloatFieldBuilder startFloatField(Text fieldNameKey) {
+        return new FloatFieldBuilder(resetButtonKey, fieldNameKey);
     }
     
     @Override
-    public LongFieldBuilder startLongField(Text fieldNameKey, long value) {
-        return new LongFieldBuilder(resetButtonKey, fieldNameKey, value);
+    public DoubleFieldBuilder startDoubleField(Text fieldNameKey) {
+        return new DoubleFieldBuilder(resetButtonKey, fieldNameKey);
     }
     
     @Override
-    public FloatFieldBuilder startFloatField(Text fieldNameKey, float value) {
-        return new FloatFieldBuilder(resetButtonKey, fieldNameKey, value);
+    public IntSliderBuilder startIntSlider(Text fieldNameKey, int min, int max) {
+        return new IntSliderBuilder(resetButtonKey, fieldNameKey, min, max);
     }
     
     @Override
-    public DoubleFieldBuilder startDoubleField(Text fieldNameKey, double value) {
-        return new DoubleFieldBuilder(resetButtonKey, fieldNameKey, value);
-    }
-    
-    @Override
-    public IntSliderBuilder startIntSlider(Text fieldNameKey, int value, int min, int max) {
-        return new IntSliderBuilder(resetButtonKey, fieldNameKey, value, min, max);
-    }
-    
-    @Override
-    public LongSliderBuilder startLongSlider(Text fieldNameKey, long value, long min, long max) {
-        return new LongSliderBuilder(resetButtonKey, fieldNameKey, value, min, max);
+    public LongSliderBuilder startLongSlider(Text fieldNameKey, long min, long max) {
+        return new LongSliderBuilder(resetButtonKey, fieldNameKey, min, max);
     }
 
     @Override

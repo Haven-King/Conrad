@@ -11,21 +11,21 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public abstract class TooltipListEntry<T> extends AbstractConfigListEntry<T> {
     
-    @Nullable private Supplier<Optional<List<Text>>> tooltipSupplier;
+    @Nullable private Function<T, Optional<List<Text>>> tooltipSupplier;
     
-    @Deprecated
-    public TooltipListEntry(Text fieldName, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier) {
-        this(fieldName, tooltipSupplier, false);
+    public TooltipListEntry(Text fieldName, @Nullable Function<T, Optional<List<Text>>> tooltipSupplier, Consumer<T> saveConsumer, Supplier<T> defaultValue) {
+        this(fieldName, tooltipSupplier, false, saveConsumer, defaultValue);
     }
     
-    @Deprecated
-    public TooltipListEntry(Text fieldName, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
-        super(fieldName, requiresRestart);
+    public TooltipListEntry(Text fieldName, @Nullable Function<T, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart, Consumer<T> saveConsumer, Supplier<T> defaultValue) {
+        super(fieldName, requiresRestart, saveConsumer, defaultValue);
         this.tooltipSupplier = tooltipSupplier;
     }
     
@@ -40,17 +40,19 @@ public abstract class TooltipListEntry<T> extends AbstractConfigListEntry<T> {
     }
     
     public Optional<List<Text>> getTooltip() {
-        if (tooltipSupplier != null)
-            return tooltipSupplier.get();
+        if (tooltipSupplier != null) {
+            return tooltipSupplier.apply(this.getValue());
+        }
+
         return Optional.empty();
     }
     
     @Nullable
-    public Supplier<Optional<List<Text>>> getTooltipSupplier() {
+    public Function<T, Optional<List<Text>>> getTooltipSupplier() {
         return tooltipSupplier;
     }
     
-    public void setTooltipSupplier(@Nullable Supplier<Optional<List<Text>>> tooltipSupplier) {
+    public void setTooltipSupplier(@Nullable Function<T, Optional<List<Text>>> tooltipSupplier) {
         this.tooltipSupplier = tooltipSupplier;
     }
     

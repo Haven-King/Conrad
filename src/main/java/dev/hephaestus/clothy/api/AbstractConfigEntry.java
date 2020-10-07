@@ -13,14 +13,21 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public abstract class AbstractConfigEntry<T> extends DynamicElementListWidget.ElementEntry<AbstractConfigEntry<T>> implements ReferenceProvider<T> {
+    @Nullable private final Consumer<T> saveConsumer;
+    private final Supplier<T> defaultValue;
     private AbstractConfigScreen screen;
     private Supplier<Optional<Text>> errorSupplier;
-    @Nullable
-    private List<ReferenceProvider<?>> referencableEntries = null;
+    @Nullable private List<ReferenceProvider<?>> referencableEntries = null;
+
+    public AbstractConfigEntry(@Nullable Consumer<T> saveConsumer, Supplier<T> defaultValue) {
+        this.saveConsumer = saveConsumer;
+        this.defaultValue = defaultValue;
+    }
     
     public final void setReferenceProviderEntries(@Nullable List<ReferenceProvider<?>> referencableEntries) {
         this.referencableEntries = referencableEntries;
@@ -81,7 +88,9 @@ public abstract class AbstractConfigEntry<T> extends DynamicElementListWidget.El
         return Optional.empty();
     }
     
-    public abstract Optional<T> getDefaultValue();
+    public final Optional<T> getDefaultValue() {
+        return defaultValue == null ? Optional.empty() : Optional.ofNullable(defaultValue.get());
+    }
     
     @Nullable
     public final AbstractConfigScreen getConfigScreen() {
@@ -98,7 +107,9 @@ public abstract class AbstractConfigEntry<T> extends DynamicElementListWidget.El
         this.screen = screen;
     }
     
-    public abstract void save();
+    public final void save() {
+        this.saveConsumer.accept(this.getValue());
+    }
     
     public boolean isEdited() {
         return getConfigError().isPresent();

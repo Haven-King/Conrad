@@ -2,6 +2,7 @@ package dev.hephaestus.clothy.impl.gui.entries;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import dev.hephaestus.math.impl.Color;
 import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -25,23 +26,22 @@ import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class SelectionListEntry<T> extends TooltipListEntry<T> {
-    
     private ImmutableList<T> values;
     private AtomicInteger index;
     private final int original;
     private ButtonWidget buttonWidget, resetButton;
-    private Consumer<T> saveConsumer;
-    private Supplier<T> defaultValue;
     private List<Element> widgets;
     private Function<T, Text> nameProvider;
     
-    public SelectionListEntry(Text fieldName, T[] valuesArray, T value, Text resetButtonKey, Supplier<T> defaultValue, Consumer<T> saveConsumer, Function<T, Text> nameProvider, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
-        super(fieldName, tooltipSupplier, requiresRestart);
-        if (valuesArray != null)
+    public SelectionListEntry(Text fieldName, T[] valuesArray, T value, Text resetButtonKey, Supplier<T> defaultValue, Consumer<T> saveConsumer, Function<T, Text> nameProvider, @Nullable Function<T, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
+        super(fieldName, tooltipSupplier, requiresRestart, saveConsumer, defaultValue);
+
+        if (valuesArray != null) {
             this.values = ImmutableList.copyOf(valuesArray);
-        else
+        } else {
             this.values = ImmutableList.of(value);
-        this.defaultValue = defaultValue;
+        }
+
         this.index = new AtomicInteger(this.values.indexOf(value));
         this.index.compareAndSet(-1, 0);
         this.original = this.values.indexOf(value);
@@ -52,15 +52,8 @@ public class SelectionListEntry<T> extends TooltipListEntry<T> {
         this.resetButton = new ButtonWidget(0, 0, MinecraftClient.getInstance().textRenderer.getWidth(resetButtonKey) + 6, 20, resetButtonKey, widget -> {
             SelectionListEntry.this.index.set(getDefaultIndex());
         });
-        this.saveConsumer = saveConsumer;
         this.widgets = Lists.newArrayList(buttonWidget, resetButton);
         this.nameProvider = nameProvider == null ? (t -> new TranslatableText(t instanceof Translatable ? ((Translatable) t).getCode() : t.toString())) : nameProvider;
-    }
-    
-    @Override
-    public void save() {
-        if (saveConsumer != null)
-            saveConsumer.accept(getValue());
     }
     
     @Override
@@ -71,11 +64,6 @@ public class SelectionListEntry<T> extends TooltipListEntry<T> {
     @Override
     public T getValue() {
         return this.values.get(this.index.get());
-    }
-    
-    @Override
-    public Optional<T> getDefaultValue() {
-        return defaultValue == null ? Optional.empty() : Optional.ofNullable(defaultValue.get());
     }
     
     @Override
@@ -103,7 +91,7 @@ public class SelectionListEntry<T> extends TooltipListEntry<T> {
     }
     
     private int getDefaultIndex() {
-        return Math.max(0, this.values.indexOf(this.defaultValue.get()));
+        return Math.max(0, this.values.indexOf(this.getDefaultValue().get()));
     }
     
     @Override

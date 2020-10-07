@@ -6,36 +6,40 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ColorEntry extends TextFieldListEntry<Color> {
     
-    private ColorDisplayWidget colorDisplayWidget;
+    private final ColorDisplayWidget colorDisplayWidget;
     private boolean alpha;
     
-    @Deprecated
-    public ColorEntry(Text fieldName, Color value, Text resetButtonKey, Supplier<Color> defaultValue, Consumer<Color> saveConsumer, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
+    public ColorEntry(Text fieldName, Color value, Text resetButtonKey, Supplier<Color> defaultValue, Consumer<Color> saveConsumer, @NotNull Function<Color, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
         super(fieldName, Color.BLACK, resetButtonKey, defaultValue, saveConsumer, tooltipSupplier, requiresRestart);
         this.alpha = true;
-        ColorValue colorValue = getColorValue(String.valueOf(value));
-        if (colorValue.hasError())
-            throw new IllegalArgumentException("Invalid Color: " + colorValue.getError().name());
+        ColorValue colorValue = getColorValue(String.valueOf(value.value()));
+
+        if (colorValue.hasError()) {
+            String error = colorValue.getError() == null ? "UNKNOWN" : colorValue.getError().name();
+            throw new IllegalArgumentException("Invalid Color: " + error);
+        }
+
         this.alpha = false;
         this.original = value;
         this.textFieldWidget.setText(getHexColorString(value.getColor()));
         this.colorDisplayWidget = new ColorDisplayWidget(textFieldWidget, 0, 0, 20, getColorValueColor(textFieldWidget.getText()));
-        this.resetButton = new ButtonWidget(0, 0, MinecraftClient.getInstance().textRenderer.getWidth(resetButtonKey) + 6, 20, resetButtonKey, widget -> {
-            ColorEntry.this.textFieldWidget.setText(getHexColorString(defaultValue.get().getColor()));
-        });
+        this.resetButton = new ButtonWidget(0, 0, MinecraftClient.getInstance().textRenderer.getWidth(resetButtonKey) + 6, 20, resetButtonKey, widget ->
+                ColorEntry.this.textFieldWidget.setText(getHexColorString(defaultValue.get().getColor())));
     }
     
     @Override
@@ -67,13 +71,7 @@ public class ColorEntry extends TextFieldListEntry<Color> {
             widget.setEditableColor(16733525);
         }
     }
-    
-    @Override
-    public void save() {
-        if (saveConsumer != null)
-            saveConsumer.accept(getValue());
-    }
-    
+
     @Override
     protected boolean isMatchDefault(String text) {
         if (!getDefaultValue().isPresent())
@@ -101,8 +99,12 @@ public class ColorEntry extends TextFieldListEntry<Color> {
     @Override
     public Optional<Text> getError() {
         ColorValue colorValue = getColorValue(this.textFieldWidget.getText());
-        if (colorValue.hasError())
-            return Optional.of(new TranslatableText("text.cloth-config.error.color." + colorValue.getError().name().toLowerCase(Locale.ROOT)));
+
+        if (colorValue.hasError()) {
+            String error = colorValue.getError() == null ? "UNKNOWN" : colorValue.getError().name();
+            return Optional.of(new TranslatableText("text.clothy.error.color.invalid_color"));
+        }
+
         return super.getError();
     }
     
@@ -125,11 +127,7 @@ public class ColorEntry extends TextFieldListEntry<Color> {
             return hex.substring(1);
         } else return hex;
     }
-    
-    protected boolean isValidColorString(String str) {
-        return !getColorValue(str).hasError();
-    }
-    
+
     protected int getColorValueColor(String str) {
         return getColorValue(str).getColor();
     }
@@ -148,17 +146,7 @@ public class ColorEntry extends TextFieldListEntry<Color> {
             int a = color >> 24 & 0xFF;
             if (!alpha && a > 0)
                 return ColorError.NO_ALPHA_ALLOWED.toValue();
-            if (a < 0 || a > 255)
-                return ColorError.INVALID_ALPHA.toValue();
-            int r = color >> 16 & 0xFF;
-            if (r < 0 || r > 255)
-                return ColorError.INVALID_RED.toValue();
-            int g = color >> 8 & 0xFF;
-            if (g < 0 || g > 255)
-                return ColorError.INVALID_GREEN.toValue();
-            int b = color & 0xFF;
-            if (b < 0 || b > 255)
-                return ColorError.INVALID_BLUE.toValue();
+
             return new ColorValue(color);
         } catch (NumberFormatException e) {
             return ColorError.INVALID_COLOR.toValue();
@@ -177,7 +165,7 @@ public class ColorEntry extends TextFieldListEntry<Color> {
         INVALID_BLUE,
         INVALID_COLOR;
         
-        private ColorValue value;
+        private final ColorValue value;
         
         ColorError() {
             this.value = new ColorValue(this);
@@ -190,14 +178,13 @@ public class ColorEntry extends TextFieldListEntry<Color> {
     
     protected static class ColorValue {
         private int color = -1;
-        @Nullable
-        private ColorError error = null;
+        @Nullable private ColorError error = null;
         
         public ColorValue(int color) {
             this.color = color;
         }
         
-        public ColorValue(ColorError error) {
+        public ColorValue(@Nullable ColorError error) {
             this.error = error;
         }
         

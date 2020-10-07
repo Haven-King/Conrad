@@ -16,23 +16,19 @@ import net.minecraft.text.Text;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public abstract class TextFieldListEntry<T> extends TooltipListEntry<T> {
-
-    protected final Supplier<T> defaultValue;
-    protected final Consumer<T> saveConsumer;
     protected TextFieldWidget textFieldWidget;
     protected ButtonWidget resetButton;
     protected T original;
     protected List<Element> widgets;
     private boolean isSelected = false;
     
-    protected TextFieldListEntry(Text fieldName, T original, Text resetButtonKey, Supplier<T> defaultValue, Consumer<T> saveConsumer, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
-        super(fieldName, tooltipSupplier, requiresRestart);
-        this.defaultValue = defaultValue;
-        this.saveConsumer = saveConsumer;
+    protected TextFieldListEntry(Text fieldName, T original, Text resetButtonKey, Supplier<T> defaultValue, Consumer<T> saveConsumer, @Nullable Function<T, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
+        super(fieldName, tooltipSupplier, requiresRestart, saveConsumer, defaultValue);
         this.original = original;
         this.textFieldWidget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 148, 18, NarratorManager.EMPTY) {
             @Override
@@ -110,15 +106,9 @@ public abstract class TextFieldListEntry<T> extends TooltipListEntry<T> {
     }
     
     protected abstract boolean isMatchDefault(String text);
-    
-    @Override
-    public Optional<T> getDefaultValue() {
-        return defaultValue == null ? Optional.empty() : Optional.ofNullable(defaultValue.get());
-    }
-    
+
     @Override
     public List<? extends Element> children() {
         return widgets;
     }
-    
 }

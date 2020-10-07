@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 public class ConfigBuilderImpl implements ConfigBuilder {
     private Runnable savingRunnable;
     private Screen parent;
-    private Text title = new TranslatableText("text.cloth-config.config");
+    private Text title = new TranslatableText("text.clothy.config");
     private boolean editable = true;
     private boolean tabsSmoothScroll = true;
     private boolean listSmoothScroll = true;

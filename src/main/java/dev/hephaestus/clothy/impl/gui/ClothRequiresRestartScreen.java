@@ -15,6 +15,6 @@ public class ClothRequiresRestartScreen extends ConfirmScreen {
                 MinecraftClient.getInstance().scheduleStop();
             else
                 MinecraftClient.getInstance().openScreen(parent);
-        }, new TranslatableText("text.cloth-config.restart_required"), new TranslatableText("text.cloth-config.restart_required_sub"), new TranslatableText("text.cloth-config.exit_minecraft"), new TranslatableText("text.cloth-config.ignore_restart"));
+        }, new TranslatableText("text.clothy.restart_required"), new TranslatableText("text.clothy.restart_required_sub"), new TranslatableText("text.clothy.exit_minecraft"), new TranslatableText("text.clothy.ignore_restart"));
     }
 }

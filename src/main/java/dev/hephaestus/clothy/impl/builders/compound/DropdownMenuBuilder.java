@@ -6,6 +6,8 @@ import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.DefaultSelectionT
 import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.SelectionCellCreator;
 import dev.hephaestus.clothy.impl.gui.entries.DropdownBoxEntry.SelectionTopCellElement;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
+import dev.hephaestus.conrad.impl.common.config.ValueContainer;
+import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
@@ -30,8 +32,6 @@ import java.util.function.Supplier;
 public class DropdownMenuBuilder<T> extends FieldBuilder<T, DropdownBoxEntry<T>> {
     protected SelectionTopCellElement<T> topCellElement;
     protected SelectionCellCreator<T> cellCreator;
-    protected Function<T, Optional<List<Text>>> tooltipSupplier = str -> Optional.empty();
-    protected Consumer<T> saveConsumer = null;
     protected Iterable<T> selections = Collections.emptyList();
     protected boolean suggestionMode = true;
     
@@ -46,46 +46,6 @@ public class DropdownMenuBuilder<T> extends FieldBuilder<T, DropdownBoxEntry<T>>
         return this;
     }
 
-    public DropdownMenuBuilder<T> setDefaultValue(Supplier<T> defaultValue) {
-        this.defaultValue = defaultValue;
-        return this;
-    }
-
-    public DropdownMenuBuilder<T> setDefaultValue(T defaultValue) {
-        this.defaultValue = () -> Objects.requireNonNull(defaultValue);
-        return this;
-    }
-
-    public DropdownMenuBuilder<T> setSaveConsumer(Consumer<T> saveConsumer) {
-        this.saveConsumer = saveConsumer;
-        return this;
-    }
-
-    public DropdownMenuBuilder<T> setTooltipSupplier(Supplier<Optional<List<Text>>> tooltipSupplier) {
-        this.tooltipSupplier = str -> tooltipSupplier.get();
-        return this;
-    }
-
-    public DropdownMenuBuilder<T> setTooltipSupplier(Function<T, Optional<List<Text>>> tooltipSupplier) {
-        this.tooltipSupplier = tooltipSupplier;
-        return this;
-    }
-
-    public DropdownMenuBuilder<T> setTooltip(Optional<List<Text>> tooltip) {
-        this.tooltipSupplier = str -> tooltip;
-        return this;
-    }
-
-    public DropdownMenuBuilder<T> requireRestart() {
-        requireRestart(true);
-        return this;
-    }
-
-    public DropdownMenuBuilder<T> setErrorSupplier(Function<T, Optional<Text>> errorSupplier) {
-        this.errorSupplier = errorSupplier;
-        return this;
-    }
-
     public DropdownMenuBuilder<T> setSuggestionMode(boolean suggestionMode) {
         this.suggestionMode = suggestionMode;
         return this;
@@ -95,14 +55,15 @@ public class DropdownMenuBuilder<T> extends FieldBuilder<T, DropdownBoxEntry<T>>
         return suggestionMode;
     }
 
-    @NotNull
     @Override
-    public DropdownBoxEntry<T> build() {
-        DropdownBoxEntry<T> entry = new DropdownBoxEntry<>(getFieldNameKey(), getResetButtonKey(), null, isRequireRestart(), defaultValue, saveConsumer, selections, topCellElement, cellCreator);
-        entry.setTooltipSupplier(() -> tooltipSupplier.apply(entry.getValue()));
-        if (errorSupplier != null)
-            entry.setErrorSupplier(() -> errorSupplier.apply(entry.getValue()));
+    protected DropdownBoxEntry<T> withValue(T value) {
+        DropdownBoxEntry<T> entry = new DropdownBoxEntry<T>(getFieldNameKey(), getResetButtonKey(), this.tooltipSupplier, isRequireRestart(), defaultValue, saveConsumer, selections, topCellElement, cellCreator);
         entry.setSuggestionMode(suggestionMode);
+
+        if (errorSupplier != null) {
+            entry.setErrorSupplier(() -> errorSupplier.apply(entry.getValue()));
+        }
+
         return entry;
     }
     

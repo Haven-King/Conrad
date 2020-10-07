@@ -1,6 +1,7 @@
 package dev.hephaestus.clothy.impl.gui.entries;
 
 import com.google.common.collect.Lists;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -23,35 +24,28 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
-public class LongSliderEntry extends TooltipListEntry<Long> {
+public class LongSliderEntry extends SliderEntry<Long> {
     
     protected Slider sliderWidget;
     protected ButtonWidget resetButton;
     protected AtomicLong value;
     protected final long orginial;
     private long minimum, maximum;
-    private Consumer<Long> saveConsumer;
-    private Supplier<Long> defaultValue;
     private Function<Long, Text> textGetter = value -> new LiteralText(String.format("Value: %d", value));
     private List<Element> widgets;
     
-    @Deprecated
     public LongSliderEntry(Text fieldName, long minimum, long maximum, long value, Consumer<Long> saveConsumer, Text resetButtonKey, Supplier<Long> defaultValue) {
-        this(fieldName, minimum, maximum, value, saveConsumer, resetButtonKey, defaultValue, null);
+        this(fieldName, minimum, maximum, value, saveConsumer, resetButtonKey, defaultValue, l -> Optional.empty());
     }
     
-    @Deprecated
-    public LongSliderEntry(Text fieldName, long minimum, long maximum, long value, Consumer<Long> saveConsumer, Text resetButtonKey, Supplier<Long> defaultValue, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier) {
+    public LongSliderEntry(Text fieldName, long minimum, long maximum, long value, Consumer<Long> saveConsumer, Text resetButtonKey, Supplier<Long> defaultValue, @NotNull Function<Long, Optional<List<Text>>> tooltipSupplier) {
         this(fieldName, minimum, maximum, value, saveConsumer, resetButtonKey, defaultValue, tooltipSupplier, false);
     }
     
-    @Deprecated
-    public LongSliderEntry(Text fieldName, long minimum, long maximum, long value, Consumer<Long> saveConsumer, Text resetButtonKey, Supplier<Long> defaultValue, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
-        super(fieldName, tooltipSupplier, requiresRestart);
+    public LongSliderEntry(Text fieldName, long minimum, long maximum, long value, Consumer<Long> saveConsumer, Text resetButtonKey, Supplier<Long> defaultValue, @NotNull Function<Long, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
+        super(fieldName, tooltipSupplier, requiresRestart, saveConsumer, defaultValue);
         this.orginial = value;
-        this.defaultValue = defaultValue;
         this.value = new AtomicLong(value);
-        this.saveConsumer = saveConsumer;
         this.maximum = maximum;
         this.minimum = minimum;
         this.sliderWidget = new Slider(0, 0, 152, 20, ((double) LongSliderEntry.this.value.get() - minimum) / Math.abs(maximum - minimum));
@@ -60,12 +54,6 @@ public class LongSliderEntry extends TooltipListEntry<Long> {
         });
         this.sliderWidget.setMessage(textGetter.apply(LongSliderEntry.this.value.get()));
         this.widgets = Lists.newArrayList(sliderWidget, resetButton);
-    }
-    
-    @Override
-    public void save() {
-        if (saveConsumer != null)
-            saveConsumer.accept(getValue());
     }
     
     public Function<Long, Text> getTextGetter() {
@@ -89,12 +77,7 @@ public class LongSliderEntry extends TooltipListEntry<Long> {
         this.value.set(Math.min(Math.max(value, minimum), maximum));
         sliderWidget.updateMessage();
     }
-    
-    @Override
-    public Optional<Long> getDefaultValue() {
-        return defaultValue == null ? Optional.empty() : Optional.ofNullable(defaultValue.get());
-    }
-    
+
     @Override
     public List<? extends Element> children() {
         return widgets;
@@ -119,7 +102,7 @@ public class LongSliderEntry extends TooltipListEntry<Long> {
     public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
         super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
         Window window = MinecraftClient.getInstance().getWindow();
-        this.resetButton.active = isEditable() && getDefaultValue().isPresent() && defaultValue.get() != value.get();
+        this.resetButton.active = isEditable() && getDefaultValue().isPresent() && this.getDefaultValue().get() != value.get();
         this.resetButton.y = y;
         this.sliderWidget.active = isEditable();
         this.sliderWidget.y = y;

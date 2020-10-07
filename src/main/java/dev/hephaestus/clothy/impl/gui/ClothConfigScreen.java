@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.hephaestus.clothy.api.*;
-import dev.hephaestus.clothy.impl.gui.widget.DynamicElementListWidget;
 import dev.hephaestus.clothy.impl.EasingMethod;
+import dev.hephaestus.clothy.impl.gui.widget.DynamicElementListWidget;
 import dev.hephaestus.math.impl.Point;
 import dev.hephaestus.math.impl.Rectangle;
 import net.fabricmc.api.EnvType;
@@ -111,7 +111,7 @@ public class ClothConfigScreen extends AbstractTabbedConfigScreen {
             listWidget.children().addAll((List) Lists.newArrayList(categorizedEntries.values()).get(selectedCategoryIndex));
         }
         int buttonWidths = Math.min(200, (width - 50 - 12) / 3);
-        addButton(quitButton = new ButtonWidget(width / 2 - buttonWidths - 3, height - 26, buttonWidths, 20, isEdited() ? new TranslatableText("text.cloth-config.cancel_discard") : new TranslatableText("gui.cancel"), widget -> quit()));
+        addButton(quitButton = new ButtonWidget(width / 2 - buttonWidths - 3, height - 26, buttonWidths, 20, isEdited() ? new TranslatableText("text.clothy.cancel_discard") : new TranslatableText("gui.cancel"), widget -> quit()));
         addButton(saveButton = new ButtonWidget(width / 2 + 3, height - 26, buttonWidths, 20, NarratorManager.EMPTY, button -> saveAll(true)) {
             @Override
             public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
@@ -126,7 +126,7 @@ public class ClothConfigScreen extends AbstractTabbedConfigScreen {
                         break;
                 }
                 active = isEdited() && !hasErrors;
-                setMessage(hasErrors ? new TranslatableText("text.cloth-config.error_cannot_save") : new TranslatableText("text.cloth-config.save_and_done"));
+                setMessage(hasErrors ? new TranslatableText("text.clothy.error_cannot_save") : new TranslatableText("text.clothy.save_and_done"));
                 super.render(matrices, mouseX, mouseY, delta);
             }
         });
@@ -240,7 +240,7 @@ public class ClothConfigScreen extends AbstractTabbedConfigScreen {
             if (errors.size() > 0) {
                 client.getTextureManager().bindTexture(CONFIG_TEX);
                 RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-                String text = "§c" + (errors.size() == 1 ? errors.get(0).copy().getString() : I18n.translate("text.cloth-config.multi_error"));
+                String text = "§c" + (errors.size() == 1 ? errors.get(0).copy().getString() : I18n.translate("text.clothy.multi_error"));
                 if (isTransparentBackground()) {
                     int stringWidth = client.textRenderer.getWidth(text);
                     fillGradient(matrices, 8, 9, 20 + stringWidth, 14 + client.textRenderer.fontHeight, 0x68000000, 0x68000000);
@@ -256,7 +256,7 @@ public class ClothConfigScreen extends AbstractTabbedConfigScreen {
         } else if (!isEditable()) {
             client.getTextureManager().bindTexture(CONFIG_TEX);
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-            String text = "§c" + I18n.translate("text.cloth-config.not_editable");
+            String text = "§c" + I18n.translate("text.clothy.not_editable");
             if (isTransparentBackground()) {
                 int stringWidth = client.textRenderer.getWidth(text);
                 fillGradient(matrices, 8, 9, 20 + stringWidth, 14 + client.textRenderer.fontHeight, 0x68000000, 0x68000000);
@@ -361,10 +361,10 @@ public class ClothConfigScreen extends AbstractTabbedConfigScreen {
                 start = System.currentTimeMillis();
                 this.duration = 40;
             } else if (hasCurrent && target != null) {
-                currentX = (int) ScrollingContainer.ease(currentX, target.x, Math.min((System.currentTimeMillis() - start) / (double) duration * delta * 3, 1), EasingMethod.EasingMethodImpl.LINEAR);
-                currentY = (int) ScrollingContainer.ease(currentY, target.y, Math.min((System.currentTimeMillis() - start) / (double) duration * delta * 3, 1), EasingMethod.EasingMethodImpl.LINEAR);
-                currentWidth = (int) ScrollingContainer.ease(currentWidth, target.width, Math.min((System.currentTimeMillis() - start) / (double) duration * delta * 3, 1), EasingMethod.EasingMethodImpl.LINEAR);
-                currentHeight = (int) ScrollingContainer.ease(currentHeight, target.height, Math.min((System.currentTimeMillis() - start) / (double) duration * delta * 3, 1), EasingMethod.EasingMethodImpl.LINEAR);
+                currentX = (int) ScrollingContainer.ease(currentX, target.x, Math.min((System.currentTimeMillis() - start) / (double) duration * delta * 3, 1), EasingMethod.LINEAR);
+                currentY = (int) ScrollingContainer.ease(currentY, target.y, Math.min((System.currentTimeMillis() - start) / (double) duration * delta * 3, 1), EasingMethod.LINEAR);
+                currentWidth = (int) ScrollingContainer.ease(currentWidth, target.width, Math.min((System.currentTimeMillis() - start) / (double) duration * delta * 3, 1), EasingMethod.LINEAR);
+                currentHeight = (int) ScrollingContainer.ease(currentHeight, target.height, Math.min((System.currentTimeMillis() - start) / (double) duration * delta * 3, 1), EasingMethod.LINEAR);
             }
         }
         

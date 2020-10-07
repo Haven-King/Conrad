@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public abstract class AbstractConfigScreen extends Screen implements ConfigScreen {
-    protected static final Identifier CONFIG_TEX = new Identifier("cloth-config2", "textures/gui/cloth_config.png");
+    protected static final Identifier CONFIG_TEX = new Identifier("clothy", "textures/gui/clothy.png");
     private boolean legacyEdited = false;
     private final Identifier backgroundLocation;
     protected boolean legacyRequiresRestart = false;
@@ -41,7 +41,6 @@ public abstract class AbstractConfigScreen extends Screen implements ConfigScree
     private Text defaultFallbackCategory = null;
     public int selectedCategoryIndex = 0;
     private boolean editable = true;
-    private ModifierKey startedKey = null;
     private final List<Tooltip> tooltips = Lists.newArrayList();
     @Nullable
     private Runnable savingRunnable = null;
@@ -177,7 +176,7 @@ public abstract class AbstractConfigScreen extends Screen implements ConfigScree
     
     protected final boolean quit() {
         if (confirmSave && isEdited())
-            client.openScreen(new ConfirmScreen(new QuitSaveConsumer(), new TranslatableText("text.cloth-config.quit_config"), new TranslatableText("text.cloth-config.quit_config_sure"), new TranslatableText("text.cloth-config.quit_discard"), new TranslatableText("gui.cancel")));
+            client.openScreen(new ConfirmScreen(new QuitSaveConsumer(), new TranslatableText("text.clothy.quit_config"), new TranslatableText("text.clothy.quit_config_sure"), new TranslatableText("text.clothy.quit_discard"), new TranslatableText("gui.cancel")));
         else
             client.openScreen(parent);
         return true;
@@ -197,7 +196,7 @@ public abstract class AbstractConfigScreen extends Screen implements ConfigScree
     public void tick() {
         super.tick();
         boolean edited = isEdited();
-        Optional.ofNullable(getQuitButton()).ifPresent(button -> button.setMessage(edited ? new TranslatableText("text.cloth-config.cancel_discard") : new TranslatableText("gui.cancel")));
+        Optional.ofNullable(getQuitButton()).ifPresent(button -> button.setMessage(edited ? new TranslatableText("text.clothy.cancel_discard") : new TranslatableText("gui.cancel")));
         for (Element child : children())
             if (child instanceof Tickable)
                 ((Tickable) child).tick();

@@ -1,5 +1,6 @@
 package dev.hephaestus.conrad.impl.client;
 
+import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.gui.FieldBuilderProviderRegistry;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
@@ -23,6 +24,8 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 @Environment(EnvType.CLIENT)
@@ -101,7 +104,7 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 			for (ValueKey valueKey : KeyRing.getValueKeys(configKey)) {
 				if (!Config.class.isAssignableFrom(KeyRing.get(valueKey).getReturnType())) {
 					if (FieldBuilderProviderRegistry.contains(KeyRing.get(valueKey).getReturnType())) {
-						entryContainer.addEntry(FieldBuilderProviderRegistry.getEntry(builder, valueContainer, valueKey).build());
+						entryContainer.addEntry(FieldBuilderProviderRegistry.getEntry(builder, valueContainer, valueKey).build(valueContainer, valueKey));
 					} else {
 						ConradUtil.LOG.warn("Issue building config entry for {}: a provider has not been registered.", valueKey.toString());
 					}
@@ -114,7 +117,7 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 			EntryContainer container = containers.get(configKey);
 
 			if (container instanceof SubCategoryBuilder) {
-				containers.get(configKey.parent()).addEntry(((SubCategoryBuilder) container).build());
+				containers.get(configKey.parent()).addEntry(((SubCategoryBuilder) container).build(null, null));
 			}
 		}
 

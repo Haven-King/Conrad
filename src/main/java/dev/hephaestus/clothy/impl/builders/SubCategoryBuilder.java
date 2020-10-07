@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import dev.hephaestus.clothy.api.AbstractConfigListEntry;
 import dev.hephaestus.clothy.api.EntryContainer;
 import dev.hephaestus.clothy.impl.gui.entries.SubCategoryListEntry;
+import dev.hephaestus.conrad.impl.common.config.ValueContainer;
+import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
@@ -13,33 +15,25 @@ import java.util.*;
 import java.util.function.Function;
 
 @Environment(EnvType.CLIENT)
-public class SubCategoryBuilder extends FieldBuilder<Object, SubCategoryListEntry> implements List<AbstractConfigListEntry>, EntryContainer {
-    
-    private final List<AbstractConfigListEntry> entries;
-    private Function<List<AbstractConfigListEntry>, Optional<List<Text>>> tooltipSupplier = list -> Optional.empty();
+public class SubCategoryBuilder extends FieldBuilder<Object, SubCategoryListEntry> implements List<AbstractConfigListEntry<?>>, EntryContainer {
+    private final List<AbstractConfigListEntry<?>> entries;
     private boolean expanded = false;
     
     public SubCategoryBuilder(Text resetButtonKey, Text fieldNameKey) {
         super(resetButtonKey, fieldNameKey);
         this.entries = Lists.newArrayList();
     }
-    
+
     @Override
-    public void requireRestart(boolean requireRestart) {
-        throw new UnsupportedOperationException();
+    protected SubCategoryListEntry withValue(Object value) {
+        SubCategoryListEntry entry = new SubCategoryListEntry(getFieldNameKey(), entries, expanded);
+        entry.setTooltipSupplier(o -> tooltipSupplier.apply(entry.getValue()));
+        return entry;
     }
-    
+
     public SubCategoryBuilder setExpanded(boolean expanded) {
         this.expanded = expanded;
         return this;
-    }
-
-    @NotNull
-    @Override
-    public SubCategoryListEntry build() {
-        SubCategoryListEntry entry = new SubCategoryListEntry(getFieldNameKey(), entries, expanded);
-        entry.setTooltipSupplier(() -> tooltipSupplier.apply(entry.getValue()));
-        return entry;
     }
     
     @Override
@@ -58,7 +52,7 @@ public class SubCategoryBuilder extends FieldBuilder<Object, SubCategoryListEntr
     }
     
     @Override
-    public @NotNull Iterator<AbstractConfigListEntry> iterator() {
+    public @NotNull Iterator<AbstractConfigListEntry<?>> iterator() {
         return entries.iterator();
     }
     
@@ -88,12 +82,12 @@ public class SubCategoryBuilder extends FieldBuilder<Object, SubCategoryListEntr
     }
     
     @Override
-    public boolean addAll(@NotNull Collection<? extends AbstractConfigListEntry> c) {
+    public boolean addAll(@NotNull Collection<? extends AbstractConfigListEntry<?>> c) {
         return entries.addAll(c);
     }
     
     @Override
-    public boolean addAll(int index, @NotNull Collection<? extends AbstractConfigListEntry> c) {
+    public boolean addAll(int index, @NotNull Collection<? extends AbstractConfigListEntry<?>> c) {
         return entries.addAll(index, c);
     }
     
@@ -143,17 +137,17 @@ public class SubCategoryBuilder extends FieldBuilder<Object, SubCategoryListEntr
     }
     
     @Override
-    public @NotNull ListIterator<AbstractConfigListEntry> listIterator() {
+    public @NotNull ListIterator<AbstractConfigListEntry<?>> listIterator() {
         return entries.listIterator();
     }
     
     @Override
-    public @NotNull ListIterator<AbstractConfigListEntry> listIterator(int index) {
+    public @NotNull ListIterator<AbstractConfigListEntry<?>> listIterator(int index) {
         return entries.listIterator(index);
     }
     
     @Override
-    public @NotNull List<AbstractConfigListEntry> subList(int fromIndex, int toIndex) {
+    public @NotNull List<AbstractConfigListEntry<?>> subList(int fromIndex, int toIndex) {
         return entries.subList(fromIndex, toIndex);
     }
 

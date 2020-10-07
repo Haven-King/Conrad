@@ -7,13 +7,17 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 @Environment(EnvType.CLIENT)
 public abstract class AbstractConfigListEntry<T> extends AbstractConfigEntry<T> {
     private Text fieldName;
     private boolean editable = true;
     private boolean requiresRestart;
     
-    public AbstractConfigListEntry(Text fieldName, boolean requiresRestart) {
+    public AbstractConfigListEntry(Text fieldName, boolean requiresRestart, Consumer<T> saveConsumer, Supplier<T> defaultValue) {
+        super(saveConsumer, defaultValue);
         this.fieldName = fieldName;
         this.requiresRestart = requiresRestart;
     }

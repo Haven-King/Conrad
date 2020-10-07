@@ -3,7 +3,6 @@ package dev.hephaestus.clothy.impl.gui.entries;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.hephaestus.clothy.ClothConfigInitializer;
 import dev.hephaestus.clothy.api.ScissorsHandler;
 import dev.hephaestus.clothy.api.ScrollingContainer;
 import dev.hephaestus.math.impl.Rectangle;
@@ -41,18 +40,12 @@ import static dev.hephaestus.clothy.api.ScrollingContainer.handleScrollingPositi
 @SuppressWarnings("deprecation")
 @Environment(EnvType.CLIENT)
 public class DropdownBoxEntry<T> extends TooltipListEntry<T> {
-    
     protected ButtonWidget resetButton;
     protected SelectionElement<T> selectionElement;
-    @NotNull private Supplier<T> defaultValue;
-    @Nullable private Consumer<T> saveConsumer;
     private boolean suggestionMode = true;
     
-    @Deprecated
-    public DropdownBoxEntry(Text fieldName, @NotNull Text resetButtonKey, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart, @Nullable Supplier<T> defaultValue, @Nullable Consumer<T> saveConsumer, @Nullable Iterable<T> selections, @NotNull SelectionTopCellElement<T> topRenderer, @NotNull SelectionCellCreator<T> cellCreator) {
-        super(fieldName, tooltipSupplier, requiresRestart);
-        this.defaultValue = defaultValue;
-        this.saveConsumer = saveConsumer;
+    public DropdownBoxEntry(Text fieldName, @NotNull Text resetButtonKey, @NotNull Function<T, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart, @Nullable Supplier<T> defaultValue, @Nullable Consumer<T> saveConsumer, @Nullable Iterable<T> selections, @NotNull SelectionTopCellElement<T> topRenderer, @NotNull SelectionCellCreator<T> cellCreator) {
+        super(fieldName, tooltipSupplier, requiresRestart, saveConsumer, defaultValue);
         this.resetButton = new ButtonWidget(0, 0, MinecraftClient.getInstance().textRenderer.getWidth(resetButtonKey) + 6, 20, resetButtonKey, widget -> {
             selectionElement.topRenderer.setValue(defaultValue.get());
         });
@@ -63,7 +56,7 @@ public class DropdownBoxEntry<T> extends TooltipListEntry<T> {
     public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
         super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
         Window window = MinecraftClient.getInstance().getWindow();
-        this.resetButton.active = isEditable() && getDefaultValue().isPresent() && (!defaultValue.get().equals(getValue()) || getConfigError().isPresent());
+        this.resetButton.active = isEditable() && getDefaultValue().isPresent() && (!getDefaultValue().get().equals(getValue()) || getConfigError().isPresent());
         this.resetButton.y = y;
         this.selectionElement.active = isEditable();
         this.selectionElement.bounds.y = y;
@@ -114,17 +107,6 @@ public class DropdownBoxEntry<T> extends TooltipListEntry<T> {
     @Deprecated
     public SelectionElement<T> getSelectionElement() {
         return selectionElement;
-    }
-    
-    @Override
-    public Optional<T> getDefaultValue() {
-        return defaultValue == null ? Optional.empty() : Optional.ofNullable(defaultValue.get());
-    }
-    
-    @Override
-    public void save() {
-        if (saveConsumer != null)
-            saveConsumer.accept(getValue());
     }
     
     @Override
@@ -407,7 +389,7 @@ public class DropdownBoxEntry<T> extends TooltipListEntry<T> {
             
             if (currentElements.isEmpty()) {
                 TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-                Text text = new TranslatableText("text.cloth-config.dropdown.value.unknown");
+                Text text = new TranslatableText("text.clothy.dropdown.value.unknown");
                 textRenderer.drawWithShadow(matrices, text.asOrderedText(), lastRectangle.x + getCellCreator().getCellWidth() / 2f - textRenderer.getWidth(text) / 2f, lastRectangle.y + lastRectangle.height + 3, -1);
             }
             
@@ -483,7 +465,7 @@ public class DropdownBoxEntry<T> extends TooltipListEntry<T> {
         @Override
         public boolean mouseScrolled(double mouseX, double mouseY, double double_3) {
             if (isMouseOver(mouseX, mouseY)) {
-                offset(ClothConfigInitializer.getScrollStep() * -double_3, true);
+                offset(16 * -double_3, true);
                 return true;
             }
             return false;
@@ -506,7 +488,7 @@ public class DropdownBoxEntry<T> extends TooltipListEntry<T> {
         }
         
         public void scrollTo(double value, boolean animated) {
-            scrollTo(value, animated, ClothConfigInitializer.getScrollDuration());
+            scrollTo(value, animated, 0);
         }
         
         public void scrollTo(double value, boolean animated, long duration) {

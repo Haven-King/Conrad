@@ -37,9 +37,9 @@ public class JacksonSerializer extends ConfigSerializer<JsonNode, ObjectNode> {
 
 	public JacksonSerializer(JsonFactory jsonFactory, String fileExtension) {
 		this(
-				jsonFactory,
-				JsonNodeFactory.instance,
-				fileExtension
+			jsonFactory,
+			JsonNodeFactory.instance,
+			fileExtension
 		);
 	}
 

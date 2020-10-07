@@ -4,6 +4,7 @@ import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.Conrad;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
 import dev.hephaestus.conrad.impl.client.util.ClientUtil;
+import dev.hephaestus.conrad.impl.common.ConradPreLaunchEntrypoint;
 import dev.hephaestus.conrad.impl.common.keys.KeyRing;
 import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import dev.hephaestus.conrad.impl.common.networking.packets.all.ConfigValuePacket;
@@ -57,12 +58,16 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 	public void put(ValueKey key, Object value, boolean sync) throws IOException {
 		DEFAULT_VALUES.putIfAbsent(key, value);
 
-		boolean modified = value != this.get(key);
+		Object old = this.get(key);
+		boolean modified = value != old;
 
 		if (modified) {
-			Conrad.fireCallbacks(key, this.values.get(key), value);
 			this.values.put(key, value);
-			this.save(key, value, sync && key.isSynced());
+
+			if (ConradPreLaunchEntrypoint.isDone()) {
+				Conrad.fireCallbacks(key, old, value);
+				this.save(key, value, sync && key.isSynced());
+			}
 		}
 	}
 

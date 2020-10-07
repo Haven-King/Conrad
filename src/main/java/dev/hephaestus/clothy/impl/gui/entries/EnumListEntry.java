@@ -1,5 +1,6 @@
 package dev.hephaestus.clothy.impl.gui.entries;
 
+import dev.hephaestus.math.impl.Color;
 import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
 public class EnumListEntry<T extends Enum<?>> extends SelectionListEntry<T> {
     public static final Function<Enum<?>, Text> DEFAULT_NAME_PROVIDER = t -> new TranslatableText(t instanceof Translatable ? ((Translatable) t).getCode() : t.toString());
 
-    public EnumListEntry(Text fieldName, Class<T> clazz, T value, Text resetButtonKey, Supplier<T> defaultValue, Consumer<T> saveConsumer, Function<Enum<?>, Text> enumNameProvider, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
+    public EnumListEntry(Text fieldName, Class<T> clazz, T value, Text resetButtonKey, Supplier<T> defaultValue, Consumer<T> saveConsumer, Function<Enum<?>, Text> enumNameProvider, @Nullable Function<T, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
         super(fieldName, clazz.getEnumConstants(), value, resetButtonKey, defaultValue, saveConsumer, enumNameProvider::apply, tooltipSupplier, requiresRestart);
     }
 }

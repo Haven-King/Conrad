@@ -8,14 +8,11 @@ import dev.hephaestus.clothy.impl.builders.*;
 import dev.hephaestus.clothy.impl.builders.compound.*;
 import dev.hephaestus.clothy.impl.builders.compound.DropdownMenuBuilder.TopCellElementBuilder;
 import dev.hephaestus.clothy.impl.builders.primitive.*;
-import dev.hephaestus.math.impl.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
 
-import java.util.List;
 import java.util.function.Function;
 
 @Environment(EnvType.CLIENT)
@@ -28,56 +25,42 @@ public interface ConfigEntryBuilder {
     Text getResetButtonKey();
     
     ConfigEntryBuilder setResetButtonKey(Text resetButtonKey);
-    
-    IntListBuilder startIntList(Text fieldNameKey, List<Integer> value);
-    
-    LongListBuilder startLongList(Text fieldNameKey, List<Long> value);
-    
-    FloatListBuilder startFloatList(Text fieldNameKey, List<Float> value);
-    
-    DoubleListBuilder startDoubleList(Text fieldNameKey, List<Double> value);
-    
-    StringListBuilder startStrList(Text fieldNameKey, List<String> value);
-    
-    SubCategoryBuilder startSubCategory(Text fieldNameKey);
-    
-    SubCategoryBuilder startSubCategory(Text fieldNameKey, List<AbstractConfigListEntry> entries);
-    
-    BooleanToggleBuilder startBooleanToggle(Text fieldNameKey, boolean value);
-    
-    StringFieldBuilder startStrField(Text fieldNameKey, String value);
-    
-    ColorFieldBuilder startColorField(Text fieldNameKey, Color value);
-    
-    default ColorFieldBuilder startColorField(Text fieldNameKey, TextColor color) {
-        return startColorField(fieldNameKey, Color.ofOpaque(color.getRgb()));
-    }
-    
-    default ColorFieldBuilder startAlphaColorField(Text fieldNameKey, int value) {
-        return startColorField(fieldNameKey, Color.ofTransparent(value)).setAlphaMode(true);
-    }
-    
-    default ColorFieldBuilder startAlphaColorField(Text fieldNameKey, Color color) {
-        return startColorField(fieldNameKey, color);
-    }
 
-    TextDescriptionBuilder startTextDescription(Text value);
+    IntegerListBuilder startIntList(Text fieldNameKey);
+
+    LongListBuilder startLongList(Text fieldNameKey);
+
+    FloatListBuilder startFloatList(Text fieldNameKey);
+
+    DoubleListBuilder startDoubleList(Text fieldNameKey);
+
+    StringListBuilder startStrList(Text fieldNameKey);
+
+    SubCategoryBuilder startSubCategory(Text fieldNameKey);
+
+    BooleanToggleBuilder startBooleanToggle(Text fieldNameKey);
     
-    <T extends Enum<?>> EnumSelectorBuilder<T> startEnumSelector(Text fieldNameKey, Class<T> clazz, T value);
+    StringFieldBuilder startStrField(Text fieldNameKey);
     
-    <T> SelectorBuilder<T> startSelector(Text fieldNameKey, T[] valuesArray, T value);
+    ColorFieldBuilder startColorField(Text fieldNameKey);
+
+    TextDescriptionBuilder startTextDescription();
     
-    IntFieldBuilder startIntField(Text fieldNameKey, int value);
+    <T extends Enum<?>> EnumSelectorBuilder<T> startEnumSelector(Text fieldNameKey, Class<T> clazz);
+
+    IntegerFieldBuilder startIntField(Text fieldNameKey);
     
-    LongFieldBuilder startLongField(Text fieldNameKey, long value);
+    LongFieldBuilder startLongField(Text fieldNameKey);
     
-    FloatFieldBuilder startFloatField(Text fieldNameKey, float value);
+    FloatFieldBuilder startFloatField(Text fieldNameKey);
     
-    DoubleFieldBuilder startDoubleField(Text fieldNameKey, double value);
+    DoubleFieldBuilder startDoubleField(Text fieldNameKey);
     
-    IntSliderBuilder startIntSlider(Text fieldNameKey, int value, int min, int max);
+    IntSliderBuilder startIntSlider(Text fieldNameKey, int min, int max);
     
-    LongSliderBuilder startLongSlider(Text fieldNameKey, long value, long min, long max);
+    LongSliderBuilder startLongSlider(Text fieldNameKey, long min, long max);
+
+    <T> SelectorBuilder<T> startSelector(Text fieldNameKey, T[] valuesArray);
 
     <T> DropdownMenuBuilder<T> startDropdownMenu(Text fieldNameKey, SelectionTopCellElement<T> topCellElement, SelectionCellCreator<T> cellCreator);
     

@@ -1,7 +1,6 @@
 package dev.hephaestus.clothy.impl.gui.entries;
 
 import com.google.common.collect.Lists;
-import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -12,11 +11,13 @@ import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
@@ -26,24 +27,10 @@ public class BooleanListEntry extends TooltipListEntry<Boolean> {
     private final boolean original;
     private final ButtonWidget buttonWidget;
     private final ButtonWidget resetButton;
-    private final Consumer<Boolean> saveConsumer;
-    private final Supplier<Boolean> defaultValue;
     private final List<Element> widgets;
     
-    @Deprecated
-    public BooleanListEntry(Text fieldName, boolean bool, Text resetButtonKey, Supplier<Boolean> defaultValue, Consumer<Boolean> saveConsumer) {
-        this(fieldName, bool, resetButtonKey, defaultValue, saveConsumer, null);
-    }
-    
-    @Deprecated
-    public BooleanListEntry(Text fieldName, boolean bool, Text resetButtonKey, Supplier<Boolean> defaultValue, Consumer<Boolean> saveConsumer, Supplier<Optional<List<Text>>> tooltipSupplier) {
-        this(fieldName, bool, resetButtonKey, defaultValue, saveConsumer, tooltipSupplier, false);
-    }
-    
-    @Deprecated
-    public BooleanListEntry(Text fieldName, boolean bool, Text resetButtonKey, Supplier<Boolean> defaultValue, Consumer<Boolean> saveConsumer, @Nullable Supplier<Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
-        super(fieldName, tooltipSupplier, requiresRestart);
-        this.defaultValue = defaultValue;
+    public BooleanListEntry(Text fieldName, boolean bool, Text resetButtonKey, Supplier<Boolean> defaultValue, Consumer<Boolean> saveConsumer, @Nullable Function<Boolean, Optional<List<Text>>> tooltipSupplier, boolean requiresRestart) {
+        super(fieldName, tooltipSupplier, requiresRestart, saveConsumer, defaultValue);
         this.original = bool;
         this.bool = new AtomicBoolean(bool);
         this.buttonWidget = new ButtonWidget(0, 0, 150, 20, NarratorManager.EMPTY, widget -> {
@@ -52,7 +39,6 @@ public class BooleanListEntry extends TooltipListEntry<Boolean> {
         this.resetButton = new ButtonWidget(0, 0, MinecraftClient.getInstance().textRenderer.getWidth(resetButtonKey) + 6, 20, resetButtonKey, widget -> {
             BooleanListEntry.this.bool.set(defaultValue.get());
         });
-        this.saveConsumer = saveConsumer;
         this.widgets = Lists.newArrayList(buttonWidget, resetButton);
     }
     
@@ -60,28 +46,17 @@ public class BooleanListEntry extends TooltipListEntry<Boolean> {
     public boolean isEdited() {
         return super.isEdited() || original != bool.get();
     }
-    
-    @Override
-    public void save() {
-        if (saveConsumer != null)
-            saveConsumer.accept(getValue());
-    }
-    
+
     @Override
     public Boolean getValue() {
         return bool.get();
     }
-    
-    @Override
-    public Optional<Boolean> getDefaultValue() {
-        return defaultValue == null ? Optional.empty() : Optional.ofNullable(defaultValue.get());
-    }
-    
+
     @Override
     public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
         super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
         Window window = MinecraftClient.getInstance().getWindow();
-        this.resetButton.active = isEditable() && getDefaultValue().isPresent() && defaultValue.get() != bool.get();
+        this.resetButton.active = isEditable() && getDefaultValue().isPresent() && this.getDefaultValue().get() != bool.get();
         this.resetButton.y = y;
         this.buttonWidget.active = isEditable();
         this.buttonWidget.y = y;
@@ -102,7 +77,7 @@ public class BooleanListEntry extends TooltipListEntry<Boolean> {
     }
     
     public Text getYesNoText(boolean bool) {
-        return new TranslatableText("text.cloth-config.boolean.value." + bool);
+        return new TranslatableText("text.clothy.boolean.value." + bool);
     }
     
     @Override

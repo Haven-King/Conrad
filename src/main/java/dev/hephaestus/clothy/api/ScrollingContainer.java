@@ -25,9 +25,8 @@
 package dev.hephaestus.clothy.api;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.hephaestus.clothy.ClothConfigInitializer;
-import dev.hephaestus.clothy.impl.gui.widget.DynamicEntryListWidget;
 import dev.hephaestus.clothy.impl.EasingMethod;
+import dev.hephaestus.clothy.impl.gui.widget.DynamicEntryListWidget;
 import dev.hephaestus.math.impl.Rectangle;
 import dev.hephaestus.math.impl.PointHelper;
 import net.minecraft.client.render.BufferBuilder;
@@ -79,7 +78,7 @@ public abstract class ScrollingContainer {
     }
     
     public final void scrollTo(double value, boolean animated) {
-        scrollTo(value, animated, ClothConfigInitializer.getScrollDuration());
+        scrollTo(value, animated, 0);
     }
     
     public final void scrollTo(double value, boolean animated, long duration) {
@@ -99,7 +98,7 @@ public abstract class ScrollingContainer {
     }
     
     public static double handleScrollingPosition(double[] target, double scroll, double maxScroll, float delta, double start, double duration) {
-        return handleScrollingPosition(target, scroll, maxScroll, delta, start, duration, ClothConfigInitializer.getBounceBackMultiplier(), ClothConfigInitializer.getEasingMethod());
+        return handleScrollingPosition(target, scroll, maxScroll, delta, start, duration, -10, EasingMethod.NONE);
     }
     
     public static double handleScrollingPosition(double[] target, double scroll, double maxScroll, float delta, double start, double duration, double bounceBackMultiplier, EasingMethod easingMethod) {

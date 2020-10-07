@@ -1,13 +1,13 @@
 package dev.hephaestus.conrad.impl.common.serialization;
 
+import dev.hephaestus.conrad.api.StronglyTypedList;
+import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
+import dev.hephaestus.jankson.*;
+import dev.hephaestus.math.impl.Color;
 import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
 import dev.hephaestus.conrad.api.serialization.ValueSerializer;
-import dev.hephaestus.jankson.Jankson;
-import dev.hephaestus.jankson.JsonElement;
-import dev.hephaestus.jankson.JsonObject;
-import dev.hephaestus.jankson.JsonPrimitive;
 import dev.hephaestus.jankson.api.SyntaxError;
 
 import java.io.IOException;
@@ -27,12 +27,18 @@ public class JanksonSerializer extends ConfigSerializer<JsonElement, JsonObject>
 		this.addSerializer(String.class, JsonPrimitive.class, StringSerializer.INSTANCE);
 		this.addSerializer(Float.class, JsonPrimitive.class, FloatSerializer.INSTANCE);
 		this.addSerializer(Double.class, JsonPrimitive.class, DoubleSerializer.INSTANCE);
+		this.addSerializer(Color.class, JsonPrimitive.class, ColorSerializer.INSTANCE);
+		this.addSerializer(StronglyTypedList.class, JsonArray.class, IntegerListSerializer.INSTANCE);
 	}
 
 	@Override
 	public JsonObject start(Config config) {
 		JsonObject object = new JsonObject();
-//		object.put("version", new JsonPrimitive(config.version().toString()));
+
+		if (ReflectionUtil.getDeclared(config.getClass()).getDeclaringClass() == null) {
+			object.put("version", new JsonPrimitive(config.version().toString()));
+		}
+
 		return object;
 	}
 
@@ -150,6 +156,60 @@ public class JanksonSerializer extends ConfigSerializer<JsonElement, JsonObject>
 		@Override
 		public Double deserialize(JsonElement representation) {
 			return ((JsonPrimitive) representation).asDouble(0);
+		}
+	}
+
+	private static class ColorSerializer implements JanksonValueSerializer<JsonPrimitive, Color> {
+		public static final ColorSerializer INSTANCE = new ColorSerializer();
+
+		@Override
+		public JsonPrimitive serialize(Color value) {
+			return new JsonPrimitive(value.value());
+		}
+
+		@Override
+		public Color deserialize(JsonElement representation) {
+			return Color.ofTransparent(((JsonPrimitive) representation).asInt(0));
+		}
+	}
+
+	private static class IntegerListSerializer implements JanksonValueSerializer<JsonArray, StronglyTypedList<Integer>> {
+		public static final IntegerListSerializer INSTANCE = new IntegerListSerializer();
+
+		@Override
+		public JsonArray serialize(StronglyTypedList<Integer> value) {
+			return new JsonArray(value);
+		}
+
+		@Override
+		public StronglyTypedList<Integer> deserialize(JsonElement representation) {
+			StronglyTypedList<Integer> list = new StronglyTypedList<>(Integer.class);
+
+			for (JsonElement element : (JsonArray) representation) {
+				list.add(((JsonPrimitive) element).asInt(0));
+			}
+
+			return list;
+		}
+	}
+
+	private static class DoubleListSerializer implements JanksonValueSerializer<JsonArray, StronglyTypedList<Double>> {
+		public static final DoubleListSerializer INSTANCE = new DoubleListSerializer();
+
+		@Override
+		public JsonArray serialize(StronglyTypedList<Double> value) {
+			return new JsonArray(value);
+		}
+
+		@Override
+		public StronglyTypedList<Double> deserialize(JsonElement representation) {
+			StronglyTypedList<Double> list = new StronglyTypedList<>(Double.class);
+
+			for (JsonElement element : (JsonArray) representation) {
+				list.add(((JsonPrimitive) element).asDouble(0));
+			}
+
+			return list;
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package dev.hephaestus.conrad.api.serialization;
 
+import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.util.ConradException;
 import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
@@ -9,7 +11,6 @@ import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 import dev.hephaestus.conrad.impl.common.util.Translator;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 
 import java.io.*;
@@ -37,21 +38,24 @@ public abstract class ConfigSerializer<E, O extends E> {
 		return this.serializableTypes.containsKey(valueClass);
 	}
 
-	protected final ValueSerializer<E, ?, ?> getSerializer(Class<?> clazz) {
+	public final ValueSerializer<E, ?, ?> getSerializer(Class<?> clazz) {
 		return serializableTypes.containsKey(clazz) ? serializableTypes.get(clazz) : serializableTypes.get(valueSerializers.get(clazz));
 	}
 
 	public final O serialize(Config config) {
 		O object = this.start(config);
 
-		for (Method method : this.getMethods(config.getClass())) {
+		for (ValueKey key : this.getKeys(config.getClass())) {
 			E value = null;
+			Method method = KeyRing.get(key);
 			try {
 				Class<?> type = method.getReturnType();
 				if (Config.class.isAssignableFrom(type)) {
 					value = this.serialize((Config) method.invoke(config));
 				} else if (this.canSerialize(type)) {
 					value = this.getSerializer(type).serializeValue(method.invoke(config));
+				} else {
+					throw new ConradException("Unable to serialize type: " + method.getReturnType().getName());
 				}
 			} catch (IllegalAccessException | InvocationTargetException e) {
 				e.printStackTrace();
@@ -83,7 +87,8 @@ public abstract class ConfigSerializer<E, O extends E> {
 			return;
 		}
 
-		for (Method method : this.getMethods(config.getClass())) {
+		for (ValueKey key : this.getKeys(config.getClass())) {
+			Method method = KeyRing.get(key);
 			Class<?> type = method.getReturnType();
 			try {
 				if (Config.class.isAssignableFrom(type)) {
@@ -125,29 +130,28 @@ public abstract class ConfigSerializer<E, O extends E> {
 
 	public abstract String fileExtension();
 
-	private Collection<Method> getMethods(Class<?> configClass) {
-		TreeSet<Method> primitiveMethods = new TreeSet<>(Comparator.comparing(Method::getName));
-		TreeSet<Method> compoundMethods = new TreeSet<>(Comparator.comparing(Method::getName));
+	private Collection<ValueKey> getKeys(Class<?> configClass) {
+		TreeSet<ValueKey> primitiveMethods = new TreeSet<>();
+		TreeSet<ValueKey> compoundMethods = new TreeSet<>();
 
-		for (Method method : configClass.getDeclaredMethods()) {
-			if (ConradUtil.methodType(method) == Config.Value.MethodType.GETTER) {
+		for (ValueKey valueKey : KeyRing.getValueKeys(KeyRing.get(configClass))) {
+			Class<?> returnType = KeyRing.get(valueKey).getReturnType();
 
-				Class<?> returnType = method.getReturnType();
-
-				if (this.canSerialize(returnType)) {
-					ValueSerializer<?, ?, ?> valueSerializer = this.getSerializer(returnType);
-					if (valueSerializer.isCompound()) {
-						compoundMethods.add(method);
-					} else {
-						primitiveMethods.add(method);
-					}
-				} else if (Config.class.isAssignableFrom(returnType)) {
-					compoundMethods.add(method);
+			if (this.canSerialize(returnType)) {
+				ValueSerializer<?, ?, ?> valueSerializer = this.getSerializer(returnType);
+				if (valueSerializer.isCompound()) {
+					compoundMethods.add(valueKey);
+				} else {
+					primitiveMethods.add(valueKey);
 				}
+			} else if (Config.class.isAssignableFrom(returnType)) {
+				compoundMethods.add(valueKey);
+			} else {
+				throw new ConradException("Unable to serialize type: " + returnType.getName());
 			}
 		}
 
-		ArrayList<Method> methods = new ArrayList<>();
+		ArrayList<ValueKey> methods = new ArrayList<>();
 
 		methods.addAll(primitiveMethods);
 		methods.addAll(compoundMethods);

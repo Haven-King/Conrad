@@ -27,16 +27,15 @@ public class ConradTestEntrypoint implements ClientModInitializer, ModInitialize
 
 	@Override
 	public void onInitialize() {
-		Conrad.registerCallback(new Identifier("meth", "head"), (SaveCallback<Integer>) (valueKey, oldValue, newValue) -> {
-			System.out.printf("Value changed from %d to %d", oldValue, newValue);
-		});
+		Conrad.registerCallback(new Identifier("meth", "head"), (SaveCallback<Integer>) (valueKey, oldValue, newValue) ->
+				System.out.printf("Value changed from %d to %d", oldValue, newValue));
 
 		ServerTickEvents.START_SERVER_TICK.register((minecraftServer -> {
 			for (ServerPlayerEntity player : minecraftServer.getPlayerManager().getPlayerList()) {
 				UserTestConfig config = Conrad.getConfig(UserTestConfig.class, player);
 
 				if (config != null) {
-					player.sendMessage(new LiteralText("Power Level: " + config.innerTestConfig().innerTestConfig().leet()), true);
+					player.sendMessage(new LiteralText("Power Level: " + config.innerTestConfig().innerTestConfig().leet()).styled(style -> style.withColor(config.color())), true);
 				}
 			}
 		}));
