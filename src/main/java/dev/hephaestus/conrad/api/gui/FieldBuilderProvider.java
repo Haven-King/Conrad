@@ -2,21 +2,10 @@ package dev.hephaestus.conrad.api.gui;
 
 import dev.hephaestus.clothy.api.ConfigBuilder;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
-import dev.hephaestus.conrad.api.Conrad;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
-import dev.hephaestus.conrad.impl.common.util.ConradUtil;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.text.Text;
-import org.jetbrains.annotations.ApiStatus;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @FunctionalInterface
 @Environment(EnvType.CLIENT)

@@ -2,7 +2,6 @@ package dev.hephaestus.conrad.test;
 
 import dev.hephaestus.conrad.api.Conrad;
 import dev.hephaestus.conrad.api.SaveCallback;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

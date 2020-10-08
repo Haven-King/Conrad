@@ -1,12 +1,13 @@
 package dev.hephaestus.conrad.api.serialization;
 
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.ConfigDefinition;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import dev.hephaestus.conrad.impl.common.util.ConradException;
 import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
+import dev.hephaestus.conrad.impl.common.config.KeyRing;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 import dev.hephaestus.conrad.impl.common.util.Translator;
 import net.fabricmc.api.EnvType;
@@ -42,7 +43,7 @@ public abstract class ConfigSerializer<E, O extends E> {
 		return serializableTypes.containsKey(clazz) ? serializableTypes.get(clazz) : serializableTypes.get(valueSerializers.get(clazz));
 	}
 
-	public final O serialize(Config config) {
+	public final O serialize(ConfigDefinition configDefinition) {
 		O object = this.start(config);
 
 		for (ValueKey key : this.getKeys(config.getClass())) {

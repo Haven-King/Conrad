@@ -2,14 +2,9 @@ package dev.hephaestus.clothy.impl.builders.primitive;
 
 import dev.hephaestus.clothy.impl.gui.entries.StringListEntry;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
-import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
 
 @Environment(EnvType.CLIENT)
 public class StringFieldBuilder extends FieldBuilder<String, StringListEntry> {

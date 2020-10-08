@@ -2,7 +2,7 @@ package dev.hephaestus.conrad.impl.common.networking.packets.all;
 
 import dev.hephaestus.conrad.api.networking.NetworkSerializerRegistry;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import dev.hephaestus.conrad.impl.common.networking.packets.ConradPacket;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import net.fabricmc.fabric.api.network.PacketContext;

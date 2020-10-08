@@ -1,8 +1,7 @@
 package dev.hephaestus.conrad.impl.common.util;
 
 import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.common.keys.ConfigKey;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
+import dev.hephaestus.conrad.impl.common.config.KeyRing;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -67,14 +66,6 @@ public class ConradUtil {
 		MOD_ID_TO_CONFIG_CLASS_MAP.computeIfAbsent(modId, key -> new ArrayList<>()).add(configClass);
 	}
 
-	public static String getModId(Class<? extends Config> configClass) {
-		return CONFIG_CLASS_TO_MOD_ID_MAP.get(ReflectionUtil.getRoot(configClass));
-	}
-
-	public static Collection<Class<? extends Config>> getConfigClasses(String modId) {
-		return MOD_ID_TO_CONFIG_CLASS_MAP.get(modId);
-	}
-
 	public static void prove(boolean bool) {
 		if (!bool) {
 			throw new AssertionError();
@@ -85,40 +76,4 @@ public class ConradUtil {
 		return t1 == null ? t2 : t1;
 	}
 
-	public static void getTooltips(Method method, Consumer<Text> textConsumer) {
-		method = ReflectionUtil.getDeclared(method);
-		if (method.isAnnotationPresent(Config.Value.Options.class)) {
-			Config.Value.Options options = method.getAnnotation(Config.Value.Options.class);
-
-			final int tooltipCount = options.tooltipCount();
-			if (tooltipCount > 0) {
-				List<Text> tooltips = new ArrayList<>(tooltipCount);
-				for (int i = 0; i < tooltipCount; ++i) {
-					textConsumer.accept(new TranslatableText(KeyRing.get(method) + ".tooltip." + i));
-				}
-			}
-		}
-
-		if (method.isAnnotationPresent(Config.Value.FloatingBounds.class)) {
-			Config.Value.FloatingBounds bounds = method.getAnnotation(Config.Value.FloatingBounds.class);
-			if (bounds.max() != Double.MAX_VALUE) {
-				textConsumer.accept(new LiteralText("@max " + bounds.max()));
-			}
-
-			if (bounds.min() != Double.MIN_VALUE) {
-				textConsumer.accept(new LiteralText("@min " + bounds.min()));
-			}
-		}
-
-		if (method.isAnnotationPresent(Config.Value.IntegerBounds.class)) {
-			Config.Value.IntegerBounds bounds = method.getAnnotation(Config.Value.IntegerBounds.class);
-			if (bounds.max() != Long.MAX_VALUE) {
-				textConsumer.accept(new LiteralText("@max " + bounds.max()));
-			}
-
-			if (bounds.min() != Long.MIN_VALUE) {
-				textConsumer.accept(new LiteralText("@min " + bounds.min()));
-			}
-		}
-	}
 }

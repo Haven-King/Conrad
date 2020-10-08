@@ -2,8 +2,8 @@ package dev.hephaestus.conrad.impl.common;
 
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.KeyRing;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import dev.hephaestus.conrad.impl.common.util.ConradException;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;

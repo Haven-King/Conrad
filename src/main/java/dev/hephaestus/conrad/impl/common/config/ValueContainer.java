@@ -1,27 +1,16 @@
 package dev.hephaestus.conrad.impl.common.config;
 
-import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.Conrad;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
 import dev.hephaestus.conrad.impl.client.util.ClientUtil;
 import dev.hephaestus.conrad.impl.common.ConradPreLaunchEntrypoint;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
-import dev.hephaestus.conrad.impl.common.networking.packets.all.ConfigValuePacket;
 import dev.hephaestus.conrad.impl.common.util.ConradException;
-import dev.hephaestus.conrad.impl.common.util.ConradUtil;
-import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
-import dev.hephaestus.conrad.impl.common.util.SerializationUtil;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -66,14 +55,15 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 
 			if (ConradPreLaunchEntrypoint.isDone()) {
 				Conrad.fireCallbacks(key, old, value);
-				this.save(key, value, sync && key.isSynced());
+				this.save(key, value, sync &&
+						KeyRing.get(key.getConfig()).getDefinition(key).isSynced()
+				);
 			}
 		}
 	}
 
 	protected void save(ValueKey key, Object value, boolean sync) throws IOException {
-		Class<? extends Config> configClass = KeyRing.get(key.getConfig().root());
-		Config config = Conrad.getConfig(configClass);
+		ConfigDefinition configDefinition = KeyRing.get(key.getConfig());
 
 		if (sync) {
 			if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
@@ -83,15 +73,14 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 			}
 		}
 
-		ConfigSerializer<?, ?> serializer = config.serializer();
-		Path path = SerializationUtil.saveFolder(this.saveDirectory, configClass);
+		ConfigSerializer<?, ?> serializer = configDefinition.getSerializer();
 
-		Files.createDirectories(path);
+		Files.createDirectories(this.saveDirectory.resolve(configDefinition.getSavePath()));
 
 		serializer.writeValue(
-				serializer.serialize(config),
+				serializer.serialize(configDefinition),
 				new FileOutputStream(
-						path.resolve(SerializationUtil.saveName(configClass) + "." + serializer.fileExtension()).toFile()
+						configDefinition.getSavePath().resolve(configDefinition.getKey().getName() + "." + serializer.fileExtension()).toFile()
 				)
 		);
 	}

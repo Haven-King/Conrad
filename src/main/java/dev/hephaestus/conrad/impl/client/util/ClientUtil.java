@@ -2,7 +2,7 @@ package dev.hephaestus.conrad.impl.client.util;
 
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.config.ValueContainerProvider;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import dev.hephaestus.conrad.impl.common.networking.packets.all.ConfigValuePacket;
 import dev.hephaestus.conrad.impl.common.util.ConradException;
 import net.minecraft.client.MinecraftClient;

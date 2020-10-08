@@ -1,13 +1,11 @@
 package dev.hephaestus.conrad.api.networking;
 
-import dev.hephaestus.conrad.impl.common.keys.ConfigKey;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.ConfigKey;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-import java.util.Date;
 import java.util.HashMap;
 
 public class NetworkSerializerRegistry {

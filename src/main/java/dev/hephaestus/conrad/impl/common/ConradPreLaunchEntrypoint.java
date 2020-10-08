@@ -5,10 +5,9 @@ import dev.hephaestus.conrad.api.Conrad;
 import dev.hephaestus.conrad.api.networking.NetworkSerializerRegistry;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
 import dev.hephaestus.conrad.impl.client.ConradModMenuEntrypoint;
+import dev.hephaestus.conrad.impl.common.config.ConfigDefinition;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.util.SerializationUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -17,7 +16,7 @@ import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 import net.fabricmc.loader.api.metadata.CustomValue;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -63,8 +62,7 @@ public class ConradPreLaunchEntrypoint implements PreLaunchEntrypoint {
 		ConradUtil.prove(configClass.getInterfaces()[0] == Config.class);
 		ConradUtil.prove(configClass.isAnnotationPresent(Config.Options.class));
 
-		ConradUtil.put(configClass, modId);
-		KeyRing.put(KeyRing.get(configClass), configClass);
+		ConfigDefinition definition = ConfigDefinition.build(modId, configClass);
 
 		Config config = Conrad.getConfig(configClass);
 
@@ -74,7 +72,7 @@ public class ConradPreLaunchEntrypoint implements PreLaunchEntrypoint {
 
 		try {
 			ConfigSerializer<T, O> serializer = (ConfigSerializer<T, O>) config.serializer();
-			Path file = SerializationUtil.saveFolder(FabricLoader.getInstance().getConfigDir(), configClass).resolve(SerializationUtil.saveName(configClass) + "." + serializer.fileExtension());
+			Path file = FabricLoader.getInstance().getConfigDir().resolve(definition.getSavePath()).resolve(definition.getKey().getName() + "." + serializer.fileExtension());
 			String fileName = file.getFileName().toString();
 
 			if (Files.exists(file)) {

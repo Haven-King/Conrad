@@ -1,12 +1,11 @@
 package dev.hephaestus.conrad.impl.client;
 
-import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.gui.FieldBuilderProviderRegistry;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.ConfigKey;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.ConfigKey;
+import dev.hephaestus.conrad.impl.common.config.KeyRing;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import dev.hephaestus.conrad.mixin.server.MinecraftServerAccessor;
 import io.github.prospector.modmenu.api.ConfigScreenFactory;
@@ -24,8 +23,6 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 @Environment(EnvType.CLIENT)
@@ -117,7 +114,7 @@ public class ConradScreenFactory implements ConfigScreenFactory<Screen> {
 			EntryContainer container = containers.get(configKey);
 
 			if (container instanceof SubCategoryBuilder) {
-				containers.get(configKey.parent()).addEntry(((SubCategoryBuilder) container).build(null, null));
+				containers.get(configKey.getParent()).addEntry(((SubCategoryBuilder) container).build(null, null));
 			}
 		}
 
