@@ -2,6 +2,7 @@ package dev.hephaestus.conrad.test;
 
 import dev.hephaestus.conrad.api.Conrad;
 import dev.hephaestus.conrad.api.SaveCallback;
+import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -27,7 +28,7 @@ public class ConradTestEntrypoint implements ClientModInitializer, ModInitialize
 	@Override
 	public void onInitialize() {
 		Conrad.registerCallback(new Identifier("meth", "head"), (SaveCallback<Integer>) (valueKey, oldValue, newValue) ->
-				System.out.printf("Value changed from %d to %d", oldValue, newValue));
+				ConradUtil.LOG.info("Value changed from {} to {}", oldValue, newValue));
 
 		ServerTickEvents.START_SERVER_TICK.register((minecraftServer -> {
 			for (ServerPlayerEntity player : minecraftServer.getPlayerManager().getPlayerList()) {

@@ -1,5 +1,7 @@
 package dev.hephaestus.conrad.impl.client.util;
 
+import dev.hephaestus.conrad.api.Config;
+import dev.hephaestus.conrad.impl.common.config.KeyRing;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.config.ValueContainerProvider;
 import dev.hephaestus.conrad.impl.common.config.ValueKey;
@@ -25,9 +27,9 @@ public class ClientUtil {
 	}
 
 	public static ValueContainer getValueContainer() {
-		if (MinecraftClient.getInstance() == null || MinecraftClient.getInstance().getServer() == null) {
+		if (MinecraftClient.getInstance() == null || (MinecraftClient.getInstance().getServer() == null && MinecraftClient.getInstance().getCurrentServerEntry() == null)) {
 			return ValueContainer.ROOT;
-		} else if (MinecraftClient.getInstance().getServer() != null && MinecraftClient.getInstance().getCurrentServerEntry() != null) {
+		} else if (MinecraftClient.getInstance().getServer() == null && MinecraftClient.getInstance().getCurrentServerEntry() != null) {
 			return ((ValueContainerProvider) MinecraftClient.getInstance().getCurrentServerEntry()).getValueContainer();
 		} else if (MinecraftClient.getInstance().getServer() != null) {
 			return ((ValueContainerProvider) MinecraftClient.getInstance().getServer()).getValueContainer();
@@ -48,7 +50,8 @@ public class ClientUtil {
 
     public static void sendValue(ValueKey key, Object value) {
 		if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getNetworkHandler() != null) {
-			new ConfigValuePacket(ConfigValuePacket.INFO, key, value).send();
+			new ConfigValuePacket(KeyRing.get(key.getConfigKey()).getSaveType() == Config.SaveType.USER ?
+					ConfigValuePacket.INFO : ConfigValuePacket.SAVE, key, value).send();
 		}
     }
 

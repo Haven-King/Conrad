@@ -99,8 +99,8 @@ public final class NestedListListEntry<T, INNER extends AbstractConfigListEntry<
         }
         
         @Override
-        public boolean isEdited() {
-            return super.isEdited() || nestedEntry.isEdited();
+        public boolean isModified() {
+            return super.isModified() || nestedEntry.isModified();
         }
         
         @Override

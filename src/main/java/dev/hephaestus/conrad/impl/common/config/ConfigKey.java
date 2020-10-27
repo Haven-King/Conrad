@@ -1,7 +1,10 @@
 package dev.hephaestus.conrad.impl.common.config;
 
+import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.networking.NetworkedObjectReader;
 import dev.hephaestus.conrad.api.networking.NetworkedObjectWriter;
+import dev.hephaestus.conrad.impl.common.util.ConradUtil;
+import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,6 +37,8 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 	final String namespace;
 	final String[] path;
 
+	int priority = 100;
+
 	private ConfigKey(String namespace, String... path) {
 		this.namespace = namespace;
 		this.path = path;
@@ -53,7 +58,8 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 		if (o == null || getClass() != o.getClass()) return false;
 		ConfigKey that = (ConfigKey) o;
 		return namespace.equals(that.namespace) &&
-				Arrays.equals(path, that.path);
+				Arrays.equals(path, that.path) &&
+				this.priority == ((ConfigKey) o).priority;
 	}
 
 	@Override
@@ -68,7 +74,13 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 
 	@Override
 	public int compareTo(ConfigKey o) {
-		int i = this.namespace.compareTo(o.namespace);
+		int i = Integer.compare(this.priority, o.priority);
+
+		if (i != 0) {
+			return i;
+		}
+
+		i = this.namespace.compareTo(o.namespace);
 
 		if (i == 0) {
 			if (this.path.length != o.path.length) {
@@ -87,5 +99,16 @@ public final class ConfigKey implements Comparable<ConfigKey> {
 
 	public static ConfigKey of(String namespace, String... path) {
 		return KEYS.computeIfAbsent(new ConfigKey(namespace, path), id -> id);
+	}
+
+	public static ConfigKey of(Class<? extends Config> configClass) {
+		configClass = ReflectionUtil.getDeclared(configClass);
+		Config.Options options = configClass.getDeclaredAnnotation(Config.Options.class);
+		return of(ConradUtil.getModId(configClass), options.name()[options.name().length - 1]);
+	}
+
+	public ConfigKey withPriority(int priority) {
+		this.priority = priority;
+		return this;
 	}
 }

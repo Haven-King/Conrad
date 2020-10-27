@@ -60,7 +60,7 @@ public abstract class AbstractConfigEntry<T> extends DynamicElementListWidget.El
     public Text getDisplayedFieldName() {
         MutableText text = getFieldName().shallowCopy();
         boolean hasError = getConfigError().isPresent();
-        boolean isEdited = isEdited();
+        boolean isEdited = isModified();
         if (hasError)
             text = text.formatted(Formatting.RED);
         if (isEdited)
@@ -111,7 +111,7 @@ public abstract class AbstractConfigEntry<T> extends DynamicElementListWidget.El
         this.saveConsumer.accept(this.getValue());
     }
     
-    public boolean isEdited() {
+    public boolean isModified() {
         return getConfigError().isPresent();
     }
     

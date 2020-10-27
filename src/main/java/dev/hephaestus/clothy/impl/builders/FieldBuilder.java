@@ -1,23 +1,14 @@
 package dev.hephaestus.clothy.impl.builders;
 
 import dev.hephaestus.clothy.api.AbstractConfigListEntry;
-import dev.hephaestus.clothy.impl.gui.entries.BoundedFieldEntry;
-import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.api.properties.PropertyType;
-import dev.hephaestus.conrad.api.properties.ValueProperty;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.config.KeyRing;
 import dev.hephaestus.conrad.impl.common.config.ValueDefinition;
-import dev.hephaestus.conrad.impl.common.config.ValueKey;
-import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -61,16 +52,12 @@ public abstract class FieldBuilder<T, A extends AbstractConfigListEntry<?>> {
         if (valueContainer != null && valueDefinition != null) {
             this.setDefaultValue((T) ValueContainer.getDefault(valueDefinition.getKey()));
             this.setSaveConsumer(newValue -> {
-                try {
-                    valueContainer.put(valueDefinition.getKey(), newValue, true);
-                } catch (IOException e) {
-                    ConradUtil.LOG.warn("Exception while saving config value {}: {}", valueDefinition.getKey().getName(), e.getMessage());
-                }
+                valueContainer.put(valueDefinition.getKey(), newValue, true);
             });
 
             List<Text> tooltips = new ArrayList<>();
 
-            valueDefinition.getTooltips(tooltips::add);
+            valueDefinition.getTooltips(false, tooltips::add);
 
             if (tooltips.size() > 0) {
                 this.setTooltip(Optional.of(tooltips));
@@ -82,7 +69,9 @@ public abstract class FieldBuilder<T, A extends AbstractConfigListEntry<?>> {
         return this.withValue(valueContainer == null || valueDefinition == null ? null : valueContainer.get(valueDefinition.getKey()));
     }
 
-    protected abstract void handleProperties(ValueDefinition valueDefinition);
+    protected void handleProperties(ValueDefinition valueDefinition) {
+
+    }
 
     @NotNull
     public final Text getFieldNameKey() {

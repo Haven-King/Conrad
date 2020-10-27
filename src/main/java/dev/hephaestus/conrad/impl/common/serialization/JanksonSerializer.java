@@ -1,11 +1,11 @@
 package dev.hephaestus.conrad.impl.common.serialization;
 
 import dev.hephaestus.conrad.api.StronglyTypedList;
+import dev.hephaestus.conrad.impl.common.config.ConfigDefinition;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 import dev.hephaestus.jankson.*;
 import dev.hephaestus.math.impl.Color;
 import org.jetbrains.annotations.Nullable;
-import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
 import dev.hephaestus.conrad.api.serialization.ValueSerializer;
 import dev.hephaestus.jankson.api.SyntaxError;
@@ -22,21 +22,20 @@ public class JanksonSerializer extends ConfigSerializer<JsonElement, JsonObject>
 
 	private JanksonSerializer() {
 		this.addSerializer(Boolean.class, JsonPrimitive.class, BooleanSerializer.INSTANCE);
-		this.addSerializer(Integer.class, JsonPrimitive.class, IntSerializer.INSTANCE);
-		this.addSerializer(Long.class, JsonPrimitive.class, LongSerializer.INSTANCE);
-		this.addSerializer(String.class, JsonPrimitive.class, StringSerializer.INSTANCE);
-		this.addSerializer(Float.class, JsonPrimitive.class, FloatSerializer.INSTANCE);
-		this.addSerializer(Double.class, JsonPrimitive.class, DoubleSerializer.INSTANCE);
-		this.addSerializer(Color.class, JsonPrimitive.class, ColorSerializer.INSTANCE);
-		this.addSerializer(StronglyTypedList.class, JsonArray.class, IntegerListSerializer.INSTANCE);
+		this.addSerializer(Integer.class, JsonPrimitive.class, IntSerializer.INSTANCE, new ListSerializer<>(Integer.class));
+		this.addSerializer(Long.class, JsonPrimitive.class, LongSerializer.INSTANCE, new ListSerializer<>(Long.class));
+		this.addSerializer(String.class, JsonPrimitive.class, StringSerializer.INSTANCE, new ListSerializer<>(String.class));
+		this.addSerializer(Float.class, JsonPrimitive.class, FloatSerializer.INSTANCE, new ListSerializer<>(Float.class));
+		this.addSerializer(Double.class, JsonPrimitive.class, DoubleSerializer.INSTANCE, new ListSerializer<>(Double.class));
+		this.addSerializer(Color.class, JsonPrimitive.class, ColorSerializer.INSTANCE, new ListSerializer<>(Color.class));
 	}
 
 	@Override
-	public JsonObject start(Config config) {
+	public JsonObject start(ConfigDefinition configDefinition) {
 		JsonObject object = new JsonObject();
 
-		if (ReflectionUtil.getDeclared(config.getClass()).getDeclaringClass() == null) {
-			object.put("version", new JsonPrimitive(config.version().toString()));
+		if (ReflectionUtil.getDeclared(configDefinition.getClass()).getDeclaringClass() == null) {
+			object.put("version", new JsonPrimitive(configDefinition.getVersion().toString()));
 		}
 
 		return object;
@@ -173,42 +172,22 @@ public class JanksonSerializer extends ConfigSerializer<JsonElement, JsonObject>
 		}
 	}
 
-	private static class IntegerListSerializer implements JanksonValueSerializer<JsonArray, StronglyTypedList<Integer>> {
-		public static final IntegerListSerializer INSTANCE = new IntegerListSerializer();
+	private class ListSerializer<T> implements JanksonValueSerializer<JsonArray, StronglyTypedList<T>> {
+		private final Class<T> valueClass;
+
+		private ListSerializer(Class<T> valueClass) {
+			this.valueClass = valueClass;
+		}
 
 		@Override
-		public JsonArray serialize(StronglyTypedList<Integer> value) {
+		public JsonArray serialize(StronglyTypedList<T> value) {
 			return new JsonArray(value);
 		}
 
 		@Override
-		public StronglyTypedList<Integer> deserialize(JsonElement representation) {
-			StronglyTypedList<Integer> list = new StronglyTypedList<>(Integer.class);
-
-			for (JsonElement element : (JsonArray) representation) {
-				list.add(((JsonPrimitive) element).asInt(0));
-			}
-
-			return list;
-		}
-	}
-
-	private static class DoubleListSerializer implements JanksonValueSerializer<JsonArray, StronglyTypedList<Double>> {
-		public static final DoubleListSerializer INSTANCE = new DoubleListSerializer();
-
-		@Override
-		public JsonArray serialize(StronglyTypedList<Double> value) {
-			return new JsonArray(value);
-		}
-
-		@Override
-		public StronglyTypedList<Double> deserialize(JsonElement representation) {
-			StronglyTypedList<Double> list = new StronglyTypedList<>(Double.class);
-
-			for (JsonElement element : (JsonArray) representation) {
-				list.add(((JsonPrimitive) element).asDouble(0));
-			}
-
+		public StronglyTypedList<T> deserialize(JsonElement representation) {
+			StronglyTypedList<T> list = new StronglyTypedList<>(this.valueClass);
+			((JsonArray) representation).forEach(e -> list.add((T) JanksonSerializer.this.getSerializer(this.valueClass).deserialize(e)));
 			return list;
 		}
 	}

@@ -2,7 +2,6 @@ package dev.hephaestus.clothy.impl.gui.entries;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import dev.hephaestus.math.impl.Color;
 import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -57,8 +56,8 @@ public class SelectionListEntry<T> extends TooltipListEntry<T> {
     }
     
     @Override
-    public boolean isEdited() {
-        return super.isEdited() || !Objects.equals(this.index.get(), this.original);
+    public boolean isModified() {
+        return super.isModified() || !Objects.equals(this.index.get(), this.original);
     }
     
     @Override

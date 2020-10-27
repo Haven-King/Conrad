@@ -10,7 +10,7 @@ import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.util.version.SemanticVersionImpl;
 import net.minecraft.text.TextColor;
 
-@Config.Options(name = "test", type = Config.SaveType.USER, tooltips = 3)
+@Config.Options(name = "test", saveType = Config.SaveType.USER, tooltipCount = 3)
 public interface UserTestConfig extends Config {
 	@Override
 	default ConfigSerializer<?, ?> serializer() {
@@ -20,7 +20,7 @@ public interface UserTestConfig extends Config {
 	@Override
 	default SemanticVersion version() {
 		try {
-			return new SemanticVersionImpl("1.2.0", false);
+			return new SemanticVersionImpl("1.3.0", false);
 		} catch (VersionParsingException e) {
 			e.printStackTrace();
 			return null;
@@ -43,8 +43,8 @@ public interface UserTestConfig extends Config {
 		return TextColor.fromRgb(this.myFavoriteColor().value());
 	}
 
-	@Value.IntegerBounds(min = 0, max = 100)
-	default StronglyTypedList<Double> aListOfIntegers() {
+	@Value.FloatingBounds(min = 0, max = 100)
+	default StronglyTypedList<Double> aListOfDoubles() {
 		return new StronglyTypedList<>(Double.class, 0D, 17D, 8D, 3D);
 	}
 

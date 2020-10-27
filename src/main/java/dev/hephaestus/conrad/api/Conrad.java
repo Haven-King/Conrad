@@ -12,6 +12,7 @@ import org.jetbrains.annotations.ApiStatus;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings("unchecked")
@@ -41,15 +42,7 @@ public class Conrad {
 	}
 
 	@ApiStatus.Internal
-	public static <T> void fireCallbacks(ValueKey valueKey, T oldValue, T newValue) {
-		Method method = KeyRing.get(valueKey);
-
-		if (method.isAnnotationPresent(Config.Value.Callback.class)) {
-			for (String callback : (method.getAnnotation(Config.Value.Callback.class).value())) {
-				SAVE_CALLBACKS.get(new Identifier(callback)).forEach(saveCallback ->
-						((SaveCallback<T>) saveCallback).onSave(valueKey, oldValue, newValue)
-				);
-			}
-		}
+	public static Set<SaveCallback<?>> getCallback(Identifier id) {
+		return SAVE_CALLBACKS.get(id);
 	}
 }

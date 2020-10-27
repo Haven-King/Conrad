@@ -2,7 +2,6 @@ package dev.hephaestus.clothy.impl.gui.entries;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -79,8 +78,8 @@ public class IntegerSliderEntry extends SliderEntry<Integer> {
     }
     
     @Override
-    public boolean isEdited() {
-        return super.isEdited() || getValue() != orginial;
+    public boolean isModified() {
+        return super.isModified() || getValue() != orginial;
     }
     
     @Override

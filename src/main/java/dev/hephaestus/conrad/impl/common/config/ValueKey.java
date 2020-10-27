@@ -8,33 +8,37 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Objects;
 
-public final class ValueKey implements Comparable<ValueKey> {
-	private static final HashMap<ValueKey, ValueKey> KEYS = new HashMap<>();
+public class ValueKey implements Comparable<ValueKey> {
+	protected static final HashMap<ValueKey, ValueKey> KEYS = new HashMap<>();
 
-	public static NetworkedObjectReader<ValueKey> READER = (buf) -> {
-		return ValueKey.of(ConfigKey.READER.read(buf), buf.readString(32767), buf.readVarInt());
-	};
+	public static NetworkedObjectReader<ValueKey> READER = (buf) ->
+			ValueKey.of(ConfigKey.READER.read(buf), buf.readString(32767), buf.readVarInt());
 
 	public static NetworkedObjectWriter<ValueKey> WRITER = (buf, value) -> {
 		ConfigKey.WRITER.write(buf, ((ValueKey) value).config);
 		return buf.writeString(((ValueKey) value).valueName).writeVarInt(((ValueKey) value).priority);
 	};
+
 	private final ConfigKey config;
 	private final String valueName;
 	private final int priority;
 
-	private ValueKey(ConfigKey configKey, String valueName, int priority) {
+	protected ValueKey(ConfigKey configKey, String valueName, int priority) {
 		this.config = configKey;
 		this.valueName = valueName;
 		this.priority = priority;
 	}
 
-	public ConfigKey getConfig() {
+	public ConfigKey getConfigKey() {
 		return config;
 	}
 
 	public String getName() {
 		return this.valueName;
+	}
+
+	public int getPriority() {
+		return this.priority;
 	}
 
 	@Override
@@ -79,14 +83,14 @@ public final class ValueKey implements Comparable<ValueKey> {
 		}
 	}
 
-	static ValueKey of(ConfigKey configKey, Method method) {
+	public static ValueKey of(ConfigKey configKey, Method method) {
 		Config.Value.Options options = method.getDeclaredAnnotation(Config.Value.Options.class);
 		String valueName = options == null || options.name().equals("")
 				? method.getName()
 				: options.name();
 		int priority = options == null ? 100 : options.priority();
 
-		return of(configKey, valueName, priority);
+		return KeyRing.put(method, of(configKey, valueName, priority));
 	}
 
 	static ValueKey of(ConfigKey configKey, String valueName, int priority) {

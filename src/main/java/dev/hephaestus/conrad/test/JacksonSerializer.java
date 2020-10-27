@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.*;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import dev.hephaestus.conrad.impl.common.config.ConfigDefinition;
 import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
@@ -44,8 +45,14 @@ public class JacksonSerializer extends ConfigSerializer<JsonNode, ObjectNode> {
 	}
 
 	@Override
-	public ObjectNode start(Config config) {
-		return new ObjectNode(this.jsonNodeFactory).put("version", config.version().toString());
+	public ObjectNode start(ConfigDefinition configDefinition) {
+		ObjectNode node = new ObjectNode(this.jsonNodeFactory);
+
+		if (configDefinition.isRoot()) {
+			 node.put("version", configDefinition.getVersion().toString());
+		}
+
+		return node;
 	}
 
 	@Override

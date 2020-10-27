@@ -43,8 +43,8 @@ public class BooleanListEntry extends TooltipListEntry<Boolean> {
     }
     
     @Override
-    public boolean isEdited() {
-        return super.isEdited() || original != bool.get();
+    public boolean isModified() {
+        return super.isModified() || original != bool.get();
     }
 
     @Override

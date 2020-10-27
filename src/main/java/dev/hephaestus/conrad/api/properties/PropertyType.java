@@ -24,8 +24,8 @@ public class PropertyType<T> {
 			@Override
 			public void addTooltips(Consumer<Text> textConsumer) {
 				Config.Value.IntegerBounds bounds = (Config.Value.IntegerBounds) annotation;
-				if (bounds.min() > Long.MIN_VALUE) textConsumer.accept(new LiteralText("@min " + bounds.min()));
-				if (bounds.max() < Long.MAX_VALUE) textConsumer.accept(new LiteralText("@max " + bounds.max()));
+				if (bounds.min() > Long.MIN_VALUE) textConsumer.accept(new LiteralText("min " + bounds.min()));
+				if (bounds.max() < Long.MAX_VALUE) textConsumer.accept(new LiteralText("max " + bounds.max()));
 			}
 
 			@Override
@@ -53,8 +53,8 @@ public class PropertyType<T> {
 			@Override
 			public void addTooltips(Consumer<Text> textConsumer) {
 				Config.Value.FloatingBounds bounds = (Config.Value.FloatingBounds) annotation;
-				if (bounds.min() > Double.MIN_VALUE) textConsumer.accept(new LiteralText("@min " + bounds.min()));
-				if (bounds.max() < Double.MAX_VALUE) textConsumer.accept(new LiteralText("@max " + bounds.max()));
+				if (bounds.min() != Double.NEGATIVE_INFINITY) textConsumer.accept(new LiteralText("min " + bounds.min()));
+				if (bounds.max() != Double.POSITIVE_INFINITY) textConsumer.accept(new LiteralText("max " + bounds.max()));
 			}
 
 			@Override
@@ -73,5 +73,9 @@ public class PropertyType<T> {
 
 	public String getId() {
 		return this.id;
+	}
+
+	public static void init() {
+
 	}
 }

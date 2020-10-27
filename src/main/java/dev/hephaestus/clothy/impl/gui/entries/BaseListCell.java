@@ -12,6 +12,8 @@ import java.util.function.Supplier;
 @Environment(EnvType.CLIENT)
 public abstract class BaseListCell extends AbstractParentElement {
     private Supplier<Optional<Text>> errorSupplier;
+
+    protected boolean modified = false;
     
     public final int getPreferredTextColor() {
         return getConfigError().isPresent() ? 16733525 : 14737632;
@@ -39,8 +41,8 @@ public abstract class BaseListCell extends AbstractParentElement {
         return false;
     }
     
-    public boolean isEdited() {
-        return getConfigError().isPresent();
+    public boolean isModified() {
+        return getConfigError().isPresent() || this.modified;
     }
     
     public void onAdd() {}

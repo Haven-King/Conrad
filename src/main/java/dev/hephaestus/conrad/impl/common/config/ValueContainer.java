@@ -1,13 +1,21 @@
 package dev.hephaestus.conrad.impl.common.config;
 
+import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.Conrad;
+import dev.hephaestus.conrad.api.SaveCallback;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
 import dev.hephaestus.conrad.impl.client.util.ClientUtil;
 import dev.hephaestus.conrad.impl.common.ConradPreLaunchEntrypoint;
+import dev.hephaestus.conrad.impl.common.networking.packets.ConradPacket;
+import dev.hephaestus.conrad.impl.common.networking.packets.all.ConfigValuePacket;
 import dev.hephaestus.conrad.impl.common.util.ConradException;
+import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,18 +33,17 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 	protected final HashMap<ValueKey, Object> values = new HashMap<>();
 
 	private final Path saveDirectory;
+	private boolean done = false;
 
 	public ValueContainer(Path saveDirectory) {
 		this.saveDirectory = saveDirectory;
 
 		if (ValueContainer.ROOT != null) {
 			for (Map.Entry<ValueKey, Object> entry : ValueContainer.ROOT) {
-				try {
-					this.put(entry.getKey(), entry.getValue(), true);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				this.put(entry.getKey(), entry.getValue(), false);
 			}
+
+			this.done = true;
 		}
 	}
 
@@ -44,7 +51,7 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 		return DEFAULT_VALUES.containsKey(key);
 	}
 
-	public void put(ValueKey key, Object value, boolean sync) throws IOException {
+	public void put(ValueKey key, Object value, boolean sync) {
 		DEFAULT_VALUES.putIfAbsent(key, value);
 
 		Object old = this.get(key);
@@ -53,24 +60,27 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 		if (modified) {
 			this.values.put(key, value);
 
-			if (ConradPreLaunchEntrypoint.isDone()) {
-				Conrad.fireCallbacks(key, old, value);
-				this.save(key, value, sync &&
-						KeyRing.get(key.getConfig()).getDefinition(key).isSynced()
-				);
+			if (this.done) {
+				for (Identifier callback : KeyRing.get(key.getConfigKey()).getValueDefinition(key).getCallbacks()) {
+					Conrad.getCallback(callback).forEach(saveCallback -> saveCallback.onSave(key, old, value));
+				}
+
+				try {
+					this.save(key, value, sync &&
+						KeyRing.get(key.getConfigKey()).getValueDefinition(key).isSynced()
+					);
+				} catch (IOException e) {
+					ConradUtil.LOG.warn("Error saving value {} for key {}: {}", value, key, e.getMessage());
+				}
 			}
 		}
 	}
 
 	protected void save(ValueKey key, Object value, boolean sync) throws IOException {
-		ConfigDefinition configDefinition = KeyRing.get(key.getConfig());
+		ConfigDefinition configDefinition = KeyRing.getRootDefinition(key.getConfigKey());
 
 		if (sync) {
-			if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-				ClientUtil.sendValue(key, value);
-			} else {
-				// TODO
-			}
+			this.sync(key, value);
 		}
 
 		ConfigSerializer<?, ?> serializer = configDefinition.getSerializer();
@@ -78,11 +88,25 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 		Files.createDirectories(this.saveDirectory.resolve(configDefinition.getSavePath()));
 
 		serializer.writeValue(
-				serializer.serialize(configDefinition),
+				serializer.serialize(this, configDefinition),
 				new FileOutputStream(
-						configDefinition.getSavePath().resolve(configDefinition.getKey().getName() + "." + serializer.fileExtension()).toFile()
+						this.saveDirectory.resolve(configDefinition.getSavePath().resolve(configDefinition.getKey().getName() + "." + serializer.fileExtension())).toFile()
 				)
 		);
+	}
+
+	protected void sync(ValueKey key, Object value) {
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+			ClientUtil.sendValue(key, value);
+		} else {
+			MinecraftServer server = (MinecraftServer) FabricLoader.getInstance().getGameInstance();
+			ConradPacket packet = new ConfigValuePacket(ConfigValuePacket.INFO, key, value);
+			server.getPlayerManager().getPlayerList().forEach(player -> {
+				if (player.hasPermissionLevel(4)) {
+					packet.send(player);
+				}
+			});
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -95,14 +119,18 @@ public class ValueContainer implements Iterable<Map.Entry<ValueKey, Object>> {
 		return this.values.entrySet().iterator();
 	}
 
+	public void done() {
+		this.done = true;
+	}
+
 	public static class Remote extends ValueContainer {
 		public Remote() {
 			super(null);
 		}
 
 		@Override
-		public void put(ValueKey key, Object value, boolean synced) throws IOException {
-			super.put(key, value, false);
+		protected void save(ValueKey key, Object value, boolean sync){
+			this.sync(key, value);
 		}
 	}
 

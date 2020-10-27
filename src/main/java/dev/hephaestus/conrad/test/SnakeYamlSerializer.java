@@ -1,5 +1,6 @@
 package dev.hephaestus.conrad.test;
 
+import dev.hephaestus.conrad.impl.common.config.ConfigDefinition;
 import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.serialization.ConfigSerializer;
@@ -26,9 +27,9 @@ public class SnakeYamlSerializer extends ConfigSerializer<Object, LinkedHashMap<
 	}
 
 	@Override
-	public LinkedHashMap<String, Object> start(Config config) {
+	public LinkedHashMap<String, Object> start(ConfigDefinition configDefinition) {
 		LinkedHashMap<String, Object> map = new LinkedHashMap<>();
-		map.put("version", config.version().toString());
+		map.put("version", configDefinition.getVersion().toString());
 		return map;
 	}
 

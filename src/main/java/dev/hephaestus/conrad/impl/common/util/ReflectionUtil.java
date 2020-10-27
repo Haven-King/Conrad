@@ -49,10 +49,6 @@ public class ReflectionUtil {
 
 	public static Class<? extends Config> getDeclared(Class<?> configClass) {
 		return CLASS_TO_DECLARED_CONFIG_CLASS_MAP.computeIfAbsent((Class<? extends Config>) configClass, c -> {
-			if (ReflectionUtil.isRootConfigClass(c)) {
-				return c;
-			}
-
 			for (Class<?> i : c.getInterfaces()) {
 				if (Config.class.isAssignableFrom(i) && !Proxy.isProxyClass(i) && i != Config.class) {
 					return (Class<? extends Config>) i;

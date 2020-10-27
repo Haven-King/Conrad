@@ -1,13 +1,9 @@
 package dev.hephaestus.conrad.api.serialization;
 
-import dev.hephaestus.conrad.impl.common.config.ConfigDefinition;
-import dev.hephaestus.conrad.impl.common.config.ValueKey;
-import dev.hephaestus.conrad.impl.common.util.ConradException;
+import dev.hephaestus.conrad.api.StronglyTypedList;
+import dev.hephaestus.conrad.impl.common.config.*;
 import org.jetbrains.annotations.Nullable;
 import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.util.ConradUtil;
-import dev.hephaestus.conrad.impl.common.config.KeyRing;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 import dev.hephaestus.conrad.impl.common.util.Translator;
 import net.fabricmc.api.EnvType;
@@ -15,15 +11,18 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.TranslatableText;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 public abstract class ConfigSerializer<E, O extends E> {
 	private final HashMap<Class<?>, ValueSerializer<E, ?, ?>> serializableTypes = new HashMap<>();
 	private final HashMap<Class<? extends E>, Class<?>> valueSerializers = new HashMap<>();
+	private final HashMap<Class<?>, ValueSerializer<E, ?, ?>> listSerializers = new HashMap<>();
 
-	protected final void addSerializer(Class<?> valueClass, Class<? extends E> representationClass,  ValueSerializer<E, ?, ?> valueSerializer) {
+	protected final void addSerializer(Class<?> valueClass, Class<? extends E> representationClass, ValueSerializer<E, ?, ?> valueSerializer) {
+		this.addSerializer(valueClass, representationClass, valueSerializer, null);
+	}
+
+	protected final void addSerializer(Class<?> valueClass, Class<? extends E> representationClass,  ValueSerializer<E, ?, ?> valueSerializer, @Nullable ValueSerializer<E, ?, ?> listSerializer) {
 		this.serializableTypes.putIfAbsent(valueClass, valueSerializer);
 
 		valueClass = ReflectionUtil.getClass(valueClass);
@@ -33,6 +32,10 @@ public abstract class ConfigSerializer<E, O extends E> {
 		}
 
 		this.valueSerializers.put(representationClass, valueClass);
+
+		if (listSerializer != null) {
+			this.listSerializers.putIfAbsent(valueClass, listSerializer);
+		}
 	}
 
 	protected final boolean canSerialize(Class<?> valueClass) {
@@ -43,77 +46,81 @@ public abstract class ConfigSerializer<E, O extends E> {
 		return serializableTypes.containsKey(clazz) ? serializableTypes.get(clazz) : serializableTypes.get(valueSerializers.get(clazz));
 	}
 
-	public final O serialize(ConfigDefinition configDefinition) {
-		O object = this.start(config);
+	public final O serialize(ValueContainer container, ConfigDefinition configDefinition) {
+		O object = this.start(configDefinition);
 
-		for (ValueKey key : this.getKeys(config.getClass())) {
-			E value = null;
-			Method method = KeyRing.get(key);
-			try {
-				Class<?> type = method.getReturnType();
-				if (Config.class.isAssignableFrom(type)) {
-					value = this.serialize((Config) method.invoke(config));
-				} else if (this.canSerialize(type)) {
-					value = this.getSerializer(type).serializeValue(method.invoke(config));
-				} else {
-					throw new ConradException("Unable to serialize type: " + method.getReturnType().getName());
-				}
-			} catch (IllegalAccessException | InvocationTargetException e) {
-				e.printStackTrace();
+		for (Map.Entry<ValueKey, ValueDefinition> entry : configDefinition.getValues()) {
+			Class<?> type = entry.getValue().getType();
+			E serializedValue = null;
+
+			if (type == StronglyTypedList.class) {
+				StronglyTypedList<?> defaultValue = container.get(entry.getKey());
+				serializedValue = this.listSerializers.get(defaultValue.valueClass).serialize(
+						container.get(entry.getKey())
+				);
+			} else if (!Config.class.isAssignableFrom(type)) {
+				Object value = container.get(entry.getKey());
+				serializedValue = this.getSerializer(value.getClass()).serializeValue(container.get(entry.getKey()));
 			}
 
-			StringBuilder builder = new StringBuilder();
+			if (serializedValue != null) {
+				StringBuilder builder = new StringBuilder();
 
-			ConradUtil.getTooltips(method, text -> {
-				if (builder.length() > 0) {
-					builder.append('\n');
-				}
+				entry.getValue().getTooltips(true, text -> {
+					if (builder.length() > 0) {
+						builder.append('\n');
+					}
 
-				String string = text instanceof TranslatableText ? Translator.translate((TranslatableText) text) : text.asString();
+					String string = text instanceof TranslatableText
+							? Translator.translate((TranslatableText) text)
+							: text.asString();
 
-				builder.append(string);
-			});
+					builder.append(string);
+				});
 
-			this.add(object, KeyRing.methodName(method), value, builder.toString());
+				this.add(object, entry.getKey().getName(), serializedValue, builder.toString());
+			}
+		}
+
+		for (Map.Entry<ConfigKey, ConfigDefinition> entry : configDefinition.getChildren()) {
+			this.add(object, entry.getKey().getName(), this.serialize(container, entry.getValue()), null);
 		}
 
 		return object;
 	}
 
 	@SuppressWarnings("unchecked")
-	public final void deserialize(Config config, Object object) {
-		Config.SaveType saveType = ReflectionUtil.getRoot(config.getClass()).getAnnotation(Config.Options.class).type();
+	public final void deserialize(ValueContainer container, ConfigDefinition configDefinition, Object object) {
+		Config.SaveType saveType = configDefinition.getSaveType();
 
 		if (saveType == Config.SaveType.USER && FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
 			return;
 		}
 
-		for (ValueKey key : this.getKeys(config.getClass())) {
-			Method method = KeyRing.get(key);
-			Class<?> type = method.getReturnType();
-			try {
-				if (Config.class.isAssignableFrom(type)) {
-					Object value = this.get((O) object, KeyRing.methodName(method));
+		for (Map.Entry<ValueKey, ValueDefinition> entry : configDefinition.getValues()) {
+			Class<?> type = entry.getValue().getType();
+			Object result = null;
 
-					if (value != null) {
-						this.deserialize((Config) KeyRing.get(KeyRing.get(ReflectionUtil.getDeclared(method))).invoke(config), value);
-					}
-				} else if (this.canSerialize(type)) {
-					Object result = this.getSerializer(type).deserialize(this.get((O) object, KeyRing.methodName(method)));
-
-					if (result == null) {
-						result = ReflectionUtil.invokeDefault(
-								KeyRing.get(KeyRing.get(method))
-						);
-					}
-
-					if (result != null && !Config.class.isAssignableFrom(result.getClass())) {
-						ValueContainer.getInstance().put(KeyRing.get(method), result, false);
-					}
-				}
-			} catch (Throwable e) {
-				e.printStackTrace();
+			if (type == StronglyTypedList.class) {
+				StronglyTypedList<?> defaultValue = container.get(entry.getKey());
+				result = this.listSerializers.get(defaultValue.valueClass).deserialize(
+						this.get((O) object, entry.getKey().getName()
+				));
+			} else if (!Config.class.isAssignableFrom(type)) {
+				result = this.getSerializer(type).deserialize(this.get((O) object, entry.getKey().getName()));
 			}
+
+			if (result == null) {
+				result = container.get(entry.getKey());
+			}
+
+			if (result != null && !Config.class.isAssignableFrom(result.getClass())) {
+				container.put(entry.getKey(), result, false);
+			}
+		}
+
+		for (Map.Entry<ConfigKey, ConfigDefinition> entry : configDefinition.getChildren()) {
+			this.deserialize(container, entry.getValue(), this.get((O) object, entry.getKey().getName()));
 		}
 	}
 
@@ -122,7 +129,7 @@ public abstract class ConfigSerializer<E, O extends E> {
 		this.write((O) object, out);
 	}
 
-	public abstract O start(Config config);
+	public abstract O start(ConfigDefinition configDefinition);
 	protected abstract <R extends E> void add(O object, String key, R representation, @Nullable String comment);
 	public abstract <V> V get(O object, String key);
 
@@ -130,33 +137,4 @@ public abstract class ConfigSerializer<E, O extends E> {
 	protected abstract void write(O object, OutputStream out) throws IOException;
 
 	public abstract String fileExtension();
-
-	private Collection<ValueKey> getKeys(Class<?> configClass) {
-		TreeSet<ValueKey> primitiveMethods = new TreeSet<>();
-		TreeSet<ValueKey> compoundMethods = new TreeSet<>();
-
-		for (ValueKey valueKey : KeyRing.getValueKeys(KeyRing.get(configClass))) {
-			Class<?> returnType = KeyRing.get(valueKey).getReturnType();
-
-			if (this.canSerialize(returnType)) {
-				ValueSerializer<?, ?, ?> valueSerializer = this.getSerializer(returnType);
-				if (valueSerializer.isCompound()) {
-					compoundMethods.add(valueKey);
-				} else {
-					primitiveMethods.add(valueKey);
-				}
-			} else if (Config.class.isAssignableFrom(returnType)) {
-				compoundMethods.add(valueKey);
-			} else {
-				throw new ConradException("Unable to serialize type: " + returnType.getName());
-			}
-		}
-
-		ArrayList<ValueKey> methods = new ArrayList<>();
-
-		methods.addAll(primitiveMethods);
-		methods.addAll(compoundMethods);
-
-		return methods;
-	}
 }

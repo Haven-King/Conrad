@@ -112,9 +112,9 @@ public class SubCategoryListEntry extends TooltipListEntry<List<AbstractConfigLi
     }
     
     @Override
-    public boolean isEdited() {
+    public boolean isModified() {
         for (AbstractConfigListEntry<?> entry : entries) {
-            if (entry.isEdited()) {
+            if (entry.isModified()) {
                 return true;
             }
         }

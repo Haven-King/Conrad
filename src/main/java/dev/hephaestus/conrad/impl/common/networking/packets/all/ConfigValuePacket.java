@@ -44,15 +44,11 @@ public class ConfigValuePacket extends ConradPacket {
 		Object value = read(buf);
 
 		context.getTaskQueue().execute(() -> {
-			try {
-				ValueContainer.getInstance((ServerPlayerEntity) context.getPlayer()).put(
-						valueKey,
-						value,
-						false
-				);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			ValueContainer.getInstance((ServerPlayerEntity) context.getPlayer()).put(
+					valueKey,
+					value,
+					false
+			);
 		});
 	}
 
@@ -61,15 +57,11 @@ public class ConfigValuePacket extends ConradPacket {
 		Object value = read(buf);
 
 		context.getTaskQueue().execute(() -> {
-			try {
-				ValueContainer.getInstance().put(
-						valueKey,
-						value,
-						true
-				);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			ValueContainer.getInstance().put(
+					valueKey,
+					value,
+					true
+			);
 		});
 	}
 }
