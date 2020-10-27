@@ -7,10 +7,7 @@ import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.util.version.SemanticVersionImpl;
 import net.minecraft.util.Identifier;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.util.function.BooleanSupplier;
 
 public interface Config {
@@ -98,6 +95,7 @@ public interface Config {
 	 * Options for handling a declared config schema.
 	 * Only the root config interface should be annotated.
 	 */
+	@Inherited
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface Options {
@@ -130,6 +128,7 @@ public interface Config {
 	}
 
 	class Value {
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Options {
@@ -164,6 +163,7 @@ public interface Config {
 			int priority() default 100;
 		}
 
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Widget {
@@ -193,12 +193,14 @@ public interface Config {
 		 * Should be in the form of "modid:callback_name". The callback method itself should be registered by calling
 		 * {@link Conrad#registerCallback(Identifier, SaveCallback)} in your mod initializer.
 		 */
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Callback {
 			String[] value();
 		}
 
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface IntegerBounds {
@@ -206,6 +208,7 @@ public interface Config {
 			long max() default Long.MAX_VALUE;
 		}
 
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface FloatingBounds {
@@ -213,6 +216,7 @@ public interface Config {
 			double max() default Double.POSITIVE_INFINITY;
 		}
 
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Matches {

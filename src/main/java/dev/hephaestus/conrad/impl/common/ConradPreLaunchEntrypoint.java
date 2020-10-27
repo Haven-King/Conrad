@@ -10,11 +10,14 @@ import dev.hephaestus.conrad.impl.common.config.ConfigDefinition;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import dev.hephaestus.conrad.impl.common.util.Translator;
+import dev.hephaestus.conrad.test.LevelTestConfig;
+import dev.hephaestus.conrad.test.UserTestConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.SemanticVersion;
 import net.fabricmc.loader.api.VersionParsingException;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 import net.fabricmc.loader.api.metadata.CustomValue;
 
@@ -33,41 +36,25 @@ public class ConradPreLaunchEntrypoint implements PreLaunchEntrypoint {
 		PropertyType.init();
 		NetworkSerializerRegistry.init();
 
-		for (ModContainer container : FabricLoader.getInstance().getAllMods()) {
-			if (container.getMetadata().containsCustomValue(ConradUtil.MOD_ID)) {
-				Translator.init(container.getMetadata().getId());
-				handle(container.getMetadata().getId(), container.getMetadata().getCustomValue(ConradUtil.MOD_ID));
+		for (EntrypointContainer<Class<? extends Config>> container : FabricLoader.getInstance().getEntrypointClassContainers("conrad", Config.class)) {
+			try {
+				process(container.getProvider().getMetadata().getId(), container.getEntrypoint());
+			} catch (VersionParsingException | IOException e) {
+				// TODO: Add descriptive error message
+				e.printStackTrace();
 			}
 		}
 
 		ValueContainer.ROOT.done();
 	}
 
-	private static void handle(String modId, CustomValue customValue) {
-		if (customValue.getType() == CustomValue.CvType.STRING) {
-			try {
-				process(modId, customValue.getAsString());
-			} catch (AssertionError | ClassNotFoundException | VersionParsingException | IOException e) {
-				e.printStackTrace();
-			}
-		} else if (customValue.getType() == CustomValue.CvType.ARRAY) {
-			for (CustomValue childValue : customValue.getAsArray()) {
-				handle(modId, childValue);
-			}
-		}
-	}
-
 	@SuppressWarnings("unchecked")
-	private static <T, O extends T> void process(String modId, String className) throws ClassNotFoundException, VersionParsingException, IOException {
-		Class<? extends Config> configClass = (Class<? extends Config>) Class.forName(className);
-
-		ConradUtil.prove(configClass.getInterfaces()[0] == Config.class);
+	private static <T, O extends T> void process(String modId, Class<? extends Config> configClass) throws VersionParsingException, IOException {
+		// TODO: Add descriptive error message
 		ConradUtil.prove(configClass.isAnnotationPresent(Config.Options.class));
-
 		ConradUtil.put(configClass, modId);
 
 		ConfigDefinition configDefinition = ConfigDefinition.build(modId, configClass);
-
 		Config config = Conrad.getConfig(configClass);
 
 		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT && FabricLoader.getInstance().isModLoaded("modmenu")) {

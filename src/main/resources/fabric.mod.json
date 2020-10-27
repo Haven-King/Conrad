@@ -25,6 +25,10 @@
     ],
     "modmenu": [
       "dev.hephaestus.conrad.impl.client.ConradModMenuEntrypoint"
+    ],
+    "conrad": [
+      "dev.hephaestus.conrad.test.LevelTestConfig",
+      "dev.hephaestus.conrad.test.UserTestConfig"
     ]
   },
   "mixins": [
@@ -34,11 +38,5 @@
     "fabricloader": ">=0.9.1+build.205",
     "fabric": "*",
     "minecraft": "1.16.2"
-  },
-  "custom": {
-    "conrad": [
-      "dev.hephaestus.conrad.test.LevelTestConfig",
-      "dev.hephaestus.conrad.test.UserTestConfig"
-    ]
   }
 }
