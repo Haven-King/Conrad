@@ -3,10 +3,7 @@ package dev.hephaestus.conrad.mixin.client;
 import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.api.networking.NetworkSerializerRegistry;
 import dev.hephaestus.conrad.impl.client.util.ClientUtil;
-import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
-import dev.hephaestus.conrad.impl.common.networking.packets.all.ConfigValuePacket;
+import dev.hephaestus.conrad.impl.common.config.*;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -24,9 +21,13 @@ import java.util.Map;
 public class SendConfigValues {
 	@Inject(method = "onGameJoin", at = @At("TAIL"))
 	private void sendConfigValues(GameJoinS2CPacket packet, CallbackInfo ci) {
-		for (Map.Entry<ValueKey, Object> value : ValueContainer.ROOT) {
-			if (NetworkSerializerRegistry.contains(value.getValue().getClass()) && ReflectionUtil.getRoot(KeyRing.get(value.getKey().getConfig())).getAnnotation(Config.Options.class).type() == Config.SaveType.USER) {
-				ClientUtil.sendValue(value.getKey(), value.getValue());
+		for (Map.Entry<ValueKey, Object> entry : ValueContainer.ROOT) {
+			ConfigDefinition configDefinition = KeyRing.get(entry.getKey().getConfigKey());
+			ValueDefinition valueDefinition = configDefinition.getValueDefinition(entry.getKey());
+
+			if (NetworkSerializerRegistry.contains(valueDefinition.getType())
+					&& configDefinition.getSaveType() == Config.SaveType.USER) {
+				ClientUtil.sendValue(entry.getKey(), entry.getValue());
 			}
 		}
 	}

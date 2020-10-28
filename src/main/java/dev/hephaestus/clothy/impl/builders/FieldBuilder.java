@@ -1,21 +1,14 @@
 package dev.hephaestus.clothy.impl.builders;
 
 import dev.hephaestus.clothy.api.AbstractConfigListEntry;
-import dev.hephaestus.clothy.impl.builders.primitive.BoundedFieldBuilder;
-import dev.hephaestus.clothy.impl.gui.entries.BoundedFieldEntry;
-import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
-import dev.hephaestus.conrad.impl.common.util.ConradUtil;
+import dev.hephaestus.conrad.impl.common.config.ValueDefinition;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,56 +48,31 @@ public abstract class FieldBuilder<T, A extends AbstractConfigListEntry<?>> {
 
     @NotNull
     @SuppressWarnings("unchecked")
-    public final A build(ValueContainer valueContainer, ValueKey valueKey) {
-        if (valueContainer != null && valueKey != null) {
-            this.setDefaultValue((T) ValueContainer.getDefault(valueKey));
+    public final A build(ValueContainer valueContainer, ValueDefinition valueDefinition) {
+        if (valueContainer != null && valueDefinition != null) {
+            this.setDefaultValue((T) ValueContainer.getDefault(valueDefinition.getKey()));
             this.setSaveConsumer(newValue -> {
-                try {
-                    valueContainer.put(valueKey, newValue, true);
-                } catch (IOException e) {
-                    ConradUtil.LOG.warn("Exception while saving config value {}: {}", valueKey.getName(), e.getMessage());
-                }
+                valueContainer.put(valueDefinition.getKey(), newValue, true);
             });
-
-            Method method = KeyRing.get(valueKey);
 
             List<Text> tooltips = new ArrayList<>();
 
-            ConradUtil.getTooltips(method, tooltips::add);
+            valueDefinition.getTooltips(false, tooltips::add);
 
             if (tooltips.size() > 0) {
                 this.setTooltip(Optional.of(tooltips));
             }
 
-            if (method.isAnnotationPresent(Config.Value.IntegerBounds.class)
-                    || method.isAnnotationPresent(Config.Value.FloatingBounds.class)) {
-                Number min;
-                Number max;
-
-                if (method.isAnnotationPresent(Config.Value.IntegerBounds.class)) {
-                    Config.Value.IntegerBounds bounds = method.getAnnotation(Config.Value.IntegerBounds.class);
-                    min = bounds.min() > Long.MIN_VALUE ? bounds.min() : null;
-                    max = bounds.max() < Long.MAX_VALUE ? bounds.max() : null;
-
-                } else {
-                    Config.Value.FloatingBounds bounds = method.getAnnotation(Config.Value.FloatingBounds.class);
-                    min = bounds.min() > Double.MIN_VALUE ? bounds.min() : null;
-                    max = bounds.max() < Double.MAX_VALUE ? bounds.max() : null;
-                }
-
-                if (min != null) {
-                    ((BoundedFieldEntry) this).setMin(min);
-                }
-
-                if (max != null) {
-                    ((BoundedFieldEntry) this).setMax(max);
-                }
-            }
+            this.handleProperties(valueDefinition);
         }
 
-        return this.withValue(valueContainer == null || valueKey == null ? null : valueContainer.get(valueKey));
+        return this.withValue(valueContainer == null || valueDefinition == null ? null : valueContainer.get(valueDefinition.getKey()));
     }
-    
+
+    protected void handleProperties(ValueDefinition valueDefinition) {
+
+    }
+
     @NotNull
     public final Text getFieldNameKey() {
         return fieldNameKey;

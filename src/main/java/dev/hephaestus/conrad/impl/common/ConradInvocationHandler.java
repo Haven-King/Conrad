@@ -1,9 +1,7 @@
 package dev.hephaestus.conrad.impl.common;
 
 import dev.hephaestus.conrad.api.Config;
-import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.*;
 import dev.hephaestus.conrad.impl.common.util.ConradException;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
@@ -32,7 +30,9 @@ public class ConradInvocationHandler implements InvocationHandler {
 		if (methodType == Config.Value.MethodType.UTIL) return ReflectionUtil.invokeDefault(proxy, method, args);
 
 		ValueKey key = KeyRing.get(method);
-		Config.SaveType saveType = KeyRing.get(key.getConfig().root()).getAnnotation(Config.Options.class).type();
+		ConfigDefinition configDefinition = KeyRing.get(key.getConfigKey());
+		Config.SaveType saveType = configDefinition.getSaveType();
+
 		ValueContainer valueContainer = saveType == Config.SaveType.LEVEL
 				? ConradUtil.either(this.valueContainer, ValueContainer.getInstance())
 				: ValueContainer.ROOT;

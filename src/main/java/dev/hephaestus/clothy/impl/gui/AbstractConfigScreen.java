@@ -73,7 +73,7 @@ public abstract class AbstractConfigScreen extends Screen implements ConfigScree
         if (legacyRequiresRestart) return true;
         for (List<AbstractConfigEntry<?>> entries : getCategorizedEntries().values()) {
             for (AbstractConfigEntry<?> entry : entries) {
-                if (!entry.getConfigError().isPresent() && entry.isEdited() && entry.isRequiresRestart()) {
+                if (!entry.getConfigError().isPresent() && entry.isModified() && entry.isRequiresRestart()) {
                     return true;
                 }
             }
@@ -88,7 +88,7 @@ public abstract class AbstractConfigScreen extends Screen implements ConfigScree
         if (legacyEdited) return true;
         for (List<AbstractConfigEntry<?>> entries : getCategorizedEntries().values()) {
             for (AbstractConfigEntry<?> entry : entries) {
-                if (entry.isEdited()) {
+                if (entry.isModified()) {
                     return true;
                 }
             }

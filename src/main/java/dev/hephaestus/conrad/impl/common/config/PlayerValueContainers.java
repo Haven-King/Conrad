@@ -1,9 +1,5 @@
 package dev.hephaestus.conrad.impl.common.config;
 
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.io.IOException;

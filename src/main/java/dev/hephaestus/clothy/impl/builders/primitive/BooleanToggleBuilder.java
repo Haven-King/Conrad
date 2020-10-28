@@ -2,15 +2,11 @@ package dev.hephaestus.clothy.impl.builders.primitive;
 
 import dev.hephaestus.clothy.impl.gui.entries.BooleanListEntry;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
-import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 @Environment(EnvType.CLIENT)

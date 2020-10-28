@@ -3,10 +3,13 @@
   "package": "dev.hephaestus.conrad.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "server.AddLevelValueContainer"
+    "server.AddLevelValueContainer",
+    "server.SendConfigValuesOnJoin",
+    "server.SendConfigValuesOnOp"
   ],
   "client": [
     "client.AddRemoteValueContainer",
+    "client.SendConfigValues",
     "server.MinecraftServerAccessor"
   ],
   "injectors": {

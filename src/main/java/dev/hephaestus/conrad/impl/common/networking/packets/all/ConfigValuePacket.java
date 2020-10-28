@@ -2,7 +2,7 @@ package dev.hephaestus.conrad.impl.common.networking.packets.all;
 
 import dev.hephaestus.conrad.api.networking.NetworkSerializerRegistry;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import dev.hephaestus.conrad.impl.common.networking.packets.ConradPacket;
 import dev.hephaestus.conrad.impl.common.util.ConradUtil;
 import net.fabricmc.fabric.api.network.PacketContext;
@@ -44,15 +44,11 @@ public class ConfigValuePacket extends ConradPacket {
 		Object value = read(buf);
 
 		context.getTaskQueue().execute(() -> {
-			try {
-				ValueContainer.getInstance((ServerPlayerEntity) context.getPlayer()).put(
-						valueKey,
-						value,
-						false
-				);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			ValueContainer.getInstance((ServerPlayerEntity) context.getPlayer()).put(
+					valueKey,
+					value,
+					false
+			);
 		});
 	}
 
@@ -61,15 +57,11 @@ public class ConfigValuePacket extends ConradPacket {
 		Object value = read(buf);
 
 		context.getTaskQueue().execute(() -> {
-			try {
-				ValueContainer.getInstance().put(
-						valueKey,
-						value,
-						true
-				);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			ValueContainer.getInstance().put(
+					valueKey,
+					value,
+					true
+			);
 		});
 	}
 }

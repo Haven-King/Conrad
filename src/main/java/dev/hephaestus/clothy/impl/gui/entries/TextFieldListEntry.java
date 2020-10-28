@@ -52,7 +52,7 @@ public abstract class TextFieldListEntry<T> extends TooltipListEntry<T> {
     }
     
     @Override
-    public boolean isEdited() {
+    public boolean isModified() {
         return isChanged(original, textFieldWidget.getText());
     }
     

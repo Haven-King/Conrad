@@ -41,6 +41,7 @@ public abstract class AbstractTextFieldListCell<T, SELF extends AbstractTextFiel
 		widget.setText(Objects.toString(finalValue));
 		widget.setChangedListener(s -> {
 			widget.setEditableColor(getPreferredTextColor());
+			this.modified = s.equals(value);
 		});
 	}
 

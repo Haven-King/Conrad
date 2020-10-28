@@ -4,7 +4,7 @@ import dev.hephaestus.clothy.api.ConfigBuilder;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
 import dev.hephaestus.conrad.api.StronglyTypedList;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 
 import java.util.HashMap;
 import java.util.List;

@@ -50,7 +50,9 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
 	protected Function<SELF, C> createNewInstance;
     @Nullable
     protected Text addTooltip = new TranslatableText("text.clothy.list.add"), removeTooltip = new TranslatableText("text.clothy.list.remove");
-    
+
+    private boolean modified = false;
+
     public BaseListEntry(@NotNull Text fieldName, @NotNull Function<StronglyTypedList<T>, Optional<List<Text>>> tooltipSupplier, @NotNull Supplier<StronglyTypedList<T>> defaultValue, @NotNull Function<SELF, C> createNewInstance, @Nullable Consumer<StronglyTypedList<T>> saveConsumer, Text resetButtonKey) {
         this(fieldName, tooltipSupplier, defaultValue, createNewInstance, saveConsumer, resetButtonKey, false);
     }
@@ -93,17 +95,8 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
     }
     
     @Override
-    public boolean isEdited() {
-        if (super.isEdited()) return true;
-        if (cells.stream().anyMatch(BaseListCell::isEdited)) return true;
-        StronglyTypedList<T> value = getValue();
-        StronglyTypedList<T> defaultValue = this.getDefaultValue().get();
-        if (value.size() != defaultValue.size()) return true;
-        for (int i = 0; i < value.size(); i++) {
-            if (!Objects.equals(value.get(i), defaultValue.get(i)))
-                return true;
-        }
-        return false;
+    public boolean isModified() {
+        return this.modified || super.isModified() || cells.stream().anyMatch(BaseListCell::isModified);
     }
     
     @Override
@@ -223,7 +216,7 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
             drawTexture(matrices, x - 15 + 26, y + 5, 24 + 27, focused == null ? 0 : insideDelete ? 18 : 9, 9, 9);
         resetWidget.x = x + entryWidth - resetWidget.getWidth();
         resetWidget.y = y;
-        resetWidget.active = isEdited();
+        resetWidget.active = isModified();
         resetWidget.render(matrices, mouseX, mouseY, delta);
         MinecraftClient.getInstance().textRenderer.drawWithShadow(matrices, getDisplayedFieldName().asOrderedText(), isDeleteButtonEnabled() ? x + 24 : x + 24 - 9, y + 6, labelWidget.rectangle.contains(mouseX, mouseY) && !resetWidget.isMouseOver(mouseX, mouseY) && !insideDelete && !insideCreateNew ? 0xffe6fe16 : getPreferredTextColor());
         if (expanded) {
@@ -270,6 +263,7 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
                 }
                 cell.onAdd();
                 MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                BaseListEntry.this.modified = true;
                 return true;
             } else if (isDeleteButtonEnabled() && isInsideDelete(double_1, double_2)) {
                 Element focused = getFocused();
@@ -280,6 +274,7 @@ public abstract class BaseListEntry<T, C extends BaseListCell, SELF extends Base
                     widgets.remove(focused);
                     MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 }
+                BaseListEntry.this.modified = true;
                 return true;
             } else if (rectangle.contains(double_1, double_2)) {
                 expanded = !expanded;

@@ -2,13 +2,10 @@ package dev.hephaestus.clothy.impl.builders.primitive;
 
 import dev.hephaestus.clothy.impl.gui.entries.ColorEntry;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
-import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
 import dev.hephaestus.math.impl.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
 
 @Environment(EnvType.CLIENT)
 public class ColorFieldBuilder extends FieldBuilder<Color, ColorEntry> {

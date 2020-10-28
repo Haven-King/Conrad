@@ -76,7 +76,7 @@ public class DropdownBoxEntry<T> extends TooltipListEntry<T> {
     }
     
     @Override
-    public boolean isEdited() {
+    public boolean isModified() {
         return this.selectionElement.topRenderer.isEdited();
     }
     

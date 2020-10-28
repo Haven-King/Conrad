@@ -2,10 +2,10 @@ package dev.hephaestus.conrad.api.gui;
 
 import dev.hephaestus.clothy.api.ConfigBuilder;
 import dev.hephaestus.clothy.impl.builders.FieldBuilder;
-import dev.hephaestus.conrad.api.Config;
 import dev.hephaestus.conrad.impl.common.config.ValueContainer;
-import dev.hephaestus.conrad.impl.common.keys.KeyRing;
-import dev.hephaestus.conrad.impl.common.keys.ValueKey;
+import dev.hephaestus.conrad.impl.common.config.KeyRing;
+import dev.hephaestus.conrad.impl.common.config.ValueDefinition;
+import dev.hephaestus.conrad.impl.common.config.ValueKey;
 import dev.hephaestus.conrad.impl.common.util.ConradException;
 import dev.hephaestus.conrad.impl.common.util.ReflectionUtil;
 import net.fabricmc.api.EnvType;
@@ -13,7 +13,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 
 @Environment(EnvType.CLIENT)
@@ -62,16 +61,15 @@ public class FieldBuilderProviderRegistry {
 
 	@ApiStatus.Internal
 	public static FieldBuilder<?, ?> getEntry(ConfigBuilder configBuilder, ValueContainer valueContainer, ValueKey valueKey) {
-		Method method = KeyRing.get(valueKey);
-		if (method.isAnnotationPresent(Config.Value.Widget.class)) {
-			Identifier id = new Identifier(method.getAnnotation(Config.Value.Widget.class).value());
-			if (CUSTOM_FIELD_BUILDERS.containsKey(id)) {
-				return CUSTOM_FIELD_BUILDERS.get(id).getBuilder(configBuilder, valueContainer, valueKey);
+		ValueDefinition valueDefinition = KeyRing.get(valueKey.getConfigKey()).getValueDefinition(valueKey);
+		if (valueDefinition.getWidget() != null) {
+			if (CUSTOM_FIELD_BUILDERS.containsKey(valueDefinition.getWidget())) {
+				return CUSTOM_FIELD_BUILDERS.get(valueDefinition.getWidget()).getBuilder(configBuilder, valueContainer, valueKey);
 			} else {
-				throw new ConradException("Custom field builder provider not registered: '" + id + "'!");
+				throw new ConradException("Custom field builder provider not registered: '" + valueDefinition.getWidget() + "'!");
 			}
 		} else {
-			Class<?> clazz = KeyRing.get(valueKey).getReturnType();
+			Class<?> clazz = valueDefinition.getType();
 			return FIELD_BUILDERS.get(clazz).getBuilder(configBuilder, valueContainer, valueKey);
 		}
 	}

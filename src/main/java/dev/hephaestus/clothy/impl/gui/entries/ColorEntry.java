@@ -81,7 +81,7 @@ public class ColorEntry extends TextFieldListEntry<Color> {
     }
     
     @Override
-    public boolean isEdited() {
+    public boolean isModified() {
         ColorValue colorValue = getColorValue(textFieldWidget.getText());
         return colorValue.hasError() || colorValue.color != original.getColor();
     }

@@ -7,10 +7,7 @@ import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.util.version.SemanticVersionImpl;
 import net.minecraft.util.Identifier;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.util.function.BooleanSupplier;
 
 public interface Config {
@@ -98,6 +95,7 @@ public interface Config {
 	 * Options for handling a declared config schema.
 	 * Only the root config interface should be annotated.
 	 */
+	@Inherited
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface Options {
@@ -114,22 +112,23 @@ public interface Config {
 		/**
 		 * The method that will be used to save this config file. See {@link SaveType}.
 		 */
-		SaveType type();
+		SaveType saveType();
 
 		/**
 		 * The number of tooltips that are shown when hovering over the category on the config screen.
 		 * Tooltips are automatically wrapped to fit in the window, so doing that manually isn't necessary.
 		 */
-		int tooltips() default 0;
+		int tooltipCount() default 0;
 
 		/**
 		 * If the client should know about level values and vice-versa.
 		 * Level configs will always be synced to operators so that they can modify the configs from mod menu.
 		 */
-		Sync synced() default Sync.DEFAULT;
+		Sync synced() default Sync.FALSE;
 	}
 
 	class Value {
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Options {
@@ -164,6 +163,7 @@ public interface Config {
 			int priority() default 100;
 		}
 
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Widget {
@@ -193,12 +193,14 @@ public interface Config {
 		 * Should be in the form of "modid:callback_name". The callback method itself should be registered by calling
 		 * {@link Conrad#registerCallback(Identifier, SaveCallback)} in your mod initializer.
 		 */
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Callback {
 			String[] value();
 		}
 
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface IntegerBounds {
@@ -206,13 +208,15 @@ public interface Config {
 			long max() default Long.MAX_VALUE;
 		}
 
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface FloatingBounds {
-			double min() default Double.MIN_VALUE;
-			double max() default Double.MAX_VALUE;
+			double min() default Double.NEGATIVE_INFINITY;
+			double max() default Double.POSITIVE_INFINITY;
 		}
 
+		@Inherited
 		@Target(ElementType.METHOD)
 		@Retention(RetentionPolicy.RUNTIME)
 		public @interface Matches {
