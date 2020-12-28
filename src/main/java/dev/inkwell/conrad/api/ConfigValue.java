@@ -2,34 +2,78 @@ package dev.inkwell.conrad.api;
 
 import dev.inkwell.conrad.impl.ConfigKey;
 import dev.inkwell.conrad.impl.ConradException;
+import dev.inkwell.conrad.impl.ValueContainer;
 import dev.inkwell.conrad.impl.entrypoints.RegisterConfigs;
+import dev.inkwell.vivid.builders.WidgetComponentBuilder;
+import dev.inkwell.vivid.constraints.Bounded;
+import dev.inkwell.vivid.util.Array;
+import dev.inkwell.vivid.util.Table;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public class ConfigValue<T> implements Supplier<T> {
+public class ConfigValue<T> implements Supplier<T>, Comparable<ConfigValue<?>> {
 	private final Supplier<T> defaultValue;
-	private final boolean sync;
+
+	private boolean sync;
+	private WidgetComponentBuilder<T> builder;
+	private T min;
+	private T max;
 
 	private ConfigKey key = null;
 
-	private ConfigValue(@NotNull Supplier<T> defaultValue, boolean sync) {
+	ConfigValue(@NotNull Supplier<@NotNull T> defaultValue) {
 		this.defaultValue = defaultValue;
-		this.sync = sync;
 
 		if (RegisterConfigs.isFinished()) {
 			throw new ConradException("Cannot create ConfigValue after registration has completed!");
 		}
 	}
 
-	private ConfigValue(@NotNull T defaultValue, boolean sync) {
-		this(() -> defaultValue, sync);
+	// Yes this is gross, please ignore it.
+	ConfigValue(@NotNull Supplier<@NotNull T> defaultValue, Void dummy) {
+		this.defaultValue = defaultValue;
 	}
 
 	public T get() {
+		return ValueContainer.ROOT.get(this.getKey());
+	}
+
+	public ConfigValue<T> widget(WidgetComponentBuilder<T> builder) {
+		this.builder = builder;
+		return this;
+	}
+
+	public ConfigValue<T> sync() {
+		this.sync = true;
+		return this;
+	}
+
+	public ConfigValue<T> setMin(@Nullable T min) {
+		this.min = min;
+		return this;
+	}
+
+	public ConfigValue<T> setMax(@Nullable T max) {
+		this.max = max;
+		return this;
+	}
+
+	public ConfigValue<T> setBounds(@Nullable T min, @Nullable T max) {
+		this.setMin(min);
+		return this.setMax(max);
+	}
+
+	@ApiStatus.Internal
+	public T getDefaultValue() {
 		return this.defaultValue.get();
+	}
+
+	@ApiStatus.Internal
+	public @Nullable WidgetComponentBuilder<T> getBuilder() {
+		return this.builder;
 	}
 
 	@ApiStatus.Internal
@@ -47,19 +91,18 @@ public class ConfigValue<T> implements Supplier<T> {
 		this.key = key;
 	}
 
-	public static <T> ConfigValue<T> of(Supplier<T> defaultValue) {
-		return new ConfigValue<>(defaultValue, false);
+	@Override
+	public int compareTo(@NotNull ConfigValue<?> o) {
+		return this.key.compareTo(o.key);
 	}
 
-	public static <T> ConfigValue<T> of(T defaultValue) {
-		return new ConfigValue<>(defaultValue, false);
+	@ApiStatus.Internal
+	public @Nullable T getMin() {
+		return this.min;
 	}
 
-	public static <T> ConfigValue<T> of(Supplier<T> defaultValue, boolean sync) {
-		return new ConfigValue<>(defaultValue, sync);
-	}
-
-	public static <T> ConfigValue<T> of(T defaultValue, boolean sync) {
-		return new ConfigValue<>(defaultValue, sync);
+	@ApiStatus.Internal
+	public @Nullable T getMax() {
+		return this.max;
 	}
 }

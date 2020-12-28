@@ -1,14 +1,17 @@
 package dev.inkwell.conrad.impl;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import dev.inkwell.conrad.api.Config;
 import dev.inkwell.conrad.api.ConfigValue;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class KeyRing {
-	private static final Multimap<String, ConfigKey> KEYS_BY_MOD_ID = LinkedHashMultimap.create();
+	private static final Multimap<String, ConfigKey> KEYS_BY_MOD_ID = HashMultimap.create();
 	private static final Multimap<ConfigKey, ConfigValue<?>> VALUES_BY_CONFIG = LinkedHashMultimap.create();
 	private static final Map<ConfigKey, Config> CONFIGS = new HashMap<>();
 
@@ -30,6 +33,10 @@ public class KeyRing {
 
 	public static void register(ConfigKey configKey, Config config) {
 		CONFIGS.put(configKey, config);
+	}
+
+	public static Collection<String> getMods() {
+		return KEYS_BY_MOD_ID.keySet();
 	}
 
 	public static Collection<ConfigKey> getKeys(String modId) {

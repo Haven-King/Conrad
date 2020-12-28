@@ -10,11 +10,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ValueContainer {
 	public static ValueContainer ROOT = new ValueContainer(FabricLoader.getInstance().getConfigDir().normalize());
 
-	private final Map<ConfigKey, Object> values = new HashMap<>();
+	private final ConcurrentMap<ConfigKey, Object> values = new ConcurrentHashMap<>();
 	private final Path saveDirectory;
 
 	public ValueContainer(Path saveDirectory) {
@@ -57,7 +59,7 @@ public class ValueContainer {
 		ConfigKey rootKey = new ConfigKey(key.getNamespace(), key.getPath()[0]);
 		Config root = KeyRing.getRootConfig(rootKey);
 		ConfigSerializer<T, O> serializer = (ConfigSerializer<T, O>) root.serializer();
-		Path path = this.saveDirectory.resolve(root.name()).getParent();
+		Path path = this.saveDirectory.resolve(rootKey.getNamespace()).resolve(root.name()).getParent();
 
 		Files.createDirectories(path);
 

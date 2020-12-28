@@ -1,6 +1,8 @@
 package dev.inkwell.conrad.api;
 
 import dev.inkwell.conrad.impl.*;
+import dev.inkwell.vivid.util.Array;
+import dev.inkwell.vivid.util.Table;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
@@ -10,29 +12,50 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public abstract class ConfigSerializer<E, O extends E> {
 	private final HashMap<Class<?>, ValueSerializer<E, ?, ?>> serializableTypes = new HashMap<>();
-	private final HashMap<Class<? extends E>, Class<?>> valueSerializers = new HashMap<>();
+	private final HashMap<Class<?>, Function<ConfigValue<?>, ValueSerializer<E, ?, ?>>> typeDependentSerializers = new HashMap<>();
 
-	protected final void addSerializer(Class<?> valueClass, Class<? extends E> representationClass,  ValueSerializer<E, ?, ?> valueSerializer) {
+	@SuppressWarnings("unchecked")
+	public final <T> void addSerializer(Class<T> valueClass, ValueSerializer<E, ?, T> valueSerializer) {
 		this.serializableTypes.putIfAbsent(valueClass, valueSerializer);
 
-		valueClass = ReflectionUtil.getClass(valueClass);
+		valueClass = (Class<T>) ReflectionUtil.getClass(valueClass);
 
 		for (Class<?> clazz : ReflectionUtil.getClasses(valueClass)) {
-			this.serializableTypes.put(clazz, valueSerializer);
+			this.serializableTypes.putIfAbsent(clazz, valueSerializer);
 		}
+	}
 
-		this.valueSerializers.put(representationClass, valueClass);
+	public final <T> void addSerializer(Class<T> valueClass, Function<ConfigValue<T>, ValueSerializer<E, ?, T>> serializerBuilder) {
+		this.typeDependentSerializers.putIfAbsent(valueClass, (Function) serializerBuilder);
 	}
 
 	protected final boolean canSerialize(Class<?> valueClass) {
 		return this.serializableTypes.containsKey(valueClass);
 	}
 
-	public final ValueSerializer<E, ?, ?> getSerializer(Class<?> clazz) {
-		return serializableTypes.containsKey(clazz) ? serializableTypes.get(clazz) : serializableTypes.get(valueSerializers.get(clazz));
+	@SuppressWarnings("unchecked")
+	public final <V> ValueSerializer<E, ?, V> getSerializer(ConfigValue<V> configValue) {
+		V defaultValue = configValue.getDefaultValue();
+
+		if (typeDependentSerializers.containsKey(defaultValue.getClass())) {
+			return (ValueSerializer<E, ?, V>) typeDependentSerializers.get(defaultValue.getClass()).apply(configValue);
+		}
+
+		return (ValueSerializer<E, ?, V>) this.getSerializer(defaultValue.getClass());
+	}
+
+	public final <V> ValueSerializer<E, ?, V> getSerializer(Supplier<V> defaultValue) {
+		return this.getSerializer(new ConfigValue<>(defaultValue, null));
+	}
+
+	@SuppressWarnings("unchecked")
+	public final <V> ValueSerializer<E, ?, V> getSerializer(Class<V> valueClass) {
+		return (ValueSerializer<E, ?, V>) serializableTypes.get(valueClass);
 	}
 
 	public abstract O start();
@@ -66,7 +89,13 @@ public abstract class ConfigSerializer<E, O extends E> {
 			doNested(root, value.getKey(), (object, key) ->
 				{
 					try {
-						ValueContainer.ROOT.put(value.getKey(), this.get(object, key), false);
+						ValueSerializer<E, ?, ?> serializer = this.getSerializer(value);
+						E representation = this.get(object, key);
+						if (representation != null) {
+							ValueContainer.ROOT.put(value.getKey(), serializer.deserialize(representation), false);
+						} else {
+							Conrad.LOGGER.info("Missing key: " + value.getKey());
+						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -82,7 +111,7 @@ public abstract class ConfigSerializer<E, O extends E> {
 		for (ConfigValue<?> value : KeyRing.getValues(configKey)) {
 			doNested(root, value.getKey(), (object, key) -> {
 						Object v = value.get();
-						this.add(object, key, this.getSerializer(v.getClass()).serializeValue(v), null);
+						this.add(object, key, this.getSerializer(value).serializeValue(v), null);
 					}
 			);
 		}

@@ -66,11 +66,11 @@ public class RegisterConfigs implements PreLaunchEntrypoint {
 					configValue.setKey(key);
 					KeyRing.register(configValue);
 
-					ValueContainer.ROOT.putDefault(key, configValue.get());
+					ValueContainer.ROOT.putDefault(key, configValue.getDefaultValue());
 
 					Conrad.LOGGER.info("Registered ConfigKey {}", key);
 				} catch (IllegalAccessException e) {
-					e.printStackTrace();
+					throw new ConradException("Error reading field " + field.getDeclaringClass().getName() + "." + field.getName());
 				}
 			}
 		}

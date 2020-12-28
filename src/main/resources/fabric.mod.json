@@ -15,7 +15,8 @@
     ],
     "conrad": [
       "dev.inkwell.conrad.test.TestConfig",
-      "dev.inkwell.conrad.test.TestConfig2"
+      "dev.inkwell.conrad.test.TestConfig2",
+      "dev.inkwell.conrad.test.TestConfig3"
     ],
     "modmenu": [
       "dev.inkwell.conrad.impl.entrypoints.ModMenuEntrypoint"

@@ -2,16 +2,19 @@ package dev.inkwell.conrad.impl;
 
 import dev.inkwell.conrad.api.Color;
 import dev.inkwell.conrad.api.ConfigSerializer;
-import dev.inkwell.conrad.api.StronglyTypedList;
+import dev.inkwell.conrad.api.ConfigValue;
 import dev.inkwell.conrad.api.ValueSerializer;
-import dev.inkwell.json.*;
-import dev.inkwell.json.api.SyntaxError;
+import dev.inkwell.conrad.json.*;
+import dev.inkwell.conrad.json.api.SyntaxError;
+import dev.inkwell.vivid.util.Array;
+import dev.inkwell.vivid.util.Table;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 public class JsonSerializer extends ConfigSerializer<JsonElement, JsonObject> {
 	public static final JsonSerializer INSTANCE = new JsonSerializer();
@@ -19,14 +22,15 @@ public class JsonSerializer extends ConfigSerializer<JsonElement, JsonObject> {
 	private final Jankson jankson = new Jankson();
 
 	private JsonSerializer() {
-		this.addSerializer(Boolean.class, JsonPrimitive.class, BooleanSerializer.INSTANCE);
-		this.addSerializer(Integer.class, JsonPrimitive.class, IntSerializer.INSTANCE);
-		this.addSerializer(Long.class, JsonPrimitive.class, LongSerializer.INSTANCE);
-		this.addSerializer(String.class, JsonPrimitive.class, StringSerializer.INSTANCE);
-		this.addSerializer(Float.class, JsonPrimitive.class, FloatSerializer.INSTANCE);
-		this.addSerializer(Double.class, JsonPrimitive.class, DoubleSerializer.INSTANCE);
-		this.addSerializer(Color.class, JsonPrimitive.class, ColorSerializer.INSTANCE);
-		this.addSerializer(StronglyTypedList.class, JsonArray.class, IntegerListSerializer.INSTANCE);
+		this.addSerializer(Boolean.class, BooleanSerializer.INSTANCE);
+		this.addSerializer(Integer.class, IntSerializer.INSTANCE);
+		this.addSerializer(Long.class, LongSerializer.INSTANCE);
+		this.addSerializer(String.class, StringSerializer.INSTANCE);
+		this.addSerializer(Float.class, FloatSerializer.INSTANCE);
+		this.addSerializer(Double.class, DoubleSerializer.INSTANCE);
+		this.addSerializer(Color.class, ColorSerializer.INSTANCE);
+		this.addSerializer(Array.class, value -> this.arrayValueSerializer(value.getDefaultValue()));
+		this.addSerializer(Table.class, value -> this.tableValueSerializer(value.getDefaultValue()));
 	}
 
 	@Override
@@ -65,7 +69,15 @@ public class JsonSerializer extends ConfigSerializer<JsonElement, JsonObject> {
 		return "json5";
 	}
 
-	private interface JsonValueSerializer<R extends JsonElement, V> extends ValueSerializer<JsonElement, R, V> {
+	protected <V> ValueSerializer<JsonElement, ?, Array<V>> arrayValueSerializer(Array<V> defaultValue) {
+		return new ArraySerializer<>(defaultValue);
+	}
+
+	protected <V> ValueSerializer<JsonElement, ?, Table<V>> tableValueSerializer(Table<V> defaultValue) {
+		return new TableSerializer<>(defaultValue);
+	}
+
+	public interface JsonValueSerializer<R extends JsonElement, V> extends ValueSerializer<JsonElement, R, V> {
 	}
 
 	private static class BooleanSerializer implements JsonValueSerializer<JsonPrimitive, Boolean> {
@@ -166,43 +178,74 @@ public class JsonSerializer extends ConfigSerializer<JsonElement, JsonObject> {
 		}
 	}
 
-	private static class IntegerListSerializer implements JsonValueSerializer<JsonArray, StronglyTypedList<Integer>> {
-		public static final IntegerListSerializer INSTANCE = new IntegerListSerializer();
+	private class ArraySerializer<T> implements JsonValueSerializer<JsonArray, Array<T>> {
+		private final Array<T> defaultValue;
 
-		@Override
-		public JsonArray serialize(StronglyTypedList<Integer> value) {
-			return new JsonArray(value);
+		private ArraySerializer(Array<T> defaultValue) {
+			this.defaultValue = defaultValue;
 		}
 
 		@Override
-		public StronglyTypedList<Integer> deserialize(JsonElement representation) {
-			StronglyTypedList<Integer> list = new StronglyTypedList<>(Integer.class);
+		public JsonArray serialize(Array<T> value) {
+			JsonArray array = new JsonArray();
+			ValueSerializer<? extends JsonElement, ?, T> serializer = JsonSerializer.this.getSerializer(value.getDefaultValue());
 
-			for (JsonElement element : (JsonArray) representation) {
-				list.add(((JsonPrimitive) element).asInt(0));
+			for (T t : value) {
+				array.add(serializer.serialize(t));
 			}
 
-			return list;
+			return array;
+		}
+
+		@Override
+		public Array<T> deserialize(JsonElement representation) {
+			ValueSerializer<JsonElement, ?, T> serializer = JsonSerializer.this.getSerializer(this.defaultValue.getDefaultValue());
+
+			Array<T> array = new Array<>(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue());
+
+			int i = 0;
+			for (JsonElement element : ((JsonArray) representation)) {
+				array.addEntry();
+				array.put(i++, serializer.deserialize(element));
+			}
+
+			return array;
 		}
 	}
 
-	private static class DoubleListSerializer implements JsonValueSerializer<JsonArray, StronglyTypedList<Double>> {
-		public static final DoubleListSerializer INSTANCE = new DoubleListSerializer();
+	private class TableSerializer<T> implements JsonValueSerializer<JsonObject, Table<T>> {
+		private final Table<T> defaultValue;
 
-		@Override
-		public JsonArray serialize(StronglyTypedList<Double> value) {
-			return new JsonArray(value);
+		private TableSerializer(Table<T> defaultValue) {
+			this.defaultValue = defaultValue;
 		}
 
 		@Override
-		public StronglyTypedList<Double> deserialize(JsonElement representation) {
-			StronglyTypedList<Double> list = new StronglyTypedList<>(Double.class);
+		public JsonObject serialize(Table<T> table) {
+			JsonObject object = new JsonObject();
+			ValueSerializer<? extends JsonElement, ?, T> serializer = JsonSerializer.this.getSerializer(this.defaultValue.getDefaultValue());
 
-			for (JsonElement element : (JsonArray) representation) {
-				list.add(((JsonPrimitive) element).asDouble(0));
+			for (Table.Entry<String, T>  t : table) {
+				object.put(t.getKey(), serializer.serialize(t.getValue()));
 			}
 
-			return list;
+			return object;
+		}
+
+		@Override
+		public Table<T> deserialize(JsonElement representation) {
+			ValueSerializer<JsonElement, ?, T> serializer = JsonSerializer.this.getSerializer(this.defaultValue.getDefaultValue());
+
+			Table<T> table = new Table<>(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue());
+
+			int i = 0;
+			for (Map.Entry<String, JsonElement> entry : ((JsonObject) representation).entrySet()) {
+				table.addEntry();
+				table.setKey(i, entry.getKey());
+				table.put(i++, serializer.deserialize(entry.getValue()));
+			}
+
+			return table;
 		}
 	}
 }

@@ -29,8 +29,8 @@ dependencies {
         transitive(false)
     }
 
-    modImplementation "dev.inkwell:vivid-config-screens:0.1.0"
-    include "dev.inkwell:vivid-config-screens:0.1.0"
+    modImplementation "dev.inkwell:vivid:0.1.0"
+    include "dev.inkwell:vivid:0.1.0"
 }
 
 processResources {

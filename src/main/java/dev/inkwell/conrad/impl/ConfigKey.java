@@ -1,11 +1,12 @@
 package dev.inkwell.conrad.impl;
 
 import net.minecraft.util.InvalidIdentifierException;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ConfigKey {
+public class ConfigKey implements Comparable<ConfigKey> {
 	private final String namespace;
 	private final String[] path;
 
@@ -86,5 +87,31 @@ public class ConfigKey {
 
 	private static boolean isNamespaceCharacterValid(char c) {
 		return c == '_' || c == '-' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9';
+	}
+
+	@Override
+	public int compareTo(@NotNull ConfigKey o) {
+		if (!this.namespace.equals(o.namespace)) {
+			return this.namespace.compareTo(o.namespace);
+		} else if (this.path.length != o.path.length) {
+			return Integer.compare(this.path.length, o.path.length);
+		} else {
+			for (int i = 0; i < this.path.length; ++i) {
+				if (!this.path[i].equals(o.path[i])) {
+					return this.path[i].compareTo(o.path[i]);
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	public ConfigKey getParent() {
+		if (this.path.length > 1) {
+			String[] path = Arrays.copyOf(this.path, this.path.length - 1);
+			return new ConfigKey(this.namespace, path);
+		} else {
+			return this;
+		}
 	}
 }
