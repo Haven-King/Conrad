@@ -11,7 +11,7 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-    mavenLocal()
+    maven { url = "https://hephaestus.dev/release" }
 }
 
 dependencies {
@@ -29,8 +29,8 @@ dependencies {
         transitive(false)
     }
 
-    modImplementation "dev.inkwell:vivid:0.1.0"
-    include "dev.inkwell:vivid:0.1.0"
+    modImplementation "dev.monarkhes:vivid:${vivid_version}"
+    include "dev.monarkhes:vivid:${vivid_version}"
 }
 
 processResources {

@@ -11,15 +11,18 @@
   "environment": "*",
   "entrypoints": {
     "preLaunch": [
-      "dev.inkwell.conrad.impl.entrypoints.RegisterConfigs"
+      "dev.monarkhes.conrad.impl.entrypoints.RegisterConfigs"
+    ],
+    "main": [
+      "dev.monarkhes.conrad.impl.entrypoints.Networking"
     ],
     "conrad": [
-      "dev.inkwell.conrad.test.TestConfig",
-      "dev.inkwell.conrad.test.TestConfig2",
-      "dev.inkwell.conrad.test.TestConfig3"
+      "dev.monarkhes.conrad.test.TestConfig",
+      "dev.monarkhes.conrad.test.TestConfig2",
+      "dev.monarkhes.conrad.test.TestConfig3"
     ],
     "modmenu": [
-      "dev.inkwell.conrad.impl.entrypoints.ModMenuEntrypoint"
+      "dev.monarkhes.conrad.impl.entrypoints.ModMenuEntrypoint"
     ]
   },
   "mixins": [

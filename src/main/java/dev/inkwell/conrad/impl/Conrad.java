@@ -1,8 +1,0 @@
-package dev.inkwell.conrad.impl;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-public class Conrad {
-	public static final Logger LOGGER = LogManager.getLogger("conrad");
-}

@@ -1,11 +1,13 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "dev.inkwell.conrad.mixin",
+  "package": "dev.monarkhes.conrad.impl.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "MixinMinecraftServer"
   ],
   "client": [
+    "client.MixinServerInfo"
   ],
   "injectors": {
     "defaultRequire": 1
