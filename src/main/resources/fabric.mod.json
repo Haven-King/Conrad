@@ -10,19 +10,11 @@
   "icon": "assets/conrad/icon.png",
   "environment": "*",
   "entrypoints": {
-    "preLaunch": [
-      "dev.monarkhes.conrad.impl.entrypoints.RegisterConfigs"
-    ],
-    "main": [
-      "dev.monarkhes.conrad.impl.entrypoints.Networking"
-    ],
-    "conrad": [
-      "dev.monarkhes.conrad.test.TestConfig",
-      "dev.monarkhes.conrad.test.TestConfig2",
-      "dev.monarkhes.conrad.test.TestConfig3"
+    "config": [
+      "dev.monarkhes.conrad.test.TestConfig"
     ],
     "modmenu": [
-      "dev.monarkhes.conrad.impl.entrypoints.ModMenuEntrypoint"
+      "dev.monarkhes.conrad.impl.entrypoints.ConfigScreenProvider"
     ]
   },
   "mixins": [

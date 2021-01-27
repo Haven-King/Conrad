@@ -4,10 +4,9 @@
   "package": "dev.monarkhes.conrad.impl.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "MixinMinecraftServer"
+    "PlayerEntityMixin"
   ],
   "client": [
-    "client.MixinServerInfo"
   ],
   "injectors": {
     "defaultRequire": 1
