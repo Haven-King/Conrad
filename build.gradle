@@ -11,9 +11,9 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+    mavenLocal()
     maven { url = "https://hephaestus.dev/release" }
     maven { url = "http://maven.terraformersmc.com/" }
-    mavenLocal()
     jcenter()
 }
 
@@ -22,8 +22,8 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.29.3+1.16"
-    modImplementation "net.fabricmc.fabric-api:fabric-config-api-v1:1.0.0+2eb937ed3a"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-config-api-v1:${project.config_version}"
 
     modCompileOnly("com.terraformersmc:modmenu:${modmenu_version}") {
         transitive(false)

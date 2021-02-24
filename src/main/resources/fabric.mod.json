@@ -11,15 +11,12 @@
   "environment": "*",
   "entrypoints": {
     "config": [
-      "dev.monarkhes.conrad.test.TestConfig"
+      "dev.monarkhes.conrad.impl.entrypoints.Conrad"
     ],
     "modmenu": [
       "dev.monarkhes.conrad.impl.entrypoints.ConfigScreenProvider"
     ]
   },
-  "mixins": [
-    "conrad.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=0.10.5+build.213",
     "minecraft": ">=1.16.2"

@@ -11,18 +11,18 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @FunctionalInterface
-public interface WidgetBuilder<T, V extends KeyView<T>> {
-    DataType<WidgetBuilder<?, ?>> DATA_TYPE = new DataType<>("conrad", "widget_builder");
+public interface WidgetFactory<T, V extends KeyView<T>> {
+    DataType<WidgetFactory<?, ?>> DATA_TYPE = new DataType<>("conrad", "widget_builder");
 
     WidgetComponent build(V keyView, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value);
 
     @FunctionalInterface
-    interface Default<T> extends WidgetBuilder<T, KeyView<T>> {
+    interface Default<T> extends WidgetFactory<T, KeyView<T>> {
         WidgetComponent build(KeyView<T> keyView, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value);
     }
 
     @FunctionalInterface
-    interface ValueDependent<T> extends WidgetBuilder<T, ValueKey<T>> {
+    interface ValueDependent<T> extends WidgetFactory<T, ValueKey<T>> {
         WidgetComponent build(ValueKey<T> valueKey, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value);
     }
 }
