@@ -67,6 +67,11 @@ public class CategoryButtonWidget extends ButtonWidget implements DrawableExtens
     }
 
     @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return this.visible && mouseX >= (double)this.x && mouseY >= (double)this.y && mouseX < (double)(this.x + this.width) && mouseY < (double)(this.y + this.height);
+    }
+
+    @Override
     public void addTooltips(Consumer<Text> tooltipConsumer) {
         this.tooltips.forEach(tooltipConsumer);
     }

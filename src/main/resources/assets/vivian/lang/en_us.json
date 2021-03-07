@@ -9,6 +9,7 @@
   "vivian.unsaved.count.singular": "You have §c%d§r unsaved change!",
   "vivian.unsaved.prompt": "Would you like to save?",
   "conrad:vivian": "Vivian",
+  "conrad:vivian.comment": "Controls config GUI visuals",
   "conrad:vivian/animations": "Animations",
   "conrad:vivian/animations/enabled": "Enabled",
   "conrad:vivian/animations/speed": "Speed"

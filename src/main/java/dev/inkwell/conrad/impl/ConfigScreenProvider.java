@@ -86,6 +86,11 @@ public class ConfigScreenProvider implements ModMenuApi {
 
                 config.getData(DataType.COMMENT).forEach(string -> category.add(new LiteralText(string)));
 
+                if (!category.getTooltips().isEmpty()) {
+                    category.addTooltip(LiteralText.EMPTY);
+                }
+                category.addTooltip(new TranslatableText("conrad.tooltip.save_type", config.getSaveType()));
+
                 Deque<ValueKey<?>> deque = new ArrayDeque<>();
                 values.forEach(deque::add);
 
