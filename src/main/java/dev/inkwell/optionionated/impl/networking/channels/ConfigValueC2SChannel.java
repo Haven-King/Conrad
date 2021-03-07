@@ -46,9 +46,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientModInitializer.class)
-@EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayConnectionEvents.class)
-public class UserConfigC2SChannel extends C2SChannel {
-    private static final Identifier ID = new Identifier("optionionated", "channel/send_level_values");
+@EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayConnectionEvents.Join.class)
+public class ConfigValueC2SChannel extends C2SChannel implements ServerPlayConnectionEvents.Disconnect {
+    private static final Identifier ID = new Identifier("optionionated", "channel/send_client_values");
 
     @Override
     public Identifier getId() {
@@ -59,8 +59,12 @@ public class UserConfigC2SChannel extends C2SChannel {
     public void onInitialize() {
         super.onInitialize();
 
-        ServerPlayConnectionEvents.DISCONNECT.register(((handler, server) ->
-                ((ConfigValueCache) server).drop(handler.player)));
+        ServerPlayConnectionEvents.DISCONNECT.register(this);
+    }
+
+    @Override
+    public void onPlayDisconnect(ServerPlayNetworkHandler handler, MinecraftServer server) {
+        ((ConfigValueCache) server).drop(handler.player);
     }
 
     @Override
@@ -96,7 +100,7 @@ public class UserConfigC2SChannel extends C2SChannel {
             PacketByteBuf out = ConfigNetworking.toPacket(configDefinition, result.valueContainer);
 
             if (out != null) {
-                PlayerLookup.all(server).forEach(player -> ServerPlayNetworking.send(player, ConfigNetworking.SYNC_CONFIG, out));
+                PlayerLookup.all(server).forEach(player -> ServerPlayNetworking.send(player, ServerConfigS2CChannel.ID, out));
             }
         }
 

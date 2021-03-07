@@ -51,9 +51,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ConfigNetworking implements ModInitializer, ClientModInitializer {
-    public static final Identifier SYNC_CONFIG = new Identifier("fabric", "packet/sync_values");
-    public static final Identifier USER_CONFIG = new Identifier("fabric", "packet/sync_values/user");
-
     public static <R> Result read(PacketByteBuf buf, Function<SaveType, ValueContainer> provider, Disconnector disconnector) {
         String configDefinitionString = buf.readString(32767);
         ConfigDefinition<R> configDefinition = ConfigManager.getDefinition(configDefinitionString);
@@ -90,6 +87,11 @@ public class ConfigNetworking implements ModInitializer, ClientModInitializer {
 
                 try {
                     configDefinition.getSerializer().deserialize(configDefinition, inputStream, valueContainer);
+
+                    if (saveType == SaveType.LEVEL) {
+                        valueContainer.save(configDefinition);
+                    }
+
                     return new Result(forward, configDefinitionString, valueContainer);
                 } catch (IOException e) {
                     ConfigManagerImpl.LOGGER.error("Failed to sync config '{}': {}", configDefinition, e.getMessage());

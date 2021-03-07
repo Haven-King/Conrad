@@ -29,7 +29,7 @@
     "channel": [
       "dev.inkwell.optionionated.impl.networking.channels.ForwardUserConfigsS2CChannel",
       "dev.inkwell.optionionated.impl.networking.channels.ServerConfigS2CChannel",
-      "dev.inkwell.optionionated.impl.networking.channels.UserConfigC2SChannel",
+      "dev.inkwell.optionionated.impl.networking.channels.ConfigValueC2SChannel",
       "dev.inkwell.optionionated.impl.networking.channels.VersionCheckChannel"
     ]
   },

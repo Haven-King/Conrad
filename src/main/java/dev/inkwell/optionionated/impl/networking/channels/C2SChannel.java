@@ -25,7 +25,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientModInitializer.class)
-@EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayConnectionEvents.class)
+@EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayConnectionEvents.Join.class)
 public abstract class C2SChannel implements Channel, ClientPlayConnectionEvents.Join, ServerPlayNetworking.PlayChannelHandler {
     @Override
     @Environment(EnvType.CLIENT)

@@ -18,7 +18,7 @@ package dev.inkwell.optionionated.api;
 
 import dev.inkwell.optionionated.api.value.ValueContainer;
 import dev.inkwell.optionionated.impl.networking.channels.ServerConfigS2CChannel;
-import dev.inkwell.optionionated.impl.networking.channels.UserConfigC2SChannel;
+import dev.inkwell.optionionated.impl.networking.channels.ConfigValueC2SChannel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -26,7 +26,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 public class SyncConfigValues {
     @Environment(EnvType.CLIENT)
     public static void sendConfigValues(ConfigDefinition<?> configDefinition, ValueContainer valueContainer) {
-        UserConfigC2SChannel.sendToServer(configDefinition, valueContainer);
+        ConfigValueC2SChannel.sendToServer(configDefinition, valueContainer);
     }
 
     private static <R> void sendConfigValues(ConfigDefinition<R> configDefinition, ServerPlayerEntity player, ValueContainer valueContainer) {

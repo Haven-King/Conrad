@@ -22,14 +22,22 @@ import net.fabricmc.api.EnvironmentInterface;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayNetworking.PlayChannelHandler.class)
-public abstract class S2CChannel implements Channel, ServerPlayConnectionEvents.Join, ClientPlayNetworking.PlayChannelHandler {
+@EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayConnectionEvents.Init.class)
+public abstract class S2CChannel implements Channel, ServerPlayConnectionEvents.Join, ClientPlayNetworking.PlayChannelHandler, ClientPlayConnectionEvents.Init {
     @Override
     @Environment(EnvType.CLIENT)
     public void onInitializeClient() {
-        ClientPlayConnectionEvents.INIT.register((handler, client) ->
-                ClientPlayNetworking.registerReceiver(this.getId(), this));
+        ClientPlayConnectionEvents.INIT.register(this);
+    }
+
+    @Override
+    @Environment(EnvType.CLIENT)
+    public void onPlayInit(ClientPlayNetworkHandler handler, MinecraftClient client) {
+        ClientPlayNetworking.registerReceiver(this.getId(), this);
     }
 
     @Override

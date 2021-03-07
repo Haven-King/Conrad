@@ -23,6 +23,7 @@ import dev.inkwell.optionionated.api.data.SaveType;
 import dev.inkwell.optionionated.api.value.ValueContainer;
 import dev.inkwell.optionionated.api.value.ValueContainerProvider;
 import dev.inkwell.optionionated.impl.networking.ConfigNetworking;
+import dev.inkwell.optionionated.impl.networking.channels.ForwardUserConfigsS2CChannel;
 import dev.inkwell.optionionated.impl.networking.util.ConfigValueCache;
 import dev.inkwell.optionionated.impl.networking.util.ConfigValueSender;
 import dev.inkwell.optionionated.impl.util.ClientUtil;
@@ -99,7 +100,7 @@ public abstract class MixinMinecraftServer implements ValueContainerProvider, Co
 
         PlayerLookup.all(((MinecraftServer) (Object) this)).forEach(player -> {
             if (!player.getUuid().equals(except)) {
-                ServerPlayNetworking.send(player, ConfigNetworking.USER_CONFIG, peerBuf);
+                ServerPlayNetworking.send(player, ForwardUserConfigsS2CChannel.ID, peerBuf);
             }
         });
     }
