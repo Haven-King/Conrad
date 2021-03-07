@@ -21,7 +21,7 @@ import dev.inkwell.optionionated.api.data.SaveType;
 import dev.inkwell.optionionated.api.serialization.ConfigSerializer;
 import dev.inkwell.optionionated.api.util.ListView;
 import dev.inkwell.optionionated.api.util.Version;
-import dev.inkwell.optionionated.api.value.ConfigUpgrade;
+import dev.inkwell.optionionated.api.value.ConfigUpgradeHandler;
 import dev.inkwell.optionionated.api.value.ValueKey;
 import dev.inkwell.optionionated.impl.ConfigManagerImpl;
 import dev.inkwell.optionionated.impl.exceptions.ConfigIdentifierException;
@@ -45,22 +45,22 @@ public class ConfigDefinition<R> implements Comparable<ConfigDefinition<?>>, Ite
     private final String string;
     private final SaveType saveType;
     private final Map<DataType<?>, List<Object>> data = new HashMap<>();
-    private final ConfigUpgrade<R> upgrade;
+    private final ConfigUpgradeHandler<R> upgrade;
 
     /**
      * @param namespace namespace of the entity that owns this config file, usually a mod id
      * @param name      the name of the config file this key represents (without any file extensions)
-     * @param version   version
+     * @param version   the version of this config file, used for upgrades
      * @param saveType  see {@link SaveType}
-     * @param upgrade   the upgrader to be used
-     * @param path      the path of the directory this config file, relative to 'config/namespace'
+     * @param upgradeHandler   the object that will handle upgrades for this config definition
+     * @param path      the path of the directory this config file, relative to the 'config' folder
      */
-    public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull Version version, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, @NotNull ConfigUpgrade<R> upgrade, @NotNull Path path, Map<DataType<?>, Collection<?>> data) {
+    public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull Version version, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, @NotNull ConfigUpgradeHandler<R> upgradeHandler, @NotNull Path path, Map<DataType<?>, Collection<?>> data) {
         this.namespace = namespace;
         this.name = name;
         this.version = version;
         this.serializer = serializer;
-        this.upgrade = upgrade;
+        this.upgrade = upgradeHandler;
         this.path = path;
         this.saveType = saveType;
         this.string = namespace + ":" + name;
@@ -77,34 +77,34 @@ public class ConfigDefinition<R> implements Comparable<ConfigDefinition<?>>, Ite
     /**
      * @param namespace namespace of the entity that owns this config file, usually a mod id
      * @param name      the name of the config file this key represents (without any file extensions)
-     * @param version
+     * @param version   the version of this config file, used for upgrades
      * @param saveType  see {@link SaveType}
-     * @param upgrade
-     * @param path      the path of the directory this config file, relative to 'config/namespace'
+     * @param upgradeHandler   the object that will handle upgrades for this config definition
+     * @param path      the path of the directory this config file, relative to the 'config' folder
      */
-    public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull Version version, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, @NotNull ConfigSerializer<R> serializer, @NotNull ConfigUpgrade<R> upgrade, String... path) {
-        this(namespace, name, version, serializer, saveType, upgrade, Paths.get(namespace, path), data);
+    public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull Version version, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, @NotNull ConfigSerializer<R> serializer, @NotNull ConfigUpgradeHandler<R> upgradeHandler, String... path) {
+        this(namespace, name, version, serializer, saveType, upgradeHandler, Paths.get(namespace, path), data);
     }
 
     /**
      * @param namespace namespace of the entity that owns this config file, usually a mod id
      * @param name      the name of the config file this key represents (without any file extensions)
      * @param saveType  see {@link SaveType}
-     * @param version
-     * @param upgrade
+     * @param version   the version of this config file, used for upgrades
+     * @param upgradeHandler   the object that will handle upgrades for this config definition
      */
-    public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, Version version, ConfigUpgrade<R> upgrade) {
-        this(namespace, name, version, serializer, saveType, upgrade, Paths.get("."), data);
+    public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, Version version, ConfigUpgradeHandler<R> upgradeHandler) {
+        this(namespace, name, version, serializer, saveType, upgradeHandler, Paths.get("."), data);
     }
 
     /**
      * @param namespace namespace of the entity that owns this config file, usually a mod id
      * @param saveType  see {@link SaveType}
-     * @param version
-     * @param upgrade
+     * @param version   the version of this config file, used for upgrades
+     * @param upgradeHandler   the object that will handle upgrades for this config definition
      */
-    public ConfigDefinition(@NotNull String namespace, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, Version version, ConfigUpgrade<R> upgrade) {
-        this(namespace, "config", version, serializer, saveType, upgrade, Paths.get("."), data);
+    public ConfigDefinition(@NotNull String namespace, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, Version version, ConfigUpgradeHandler<R> upgradeHandler) {
+        this(namespace, "config", version, serializer, saveType, upgradeHandler, Paths.get("."), data);
     }
 
     public static boolean isValid(String string) {

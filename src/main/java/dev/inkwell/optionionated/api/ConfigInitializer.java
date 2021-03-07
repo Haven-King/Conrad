@@ -20,7 +20,7 @@ import dev.inkwell.optionionated.api.data.SaveType;
 import dev.inkwell.optionionated.api.serialization.ConfigSerializer;
 import dev.inkwell.optionionated.api.util.DataCollector;
 import dev.inkwell.optionionated.api.util.Version;
-import dev.inkwell.optionionated.api.value.ConfigUpgrade;
+import dev.inkwell.optionionated.api.value.ConfigUpgradeHandler;
 import dev.inkwell.optionionated.api.value.ConfigValueCollector;
 import net.fabricmc.loader.api.SemanticVersion;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <R> The representation of a config serializer
  */
-public interface ConfigInitializer<R> extends ConfigUpgrade<R> {
+public interface ConfigInitializer<R> extends ConfigUpgradeHandler<R> {
     /**
      * @return the concrete serializer instance associated with this config file.
      */

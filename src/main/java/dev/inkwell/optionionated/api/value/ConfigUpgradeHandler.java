@@ -20,7 +20,7 @@ import dev.inkwell.optionionated.api.util.Version;
 import org.jetbrains.annotations.Nullable;
 
 @FunctionalInterface
-public interface ConfigUpgrade<R> {
+public interface ConfigUpgradeHandler<R> {
     /**
      * @param from           the version represented in the representation
      * @param representation the intermediate representation of the existing config file
