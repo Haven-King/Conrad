@@ -16,9 +16,9 @@
 
 package dev.inkwell.conrad.api.value;
 
-import dev.inkwell.optionionated.api.data.Bounds;
-import dev.inkwell.optionionated.api.data.Matches;
-import dev.inkwell.optionionated.api.value.ValueKey;
+import dev.inkwell.oliver.api.data.Bounds;
+import dev.inkwell.oliver.api.data.Matches;
+import dev.inkwell.oliver.api.value.ValueKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -77,15 +77,15 @@ public class Builders {
         }
     }
 
-    public static class Table<T> extends ValueKey.Builder<dev.inkwell.optionionated.api.util.Table<T>> {
+    public static class Table<T> extends ValueKey.Builder<dev.inkwell.oliver.api.util.Table<T>> {
         public Table(@NotNull Supplier<@NotNull T> defaultValue) {
             //noinspection unchecked
-            super(() -> new dev.inkwell.optionionated.api.util.Table<>((Class<T>) defaultValue.get().getClass(), defaultValue));
+            super(() -> new dev.inkwell.oliver.api.util.Table<>((Class<T>) defaultValue.get().getClass(), defaultValue));
         }
 
         public Table<T> entry(java.lang.String key, T value) {
             this.defaultValue = () -> {
-                dev.inkwell.optionionated.api.util.Table<T> table = this.defaultValue.get().addEntry();
+                dev.inkwell.oliver.api.util.Table<T> table = this.defaultValue.get().addEntry();
                 int i = table.size() - 1;
 
                 table.set(i, value);

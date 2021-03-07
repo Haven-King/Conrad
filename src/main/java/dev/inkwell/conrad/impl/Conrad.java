@@ -16,13 +16,15 @@
 
 package dev.inkwell.conrad.impl;
 
-import dev.inkwell.optionionated.api.ConfigDefinition;
-import dev.inkwell.optionionated.api.ConfigManager;
-import dev.inkwell.optionionated.api.ConfigPostInitializer;
-import dev.inkwell.optionionated.api.SyncConfigValues;
-import dev.inkwell.optionionated.api.value.ValueContainer;
-import dev.inkwell.optionionated.api.value.ValueContainerProvider;
-import dev.inkwell.optionionated.api.value.ValueKey;
+import dev.inkwell.oliver.api.ConfigDefinition;
+import dev.inkwell.oliver.api.ConfigManager;
+import dev.inkwell.oliver.api.ConfigPostInitializer;
+import dev.inkwell.oliver.api.SyncConfigValues;
+import dev.inkwell.oliver.api.data.DataType;
+import dev.inkwell.oliver.api.lang.Translator;
+import dev.inkwell.oliver.api.value.ValueContainer;
+import dev.inkwell.oliver.api.value.ValueContainerProvider;
+import dev.inkwell.oliver.api.value.ValueKey;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -52,6 +54,12 @@ public class Conrad implements ConfigPostInitializer {
         boolean dev = FabricLoader.getInstance().isDevelopmentEnvironment();
 
         for (ConfigDefinition<?> configDefinition : ConfigManager.getConfigKeys()) {
+            configDefinition.add(DataType.COMMENT, Translator.getComments(configDefinition.toString()));
+
+            for (ValueKey<?> valueKey : configDefinition) {
+                valueKey.add(DataType.COMMENT, Translator.getComments(valueKey.toString()));
+            }
+
             if (client) {
                 ConfigScreenProvider.register(ConfigManager.getValues(configDefinition));
             }

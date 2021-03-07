@@ -16,11 +16,11 @@
 
 package dev.inkwell.conrad.api;
 
-import dev.inkwell.optionionated.api.data.DataType;
-import dev.inkwell.optionionated.api.value.ValueKey;
-import dev.inkwell.optionionated.impl.data.KeyView;
-import dev.inkwell.vivid.api.screen.ConfigScreen;
-import dev.inkwell.vivid.api.widgets.WidgetComponent;
+import dev.inkwell.oliver.api.data.DataType;
+import dev.inkwell.oliver.api.value.ValueKey;
+import dev.inkwell.oliver.impl.data.KeyView;
+import dev.inkwell.vivian.api.screen.ConfigScreen;
+import dev.inkwell.vivian.api.widgets.WidgetComponent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;

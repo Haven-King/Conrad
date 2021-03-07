@@ -17,31 +17,31 @@
 package dev.inkwell.conrad.api;
 
 import dev.inkwell.conrad.impl.Conrad;
-import dev.inkwell.optionionated.api.data.Bounds;
-import dev.inkwell.optionionated.api.data.Constraint;
-import dev.inkwell.optionionated.api.data.DataType;
-import dev.inkwell.optionionated.api.data.Flag;
-import dev.inkwell.optionionated.api.util.Array;
-import dev.inkwell.optionionated.api.util.ListView;
-import dev.inkwell.optionionated.api.util.StronglyTypedImmutableCollection;
-import dev.inkwell.optionionated.api.util.Table;
-import dev.inkwell.optionionated.api.value.ValueKey;
-import dev.inkwell.optionionated.impl.data.KeyView;
-import dev.inkwell.optionionated.impl.exceptions.ConfigValueException;
-import dev.inkwell.optionionated.impl.util.ReflectionUtil;
-import dev.inkwell.vivid.api.builders.WidgetComponentFactory;
-import dev.inkwell.vivid.api.screen.ConfigScreen;
-import dev.inkwell.vivid.api.util.Alignment;
-import dev.inkwell.vivid.api.widgets.WidgetComponent;
-import dev.inkwell.vivid.api.widgets.compound.ArrayWidget;
-import dev.inkwell.vivid.api.widgets.compound.TableWidget;
-import dev.inkwell.vivid.api.widgets.value.ToggleComponent;
-import dev.inkwell.vivid.api.widgets.value.ValueWidgetComponent;
-import dev.inkwell.vivid.api.widgets.value.entry.*;
-import dev.inkwell.vivid.api.widgets.value.slider.DoubleSliderWidget;
-import dev.inkwell.vivid.api.widgets.value.slider.FloatSliderWidget;
-import dev.inkwell.vivid.api.widgets.value.slider.IntegerSliderWidget;
-import dev.inkwell.vivid.api.widgets.value.slider.LongSliderWidget;
+import dev.inkwell.oliver.api.data.Bounds;
+import dev.inkwell.oliver.api.data.Constraint;
+import dev.inkwell.oliver.api.data.DataType;
+import dev.inkwell.oliver.api.data.Flag;
+import dev.inkwell.oliver.api.util.Array;
+import dev.inkwell.oliver.api.util.ListView;
+import dev.inkwell.oliver.api.util.StronglyTypedImmutableCollection;
+import dev.inkwell.oliver.api.util.Table;
+import dev.inkwell.oliver.api.value.ValueKey;
+import dev.inkwell.oliver.impl.data.KeyView;
+import dev.inkwell.oliver.impl.exceptions.ConfigValueException;
+import dev.inkwell.oliver.impl.util.ReflectionUtil;
+import dev.inkwell.vivian.api.builders.WidgetComponentFactory;
+import dev.inkwell.vivian.api.screen.ConfigScreen;
+import dev.inkwell.vivian.api.util.Alignment;
+import dev.inkwell.vivian.api.widgets.WidgetComponent;
+import dev.inkwell.vivian.api.widgets.compound.ArrayWidget;
+import dev.inkwell.vivian.api.widgets.compound.TableWidget;
+import dev.inkwell.vivian.api.widgets.value.ToggleComponent;
+import dev.inkwell.vivian.api.widgets.value.ValueWidgetComponent;
+import dev.inkwell.vivian.api.widgets.value.entry.*;
+import dev.inkwell.vivian.api.widgets.value.slider.DoubleSliderWidget;
+import dev.inkwell.vivian.api.widgets.value.slider.FloatSliderWidget;
+import dev.inkwell.vivian.api.widgets.value.slider.IntegerSliderWidget;
+import dev.inkwell.vivian.api.widgets.value.slider.LongSliderWidget;
 import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 
@@ -127,13 +127,11 @@ public class EntryBuilderRegistry {
         registerBounded(Float.class, FloatSliderWidget::new, FloatEntryWidget::new);
         registerBounded(Double.class, DoubleSliderWidget::new, DoubleEntryWidget::new);
 
-        register(String.class, ((configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) -> {
-            return new StringEntryWidget(parent, x, y, width, height, Alignment.RIGHT, defaultValueSupplier, changedListener, saveConsumer, value);
-        }));
+        register(String.class, ((configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) ->
+                new StringEntryWidget(parent, x, y, width, height, Alignment.RIGHT, defaultValueSupplier, changedListener, saveConsumer, value)));
 
-        register(Boolean.class, (configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) -> {
-            return new ToggleComponent(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
-        });
+        register(Boolean.class, (configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) ->
+                new ToggleComponent(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value));
 
         registerUnsafe(Array.class, (WidgetFactory.ValueDependent<Array<T>>) (configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) -> {
                     ListView<WidgetFactory<?, ?>> factories = configValue.getData(WidgetFactory.DATA_TYPE);
@@ -186,12 +184,12 @@ public class EntryBuilderRegistry {
             }
 
             @Override
-            public <D> ListView<D> getData(DataType<D> dataType) {
+            public <D> @NotNull ListView<D> getData(DataType<D> dataType) {
                 return valueKey.getData(dataType);
             }
 
             @Override
-            public ListView<DataType<?>> getDataTypes() {
+            public @NotNull ListView<DataType<?>> getDataTypes() {
                 return valueKey.getDataTypes();
             }
 

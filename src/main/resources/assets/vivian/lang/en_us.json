@@ -1,0 +1,15 @@
+{
+  "vivian.constraint.min": "Min: %d",
+  "vivian.constraint.max": "Max %d",
+  "vivian.constraint.matches": "Matches %s",
+  "vivian.enabled.true": "On",
+  "vivian.enabled.false": "Off",
+  "vivian.default": "Default: %s",
+  "vivian.unsaved.count.plural": "You have §c%d§r unsaved changes!",
+  "vivian.unsaved.count.singular": "You have §c%d§r unsaved change!",
+  "vivian.unsaved.prompt": "Would you like to save?",
+  "conrad:vivian": "Vivian",
+  "conrad:vivian/animations": "Animations",
+  "conrad:vivian/animations/enabled": "Enabled",
+  "conrad:vivian/animations/speed": "Speed"
+}

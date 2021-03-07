@@ -17,13 +17,13 @@
 package dev.inkwell.conrad.api;
 
 import dev.inkwell.conrad.api.value.Builders;
-import dev.inkwell.optionionated.api.ConfigInitializer;
-import dev.inkwell.optionionated.api.data.DataType;
-import dev.inkwell.optionionated.api.util.Array;
-import dev.inkwell.optionionated.api.util.ListView;
-import dev.inkwell.optionionated.api.value.ConfigValueCollector;
-import dev.inkwell.optionionated.api.value.ValueKey;
-import dev.inkwell.optionionated.impl.exceptions.ConfigValueException;
+import dev.inkwell.oliver.api.ConfigInitializer;
+import dev.inkwell.oliver.api.data.DataType;
+import dev.inkwell.oliver.api.util.Array;
+import dev.inkwell.oliver.api.util.ListView;
+import dev.inkwell.oliver.api.value.ConfigValueCollector;
+import dev.inkwell.oliver.api.value.ValueKey;
+import dev.inkwell.oliver.impl.exceptions.ConfigValueException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
