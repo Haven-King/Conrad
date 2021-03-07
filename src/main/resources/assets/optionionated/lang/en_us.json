@@ -1,0 +1,4 @@
+{
+  "optionionated.invalid_version": "Invalid version for config '%s': %s. Present: %s. Expected matching major versions.",
+  "optionionated.version_parse": "Error parsing config '%s' version %s."
+}

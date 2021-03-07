@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "conrad",
+  "version": "${version}",
+  "name": "Conrad",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "Apache-2.0",
+  "icon": "assets/conrad/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+    ],
+    "config": [
+      "dev.inkwell.conrad.impl.Conrad",
+      "dev.inkwell.vivid.impl.VividConfig"
+    ],
+    "main": [
+    ],
+    "preLaunch": [
+      "dev.inkwell.optionionated.impl.ConfigManagerImpl"
+    ],
+    "modmenu": [
+      "dev.inkwell.conrad.impl.ConfigScreenProvider"
+    ]
+  },
+  "mixins": [
+    "optiononated.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.2",
+    "fabric-networking-api-v1": "*",
+    "fabric-resource-loader-v0": "*",
+    "minecraft": ">=1.16.2"
+  }
+}

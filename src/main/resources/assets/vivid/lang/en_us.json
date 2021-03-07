@@ -1,0 +1,15 @@
+{
+  "vivid.constraint.min": "Min: %d",
+  "vivid.constraint.max": "Max %d",
+  "vivid.constraint.matches": "Matches %s",
+  "vivid.enabled.true": "On",
+  "vivid.enabled.false": "Off",
+  "vivid.default": "Default: %s",
+  "vivid.unsaved.count.plural": "You have §c%d§r unsaved changes!",
+  "vivid.unsaved.count.singular": "You have §c%d§r unsaved change!",
+  "vivid.unsaved.prompt": "Would you like to save?",
+  "conrad:vivid": "Vivid",
+  "conrad:vivid/animations": "Animations",
+  "conrad:vivid/animations/enabled": "Enabled",
+  "conrad:vivid/animations/speed": "Speed"
+}
