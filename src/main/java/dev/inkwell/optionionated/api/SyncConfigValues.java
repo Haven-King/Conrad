@@ -17,19 +17,19 @@
 package dev.inkwell.optionionated.api;
 
 import dev.inkwell.optionionated.api.value.ValueContainer;
-import dev.inkwell.optionionated.impl.networking.ConfigSenders;
+import dev.inkwell.optionionated.impl.networking.channels.ServerConfigS2CChannel;
+import dev.inkwell.optionionated.impl.networking.channels.UserConfigC2SChannel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.impl.networking.server.ServerPlayNetworkHandlerExtensions;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class SyncConfigValues {
     @Environment(EnvType.CLIENT)
     public static void sendConfigValues(ConfigDefinition<?> configDefinition, ValueContainer valueContainer) {
-        ConfigSenders.sendToServer(configDefinition, valueContainer);
+        UserConfigC2SChannel.sendToServer(configDefinition, valueContainer);
     }
 
     private static <R> void sendConfigValues(ConfigDefinition<R> configDefinition, ServerPlayerEntity player, ValueContainer valueContainer) {
-        ConfigSenders.sendToPlayer(configDefinition, ((ServerPlayNetworkHandlerExtensions) player.networkHandler).getAddon(), valueContainer);
+        ServerConfigS2CChannel.send(configDefinition, valueContainer, player);
     }
 }

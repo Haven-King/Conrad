@@ -20,11 +20,6 @@ import java.util.function.Predicate;
 
 public enum SyncType {
     /**
-     * Does not do any syncing.
-     */
-    NONE(),
-
-    /**
      * Used to inform users of each other's config settings.
      */
     P2P(SaveType.USER),

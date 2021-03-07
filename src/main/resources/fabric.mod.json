@@ -11,18 +11,26 @@
   "environment": "*",
   "entrypoints": {
     "client": [
+      "dev.inkwell.optionionated.impl.networking.ConfigNetworking"
     ],
     "config": [
       "dev.inkwell.conrad.impl.Conrad",
       "dev.inkwell.vivid.impl.VividConfig"
     ],
     "main": [
+      "dev.inkwell.optionionated.impl.networking.ConfigNetworking"
     ],
     "preLaunch": [
       "dev.inkwell.optionionated.impl.ConfigManagerImpl"
     ],
     "modmenu": [
       "dev.inkwell.conrad.impl.ConfigScreenProvider"
+    ],
+    "channel": [
+      "dev.inkwell.optionionated.impl.networking.channels.ForwardUserConfigsS2CChannel",
+      "dev.inkwell.optionionated.impl.networking.channels.ServerConfigS2CChannel",
+      "dev.inkwell.optionionated.impl.networking.channels.UserConfigC2SChannel",
+      "dev.inkwell.optionionated.impl.networking.channels.VersionCheckChannel"
     ]
   },
   "mixins": [

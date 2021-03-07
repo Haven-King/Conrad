@@ -23,21 +23,25 @@ import dev.inkwell.optionionated.api.SyncConfigValues;
 import dev.inkwell.optionionated.api.value.ValueContainer;
 import dev.inkwell.optionionated.api.value.ValueContainerProvider;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.api.Environment;
+import net.fabricmc.api.EnvironmentInterface;
 
+@EnvironmentInterface(value = EnvType.CLIENT, itf = ConfigPostInitializer.class)
 public class Conrad implements ConfigPostInitializer {
     public static void syncAndSave(ConfigDefinition<?> config) {
         ValueContainer valueContainer = ValueContainerProvider.getInstance(config.getSaveType()).getValueContainer();
         SyncConfigValues.sendConfigValues(config, valueContainer);
-        ConfigManager.save(config, valueContainer);
+
+        if (valueContainer.getSaveDirectory() != null) {
+            ConfigManager.save(config, valueContainer);
+        }
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public void onConfigsLoaded() {
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            for (ConfigDefinition<?> configDefinition : ConfigManager.getConfigKeys()) {
-                ConfigScreenProvider.register(ConfigManager.getValues(configDefinition));
-            }
+        for (ConfigDefinition<?> configDefinition : ConfigManager.getConfigKeys()) {
+            ConfigScreenProvider.register(ConfigManager.getValues(configDefinition));
         }
     }
 }

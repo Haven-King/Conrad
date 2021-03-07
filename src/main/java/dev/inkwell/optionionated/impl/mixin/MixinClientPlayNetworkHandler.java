@@ -16,7 +16,7 @@
 
 package dev.inkwell.optionionated.impl.mixin;
 
-import dev.inkwell.optionionated.impl.networking.Disconnector;
+import dev.inkwell.optionionated.impl.networking.util.Disconnector;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

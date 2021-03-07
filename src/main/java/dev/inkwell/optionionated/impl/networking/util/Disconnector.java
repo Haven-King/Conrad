@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package dev.inkwell.optionionated.impl.mixin;
+package dev.inkwell.optionionated.impl.networking.util;
 
-import dev.inkwell.optionionated.impl.networking.util.Disconnector;
-import net.minecraft.server.network.ServerLoginNetworkHandler;
 import net.minecraft.text.Text;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(ServerLoginNetworkHandler.class)
-public abstract class MixinServerLoginNetworkHandler implements Disconnector {
-    @Shadow
-    public abstract void disconnect(Text reason);
-
-    @Override
-    public void config_disconnect(Text text) {
-        this.disconnect(text);
-    }
+public interface Disconnector {
+    void config_disconnect(Text text);
 }

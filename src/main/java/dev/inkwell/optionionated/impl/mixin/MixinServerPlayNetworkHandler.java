@@ -16,7 +16,7 @@
 
 package dev.inkwell.optionionated.impl.mixin;
 
-import dev.inkwell.optionionated.impl.networking.Disconnector;
+import dev.inkwell.optionionated.impl.networking.util.Disconnector;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;

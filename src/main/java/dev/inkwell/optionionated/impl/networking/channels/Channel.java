@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package dev.inkwell.optionionated.impl.networking;
+package dev.inkwell.optionionated.impl.networking.channels;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.EnvironmentInterface;
+import net.fabricmc.api.ModInitializer;
+import net.minecraft.util.Identifier;
 
-import java.util.UUID;
-
-public interface ConfigValueSender {
-    <R> void send(String configDefinition, UUID except, PacketByteBuf peerBuf);
-
-    void sendCached(ServerPlayerEntity player);
-
-    void drop(ServerPlayerEntity player);
+@EnvironmentInterface(value = EnvType.CLIENT, itf = ClientModInitializer.class)
+public interface Channel extends ModInitializer, ClientModInitializer {
+    Identifier getId();
 }

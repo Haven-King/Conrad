@@ -1,4 +1,4 @@
 {
-  "optionionated.invalid_version": "Invalid version for config '%s': %s. Present: %s. Expected matching major versions.",
-  "optionionated.version_parse": "Error parsing config '%s' version %s."
+  "optionionated.invalid_version": "Invalid major version for config '%s': %s. Expected: %s.",
+  "optionionated.missing_config": "Config '%s' not found on client."
 }

@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-package dev.inkwell.optionionated.impl.networking;
+package dev.inkwell.optionionated.impl.networking.util;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-public interface Disconnector {
-    void config_disconnect(Text text);
+import java.util.Map;
+import java.util.UUID;
+
+public interface ConfigValueCache {
+    Iterable<Map.Entry<UUID, Map<String, PacketByteBuf>>> cached();
+
+    void drop(ServerPlayerEntity player);
 }

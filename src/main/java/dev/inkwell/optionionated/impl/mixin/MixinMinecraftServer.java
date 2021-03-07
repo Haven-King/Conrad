@@ -23,7 +23,8 @@ import dev.inkwell.optionionated.api.data.SaveType;
 import dev.inkwell.optionionated.api.value.ValueContainer;
 import dev.inkwell.optionionated.api.value.ValueContainerProvider;
 import dev.inkwell.optionionated.impl.networking.ConfigNetworking;
-import dev.inkwell.optionionated.impl.networking.ConfigValueSender;
+import dev.inkwell.optionionated.impl.networking.util.ConfigValueCache;
+import dev.inkwell.optionionated.impl.networking.util.ConfigValueSender;
 import dev.inkwell.optionionated.impl.util.ClientUtil;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -54,7 +55,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Mixin(MinecraftServer.class)
-public abstract class MixinMinecraftServer implements ValueContainerProvider, ConfigValueSender {
+public abstract class MixinMinecraftServer implements ValueContainerProvider, ConfigValueCache, ConfigValueSender {
     @Unique
     private Map<UUID, ValueContainer> playerValueContainers;
     @Unique
@@ -109,13 +110,18 @@ public abstract class MixinMinecraftServer implements ValueContainerProvider, Co
     }
 
     @Override
-    public void sendCached(ServerPlayerEntity player) {
-        for (Map.Entry<UUID, Map<String, PacketByteBuf>> entry : cachedConfigPackets.entrySet()) {
-            if (!entry.getKey().equals(player.getUuid())) {
-                entry.getValue().values().forEach(buf -> {
-                    ServerPlayNetworking.send(player, ConfigNetworking.USER_CONFIG, buf);
-                });
-            }
-        }
+    public Iterable<Map.Entry<UUID, Map<String, PacketByteBuf>>> cached() {
+        return this.cachedConfigPackets.entrySet();
     }
+
+    //    @Override
+//    public void sendCached(ServerPlayerEntity player) {
+//        for (Map.Entry<UUID, Map<String, PacketByteBuf>> entry : cachedConfigPackets.entrySet()) {
+//            if (!entry.getKey().equals(player.getUuid())) {
+//                entry.getValue().values().forEach(buf -> {
+//                    ServerPlayNetworking.send(player, ConfigNetworking.USER_CONFIG, buf);
+//                });
+//            }
+//        }
+//    }
 }

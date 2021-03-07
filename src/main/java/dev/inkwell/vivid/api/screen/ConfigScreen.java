@@ -24,8 +24,6 @@ import dev.inkwell.vivid.api.util.Group;
 import dev.inkwell.vivid.api.widgets.WidgetComponent;
 import dev.inkwell.vivid.api.widgets.value.SectionHeaderComponent;
 import dev.inkwell.vivid.impl.widgets.Mutable;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
@@ -53,7 +51,6 @@ import java.util.function.Consumer;
 import static dev.inkwell.vivid.impl.Vivid.BLUR;
 
 // TODO: This class needs to be cleaned up/split up in general
-@Environment(EnvType.CLIENT)
 public class ConfigScreen extends Screen implements DrawableExtensions {
     public final List<Text> tooltips = new ArrayList<>();
     private final Screen parent;

@@ -27,28 +27,13 @@ import dev.inkwell.vivid.api.screen.ScreenStyle;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.api.EnvironmentInterface;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
+@EnvironmentInterface(value = EnvType.CLIENT, itf = Stylable.class)
 public class VividConfig extends Config<Map<String, String>> implements Stylable  {
-    @Environment(EnvType.CLIENT)
-    private static final ScreenStyle STYLE = new ScreenStyle() {
-        {
-            this.backgroundTexture = new Identifier("textures/block/cobblestone.png");
-            this.backgroundColor = 0x80808080;
-        }
-
-        @Override
-        public void renderDecorations(MatrixStack matrices, int mouseX, int mouseY, float delta, int screenWidth, int screenHeight, int headerHeight) {
-            super.renderDecorations(matrices, mouseX, mouseY, delta, screenWidth, screenHeight, headerHeight);
-            fillGradient(matrices, 0, 0, screenWidth, screenHeight, 0x88000000 | (gradientColor & 0x00FFFFFF), (gradientColor & 0x00FFFFFF));
-        }
-    };
-
     @Override
     public @NotNull ConfigSerializer<Map<String, String>> getSerializer() {
         return PropertiesSerializer.INSTANCE;
@@ -67,7 +52,7 @@ public class VividConfig extends Config<Map<String, String>> implements Stylable
     @Override
     @Environment(EnvType.CLIENT)
     public ScreenStyle getStyle() {
-        return STYLE;
+        return new VividConfigStyle();
     }
 
     @Override
