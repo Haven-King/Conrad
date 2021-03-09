@@ -16,17 +16,20 @@
 
 package dev.inkwell.conrad.impl;
 
-import dev.inkwell.oliver.api.ConfigDefinition;
-import dev.inkwell.oliver.api.ConfigManager;
-import dev.inkwell.oliver.api.ConfigPostInitializer;
-import dev.inkwell.oliver.api.SyncConfigValues;
-import dev.inkwell.oliver.api.data.DataType;
-import dev.inkwell.oliver.api.lang.Translator;
-import dev.inkwell.oliver.api.value.ValueContainer;
-import dev.inkwell.oliver.api.value.ValueContainerProvider;
-import dev.inkwell.oliver.api.value.ValueKey;
+import dev.inkwell.conrad.api.value.ConfigDefinition;
+import dev.inkwell.conrad.api.value.ConfigManager;
+import dev.inkwell.conrad.api.value.ConfigPostInitializer;
+import dev.inkwell.conrad.api.value.SyncConfigValues;
+import dev.inkwell.conrad.api.value.data.DataType;
+import dev.inkwell.conrad.api.value.lang.Translator;
+import dev.inkwell.conrad.api.value.ValueContainer;
+import dev.inkwell.conrad.api.value.ValueContainerProvider;
+import dev.inkwell.conrad.api.value.ValueKey;
+import ladysnake.satin.api.managed.ManagedShaderEffect;
+import ladysnake.satin.api.managed.ShaderEffectManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.Identifier;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -37,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Conrad implements ConfigPostInitializer {
+    public static final ManagedShaderEffect BLUR = ShaderEffectManager.getInstance().manage(new Identifier("conrad", "shaders/post/blur.json"));
     private static final String FILE = "%s.%s.lang.json";
     private static final String VALUE = "  \"%s\": \"\"";
     public static void syncAndSave(ConfigDefinition<?> config) {

@@ -1,3 +1,23 @@
 {
-  "conrad.tooltip.save_type": "§8Save Type: %s"
+  "conrad.tooltip.save_type": "§8Save Type: %s",
+  "conrad.invalid_version": "Invalid major version for config '%s': %s. Expected: %s.",
+  "conrad.missing_config": "Config '%s' not found on client.",
+  "conrad.data": "Data:",
+  "conrad.flags": "Flags:",
+  "conrad.constraints": "Constraints:",
+  "conrad.key_constraints": "Key Constraints:",
+  "conrad.constraint.min": "Min: %d",
+  "conrad.constraint.max": "Max %d",
+  "conrad.constraint.matches": "Matches %s",
+  "conrad.enabled.true": "On",
+  "conrad.enabled.false": "Off",
+  "conrad.default": "Default: %s",
+  "conrad.unsaved.count.plural": "You have §c%d§r unsaved changes!",
+  "conrad.unsaved.count.singular": "You have §c%d§r unsaved change!",
+  "conrad.unsaved.prompt": "Would you like to save?",
+  "conrad:gui": "GUI",
+  "conrad:gui.comment": "Controls config GUI visuals",
+  "conrad:gui/animations": "Animations",
+  "conrad:gui/animations/enabled": "Enabled",
+  "conrad:gui/animations/speed": "Speed"
 }

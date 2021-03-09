@@ -1,4 +1,0 @@
-{
-  "optionionated.invalid_version": "Invalid major version for config '%s': %s. Expected: %s.",
-  "optionionated.missing_config": "Config '%s' not found on client."
-}

@@ -11,8 +11,10 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+    maven { url "https://hephaestus.dev/release" }
     maven { url = "http://maven.terraformersmc.com/" }
     jcenter()
+    mavenLocal()
 }
 
 dependencies {
@@ -33,6 +35,11 @@ dependencies {
 
     modImplementation "io.github.ladysnake:Satin:${satin_version}"
     include "io.github.ladysnake:Satin:${satin_version}"
+
+    modImplementation "dev.inkwell:owen:${owen_version}"
+    include "dev.inkwell:owen:${owen_version}"
+
+    modImplementation "dev.inkwell:hermes:1.0.1"
 }
 
 processResources {

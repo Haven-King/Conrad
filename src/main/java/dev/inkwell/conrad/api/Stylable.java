@@ -16,7 +16,7 @@
 
 package dev.inkwell.conrad.api;
 
-import dev.inkwell.vivian.api.screen.ScreenStyle;
+import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 

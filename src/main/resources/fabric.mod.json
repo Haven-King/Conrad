@@ -11,26 +11,26 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "dev.inkwell.oliver.impl.networking.ConfigNetworking"
+      "dev.inkwell.conrad.impl.networking.ConfigNetworking"
     ],
     "config": [
       "dev.inkwell.conrad.impl.Conrad",
-      "dev.inkwell.vivian.impl.VivianConfig"
+      "dev.inkwell.conrad.impl.gui.ConradGuiConfig"
     ],
     "main": [
-      "dev.inkwell.oliver.impl.networking.ConfigNetworking"
+      "dev.inkwell.conrad.impl.networking.ConfigNetworking"
     ],
     "preLaunch": [
-      "dev.inkwell.oliver.impl.ConfigManagerImpl"
+      "dev.inkwell.conrad.impl.ConfigManagerImpl"
     ],
     "modmenu": [
       "dev.inkwell.conrad.impl.ConfigScreenProvider"
     ],
     "channel": [
-      "dev.inkwell.oliver.impl.networking.channels.ForwardUserConfigsS2CChannel",
-      "dev.inkwell.oliver.impl.networking.channels.ServerConfigS2CChannel",
-      "dev.inkwell.oliver.impl.networking.channels.ConfigValueC2SChannel",
-      "dev.inkwell.oliver.impl.networking.channels.VersionCheckChannel"
+      "dev.inkwell.conrad.impl.networking.channels.ForwardUserConfigsS2CChannel",
+      "dev.inkwell.conrad.impl.networking.channels.ServerConfigS2CChannel",
+      "dev.inkwell.conrad.impl.networking.channels.ConfigValueC2SChannel",
+      "dev.inkwell.conrad.impl.networking.channels.VersionCheckChannel"
     ]
   },
   "mixins": [
@@ -41,5 +41,8 @@
     "fabric-networking-api-v1": "*",
     "fabric-resource-loader-v0": "*",
     "minecraft": ">=1.16.2"
+  },
+  "custom": {
+    "hermes": true
   }
 }
