@@ -108,7 +108,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
     }
 
     @Override
-    public void deserialize(ConfigDefinition<OwenElement> configDefinition, InputStream inputStream, ValueContainer valueContainer) throws IOException {
+    public void deserialize(ConfigDefinition<OwenElement> configDefinition, InputStream inputStream, ValueContainer valueContainer) {
         OwenElement root = this.getRepresentation(inputStream);
 
         for (ValueKey<?> valueKey : configDefinition) {

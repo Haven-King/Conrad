@@ -419,15 +419,13 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
     @Override
     public boolean charTyped(char chr, int keyCode) {
-        if (this.isSaveDialogOpen) {
-            return false;
-        } else {
+        if (!this.isSaveDialogOpen) {
             if (this.getFocused() != null) {
                 return this.getFocused().charTyped(chr, keyCode);
             }
-
-            return false;
         }
+
+        return false;
     }
 
     @Override

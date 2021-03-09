@@ -43,6 +43,9 @@
     "minecraft": ">=1.16.2"
   },
   "custom": {
-    "hermes": true
+    "hermes": true,
+    "modmenu": {
+      "badges": [ "library" ]
+    }
   }
 }

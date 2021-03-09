@@ -376,20 +376,15 @@ public abstract class TextWidgetComponent<T> extends ValueWidgetComponent<T> imp
         this.setFocused(isMouseOver);
 
         if (this.isFocused() && isMouseOver && button == 0) {
-            switch (this.alignment) {
-                case LEFT:
-                    break;
-                case CENTER:
-                    break;
-                case RIGHT:
-                    int i = MathHelper.floor(mouseX) - this.getX();
-                    if (this.isFocused()) {
-                        i -= 4;
-                    }
+            if (this.alignment == Alignment.RIGHT) {
+                int i = MathHelper.floor(mouseX) - this.getX();
+                if (this.isFocused()) {
+                    i -= 4;
+                }
 
-                    TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-                    String string = textRenderer.trimToWidth(this.text.substring(this.firstCharacterIndex), this.width);
-                    this.setCursor(textRenderer.trimToWidth(string, i).length() + this.firstCharacterIndex);
+                TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+                String string = textRenderer.trimToWidth(this.text.substring(this.firstCharacterIndex), this.width);
+                this.setCursor(textRenderer.trimToWidth(string, i).length() + this.firstCharacterIndex);
             }
 
             return true;

@@ -113,15 +113,4 @@ public abstract class MixinMinecraftServer implements ValueContainerProvider, Co
     public Iterable<Map.Entry<UUID, Map<String, PacketByteBuf>>> cached() {
         return this.cachedConfigPackets.entrySet();
     }
-
-    //    @Override
-//    public void sendCached(ServerPlayerEntity player) {
-//        for (Map.Entry<UUID, Map<String, PacketByteBuf>> entry : cachedConfigPackets.entrySet()) {
-//            if (!entry.getKey().equals(player.getUuid())) {
-//                entry.getValue().values().forEach(buf -> {
-//                    ServerPlayNetworking.send(player, ConfigNetworking.USER_CONFIG, buf);
-//                });
-//            }
-//        }
-//    }
 }

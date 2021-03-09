@@ -20,23 +20,22 @@ import dev.inkwell.conrad.api.Config;
 import dev.inkwell.conrad.api.Stylable;
 import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.serialization.ConfigSerializer;
-import dev.inkwell.conrad.api.value.serialization.PropertiesSerializer;
+import dev.inkwell.conrad.api.value.serialization.FlatOwenSerializer;
 import dev.inkwell.conrad.api.value.util.Version;
 import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
+import dev.inkwell.owen.OwenElement;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.api.EnvironmentInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-
 @EnvironmentInterface(value = EnvType.CLIENT, itf = Stylable.class)
-public class ConradGuiConfig extends Config<Map<String, String>> implements Stylable  {
+public class ConradGuiConfig extends Config<OwenElement> implements Stylable  {
     @Override
-    public @NotNull ConfigSerializer<Map<String, String>> getSerializer() {
-        return PropertiesSerializer.INSTANCE;
+    public @NotNull ConfigSerializer<OwenElement> getSerializer() {
+        return FlatOwenSerializer.INSTANCE;
     }
 
     @Override
@@ -45,7 +44,7 @@ public class ConradGuiConfig extends Config<Map<String, String>> implements Styl
     }
 
     @Override
-    public boolean upgrade(@Nullable Version from, Map<String, String> representation) {
+    public boolean upgrade(@Nullable Version from, OwenElement representation) {
         return false;
     }
 

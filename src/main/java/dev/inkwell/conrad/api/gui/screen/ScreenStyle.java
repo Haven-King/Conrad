@@ -114,7 +114,9 @@ public class ScreenStyle extends DrawableHelper implements DrawableExtensions {
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder bufferBuilder = tessellator.getBuffer();
             MinecraftClient.getInstance().getTextureManager().bindTexture(this.backgroundTexture);
+            //noinspection deprecation
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+            //noinspection deprecation
             bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
             bufferBuilder.vertex(0.0D, screen.height, 0.0D).texture(0.0F, (float) screen.height / 32.0F).color(r, g, b, a).next();
             bufferBuilder.vertex(screen.width, screen.height, 0.0D).texture(screen.width / 32.0F, screen.height / 32.0F).color(r, g, b, a).next();

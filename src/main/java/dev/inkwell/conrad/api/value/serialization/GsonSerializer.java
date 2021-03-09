@@ -87,7 +87,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
     }
 
     @Override
-    protected void write(JsonObject root, Writer writer, boolean minimal) throws IOException {
+    protected void write(JsonObject root, Writer writer, boolean minimal) {
         this.gson.toJson(root, writer);
     }
 
@@ -95,7 +95,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
     }
 
     private static class BooleanSerializer implements GsonValueSerializer<JsonPrimitive, Boolean> {
-        static BooleanSerializer INSTANCE = new BooleanSerializer();
+        static final BooleanSerializer INSTANCE = new BooleanSerializer();
 
         @Override
         public JsonPrimitive serialize(Boolean value) {
@@ -109,7 +109,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
     }
 
     private static class IntSerializer implements GsonValueSerializer<JsonPrimitive, Integer> {
-        static IntSerializer INSTANCE = new IntSerializer();
+        static final IntSerializer INSTANCE = new IntSerializer();
 
         @Override
         public JsonPrimitive serialize(Integer value) {
@@ -123,7 +123,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
     }
 
     private static class LongSerializer implements GsonValueSerializer<JsonPrimitive, Long> {
-        static LongSerializer INSTANCE = new LongSerializer();
+        static final LongSerializer INSTANCE = new LongSerializer();
 
         @Override
         public JsonPrimitive serialize(Long value) {
@@ -137,7 +137,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
     }
 
     private static class StringSerializer implements GsonValueSerializer<JsonPrimitive, String> {
-        static StringSerializer INSTANCE = new StringSerializer();
+        static final StringSerializer INSTANCE = new StringSerializer();
 
         @Override
         public JsonPrimitive serialize(String value) {
@@ -151,7 +151,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
     }
 
     private static class FloatSerializer implements GsonValueSerializer<JsonPrimitive, Float> {
-        public static final FloatSerializer INSTANCE = new FloatSerializer();
+        static final FloatSerializer INSTANCE = new FloatSerializer();
 
         @Override
         public JsonPrimitive serialize(Float value) {

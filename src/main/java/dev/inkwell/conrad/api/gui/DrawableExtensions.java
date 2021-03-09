@@ -170,22 +170,12 @@ public interface DrawableExtensions {
         RenderSystem.defaultBlendFunc();
 
         bufferBuilder.begin(GL_LINES, VertexFormats.POSITION_COLOR);
-//
-//		bufferBuilder.vertex(matrix, x1, y1, 0F).color(r, g, b, alpha).next();
-//		bufferBuilder.vertex(matrix, x1, y2, 0F).color(r, g, b, alpha).next();
-//
-//		bufferBuilder.vertex(matrix);
-
-//		bufferBuilder.vertex(matrix, x1, y2, 0.0F).color(r, g, b, alpha).next();
-//		bufferBuilder.vertex(matrix, x2, y2, 0.0F).color(r, g, b, alpha).next();
-//		bufferBuilder.vertex(matrix, x2, y1, 0.0F).color(r, g, b, alpha).next();
-//		bufferBuilder.vertex(matrix, x1, y1, 0.0F).color(r, g, b, alpha).next();
 
         bufferBuilder.vertex(matrix, x1, y2, 0.0F).color(r, g, b, alpha).next();
         bufferBuilder.vertex(matrix, x2, y2, 0.0F).color(r, g, b, alpha).next();
         bufferBuilder.vertex(matrix, x2, y1, 0.0F).color(r, g, b, alpha).next();
         bufferBuilder.vertex(matrix, x1, y1, 0.0F).color(r, g, b, alpha).next();
-//
+
         bufferBuilder.vertex(matrix, x1, y2, 0.0F).color(r, g, b, alpha).next();
         bufferBuilder.vertex(matrix, x1, y1, 0.0F).color(r, g, b, alpha).next();
         bufferBuilder.vertex(matrix, x2, y2, 0.0F).color(r, g, b, alpha).next();

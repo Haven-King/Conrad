@@ -53,11 +53,6 @@ public class TextButton extends WidgetComponent {
     }
 
     @Override
-    public void tick() {
-        super.tick();
-    }
-
-    @Override
     public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 

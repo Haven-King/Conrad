@@ -27,13 +27,11 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T> {
-    private final T[] possibleValues;
     private final TextButton button;
     private final TextButton[] buttons;
 
     public DropdownWidgetComponent(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value, T[] possibleValues) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
-        this.possibleValues = possibleValues;
 
         this.button = new TextButton(parent, x, y, width, height, 0, this.fromValue(value), button -> {
             this.isShadeDrawn = true;

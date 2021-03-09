@@ -80,7 +80,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
     }
 
     private static class BooleanSerializer implements OwenValueSerializer<Boolean> {
-        static BooleanSerializer INSTANCE = new BooleanSerializer();
+        static final BooleanSerializer INSTANCE = new BooleanSerializer();
 
         @Override
         public OwenElement serialize(Boolean value) {
@@ -94,7 +94,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
     }
 
     private static class IntSerializer implements OwenValueSerializer<Integer> {
-        static IntSerializer INSTANCE = new IntSerializer();
+        static final IntSerializer INSTANCE = new IntSerializer();
 
         @Override
         public OwenElement serialize(Integer value) {
@@ -108,7 +108,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
     }
 
     private static class LongSerializer implements OwenValueSerializer<Long> {
-        static LongSerializer INSTANCE = new LongSerializer();
+        static final LongSerializer INSTANCE = new LongSerializer();
 
         @Override
         public OwenElement serialize(Long value) {
@@ -122,7 +122,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
     }
 
     private static class StringSerializer implements OwenValueSerializer<String> {
-        static StringSerializer INSTANCE = new StringSerializer();
+        static final StringSerializer INSTANCE = new StringSerializer();
 
         @Override
         public OwenElement serialize(String value) {
@@ -136,7 +136,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
     }
 
     private static class FloatSerializer implements OwenValueSerializer<Float> {
-        public static final FloatSerializer INSTANCE = new FloatSerializer();
+        static final FloatSerializer INSTANCE = new FloatSerializer();
 
         @Override
         public OwenElement serialize(Float value) {
@@ -150,7 +150,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
     }
 
     private static class DoubleSerializer implements OwenValueSerializer<Double> {
-        public static final DoubleSerializer INSTANCE = new DoubleSerializer();
+        static final DoubleSerializer INSTANCE = new DoubleSerializer();
 
         @Override
         public OwenElement serialize(Double value) {
