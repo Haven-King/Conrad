@@ -116,7 +116,7 @@ public final class ValueKey<T> implements Comparable<ValueKey<?>>, KeyView<T> {
 
         ValueContainerProvider provider = ValueContainerProvider.getInstance(this.config.getSaveType());
 
-        return this.getValue(provider.getValueContainer());
+        return this.getValue(provider.getValueContainer(this.config.getSaveType()));
     }
 
     /**
@@ -160,7 +160,7 @@ public final class ValueKey<T> implements Comparable<ValueKey<?>>, KeyView<T> {
         this.assertInitialized();
         this.assetConstraints(newValue);
 
-        ValueContainer valueContainer = ValueContainerProvider.getInstance(this.config.getSaveType()).getValueContainer();
+        ValueContainer valueContainer = ValueContainerProvider.getInstance(this.config.getSaveType()).getValueContainer(this.config.getSaveType());
 
         T oldValue = valueContainer.put(this, newValue);
 
@@ -204,7 +204,12 @@ public final class ValueKey<T> implements Comparable<ValueKey<?>>, KeyView<T> {
 
         T oldValue = valueContainer.put(this, newValue);
 
-        this.listeners.forEach(listener -> listener.accept(oldValue, newValue));
+        if (valueContainer instanceof PlayerValueContainer) {
+            UUID playerId = ((PlayerValueContainer) valueContainer).getPlayerId();
+            this.playerListeners.forEach(listener -> listener.accept(oldValue, newValue, playerId));
+        } else {
+            this.listeners.forEach(listener -> listener.accept(oldValue, newValue));
+        }
 
         return oldValue;
     }

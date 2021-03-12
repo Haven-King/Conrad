@@ -56,7 +56,7 @@ public class ConradGuiConfig extends Config<OwenElement> implements Stylable  {
 
     @Override
     public @NotNull String getName() {
-        return "vivian";
+        return "gui";
     }
 
     public static final class Animations {

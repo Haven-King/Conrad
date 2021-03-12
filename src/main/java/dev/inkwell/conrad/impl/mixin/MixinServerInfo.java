@@ -16,11 +16,14 @@
 
 package dev.inkwell.conrad.impl.mixin;
 
+import dev.inkwell.conrad.api.value.PlayerValueContainer;
 import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueContainerProvider;
+import dev.inkwell.conrad.impl.ConfigManagerImpl;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +53,16 @@ public class MixinServerInfo implements ValueContainerProvider {
     }
 
     @Override
-    public ValueContainer getValueContainer() {
+    public ValueContainer getValueContainer(SaveType saveType) {
+        if (saveType == SaveType.USER) {
+            if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) {
+                ConfigManagerImpl.LOGGER.warn("Attempted to get player value container from server provider.");
+                ConfigManagerImpl.LOGGER.warn("Returning root config value container.");
+            }
+
+            return ValueContainer.ROOT;
+        }
+
         return this.valueContainer;
     }
 
@@ -60,7 +72,7 @@ public class MixinServerInfo implements ValueContainerProvider {
             return ValueContainer.ROOT;
         }
 
-        return this.playerValueContainers.computeIfAbsent(playerId, id -> ValueContainer.of(null, SaveType.USER));
+        return this.playerValueContainers.computeIfAbsent(playerId, id -> PlayerValueContainer.of(id, SaveType.USER));
     }
 
     @NotNull

@@ -48,7 +48,7 @@ public class ServerConfigS2CChannel extends S2CChannel {
 
     @Override
     public void onPlayReady(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
-        ValueContainer valueContainer = ValueContainerProvider.getInstance(SaveType.LEVEL).getValueContainer();
+        ValueContainer valueContainer = ValueContainerProvider.getInstance(SaveType.LEVEL).getValueContainer(SaveType.LEVEL);
 
         for (ConfigDefinition<?> configDefinition : ConfigManager.getConfigKeys()) {
             if (configDefinition.getSaveType() == SaveType.LEVEL) {
@@ -60,7 +60,7 @@ public class ServerConfigS2CChannel extends S2CChannel {
     @Override
     @Environment(EnvType.CLIENT)
     public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-        ValueContainer container = ValueContainerProvider.getInstance(SaveType.LEVEL).getValueContainer();
+        ValueContainer container = ValueContainerProvider.getInstance(SaveType.LEVEL).getValueContainer(SaveType.LEVEL);
         ConfigNetworking.read(buf, s -> container, (Disconnector) handler);
     }
 

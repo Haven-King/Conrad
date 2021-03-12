@@ -70,10 +70,10 @@ public class ConfigValueC2SChannel extends C2SChannel implements ServerPlayConne
     @Override
     @Environment(EnvType.CLIENT)
     public void onPlayReady(ClientPlayNetworkHandler handler, PacketSender sender, MinecraftClient client) {
-        ValueContainer valueContainer = ValueContainerProvider.getInstance(SaveType.USER).getValueContainer();
+        ValueContainer valueContainer = ValueContainerProvider.getInstance(SaveType.USER).getValueContainer(SaveType.USER);
 
         for (ConfigDefinition<?> configDefinition : ConfigManager.getConfigKeys()) {
-            if (configDefinition.getSaveType() == SaveType.USER) {
+            if (configDefinition.getSaveType() == SaveType.USER && ConfigNetworking.isSynced(configDefinition)) {
                 sendToServer(configDefinition, valueContainer);
             }
         }
@@ -91,7 +91,7 @@ public class ConfigValueC2SChannel extends C2SChannel implements ServerPlayConne
             ValueContainerProvider provider = ValueContainerProvider.getInstance(saveType);
             return saveType == SaveType.USER
                     ? provider.getPlayerValueContainer(sender.getUuid())
-                    : provider.getValueContainer();
+                    : provider.getValueContainer(saveType);
         }, ((Disconnector) handler));
 
         ConfigDefinition<R> configDefinition = ConfigManager.getDefinition(result.configDefinitionString);

@@ -16,15 +16,17 @@
 
 package dev.inkwell.conrad.api.value.data;
 
-public final class SaveType extends StringIdentifiable {
+public enum SaveType {
     /**
      * Only loaded when the game first starts. Requires a restart to take effect.
      */
-    public static final SaveType ROOT = new SaveType("root");
-    public static final SaveType USER = new SaveType("user");
-    public static final SaveType LEVEL = new SaveType("level");
+    ROOT("root"),
+    USER("user"),
+    LEVEL("level");
 
-    public SaveType(String name) {
-        super(name);
+    public final String name;
+
+    SaveType(String name) {
+        this.name = name;
     }
 }

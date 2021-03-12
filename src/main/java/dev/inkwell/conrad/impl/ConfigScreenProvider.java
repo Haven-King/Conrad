@@ -179,11 +179,13 @@ public class ConfigScreenProvider implements ModMenuApi {
     }
 
     private <T> void addEntry(SectionBuilder section, ValueKey<T> configValue) {
+        ConfigDefinition<?> configDefinition = configValue.getConfig();
+
         section.add((parent, width, x, y, index) -> {
             WidgetComponent label = new LabelComponent(parent, 0, 0, width / 2, (int) (30 * parent.getScale()), new TranslatableText(configValue.toString()), true);
 
             WidgetComponentFactory<T> factory = EntryBuilderRegistry.get(configValue);
-            ValueContainer container = ValueContainerProvider.getInstance(configValue.getConfig().getSaveType()).getValueContainer();
+            ValueContainer container = ValueContainerProvider.getInstance(configDefinition.getSaveType()).getValueContainer(configDefinition.getSaveType());
             WidgetComponent widget = factory.build(parent, x, y, width / 2, (int) (30 * parent.getScale()),
                     configValue::getDefaultValue, t -> {
                     },

@@ -19,15 +19,19 @@ package dev.inkwell.conrad.impl.mixin;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
+import dev.inkwell.conrad.api.value.PlayerValueContainer;
 import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueContainerProvider;
+import dev.inkwell.conrad.impl.ConfigManagerImpl;
 import dev.inkwell.conrad.impl.networking.channels.ForwardUserConfigsS2CChannel;
 import dev.inkwell.conrad.impl.networking.util.ConfigValueCache;
 import dev.inkwell.conrad.impl.networking.util.ConfigValueSender;
 import dev.inkwell.conrad.impl.util.ClientUtil;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.resource.ServerResourceManager;
@@ -74,7 +78,16 @@ public abstract class MixinMinecraftServer implements ValueContainerProvider, Co
     }
 
     @Override
-    public ValueContainer getValueContainer() {
+    public ValueContainer getValueContainer(SaveType saveType) {
+        if (saveType == SaveType.USER) {
+            if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) {
+                ConfigManagerImpl.LOGGER.warn("Attempted to get player value container from server provider.");
+                ConfigManagerImpl.LOGGER.warn("Returning root config value container.");
+            }
+
+            return ValueContainer.ROOT;
+        }
+
         return this.valueContainer;
     }
 
@@ -84,7 +97,7 @@ public abstract class MixinMinecraftServer implements ValueContainerProvider, Co
             return ValueContainer.ROOT;
         }
 
-        return this.playerValueContainers.computeIfAbsent(playerId, id -> ValueContainer.of(null, SaveType.USER, SaveType.LEVEL));
+        return this.playerValueContainers.computeIfAbsent(playerId, id -> PlayerValueContainer.of(id, SaveType.USER));
     }
 
     @NotNull
@@ -94,7 +107,7 @@ public abstract class MixinMinecraftServer implements ValueContainerProvider, Co
     }
 
     @Override
-    public <R> void send(String configDefinition, UUID except, PacketByteBuf peerBuf) {
+    public void send(String configDefinition, UUID except, PacketByteBuf peerBuf) {
         cachedConfigPackets.compute(except, (k, v) -> new HashMap<>()).put(configDefinition, peerBuf);
 
         PlayerLookup.all(((MinecraftServer) (Object) this)).forEach(player -> {

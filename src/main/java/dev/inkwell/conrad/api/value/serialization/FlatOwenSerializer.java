@@ -121,7 +121,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
         OwenElement element = root.get(valueKey.toString());
 
         if (element != null) {
-            valueContainer.put(valueKey, serializer.deserialize(element));
+            valueKey.setValue(serializer.deserialize(element), valueContainer);
         }
     }
 

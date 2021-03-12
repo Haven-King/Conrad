@@ -44,7 +44,7 @@ public class Conrad implements ConfigPostInitializer {
     private static final String FILE = "%s.%s.lang.json";
     private static final String VALUE = "  \"%s\": \"\"";
     public static void syncAndSave(ConfigDefinition<?> config) {
-        ValueContainer valueContainer = ValueContainerProvider.getInstance(config.getSaveType()).getValueContainer();
+        ValueContainer valueContainer = ValueContainerProvider.getInstance(config.getSaveType()).getValueContainer(config.getSaveType());
         SyncConfigValues.sendConfigValues(config, valueContainer);
 
         if (valueContainer.getSaveDirectory() != null) {

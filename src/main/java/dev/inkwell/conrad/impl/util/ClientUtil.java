@@ -24,6 +24,6 @@ import java.util.UUID;
 
 public class ClientUtil {
     public static boolean isLocalPlayer(UUID playerId) {
-        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT && playerId.equals(MinecraftClient.getInstance().getSession().getProfile().getId());
+        return playerId != null && FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT && playerId.equals(MinecraftClient.getInstance().getSession().getProfile().getId());
     }
 }

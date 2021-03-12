@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public final class ValueContainer {
+public class ValueContainer {
     private static final SaveType[] ROOT_SAVE_TYPES =
             FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT
                     ? new SaveType[]{SaveType.ROOT, SaveType.LEVEL, SaveType.USER}

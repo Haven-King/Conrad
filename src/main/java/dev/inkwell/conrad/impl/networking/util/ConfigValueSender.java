@@ -21,5 +21,5 @@ import net.minecraft.network.PacketByteBuf;
 import java.util.UUID;
 
 public interface ConfigValueSender {
-    <R> void send(String configDefinition, UUID except, PacketByteBuf peerBuf);
+    void send(String configDefinition, UUID except, PacketByteBuf peerBuf);
 }

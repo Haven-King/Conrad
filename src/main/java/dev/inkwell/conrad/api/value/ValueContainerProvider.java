@@ -34,7 +34,7 @@ import java.util.UUID;
 public interface ValueContainerProvider {
     ValueContainerProvider ROOT = new ValueContainerProvider() {
         @Override
-        public ValueContainer getValueContainer() {
+        public ValueContainer getValueContainer(SaveType saveType) {
             return ValueContainer.ROOT;
         }
 
@@ -69,6 +69,10 @@ public interface ValueContainerProvider {
         } else if (saveType == SaveType.USER && envType == EnvType.CLIENT) {
             ValueContainerProvider provider = ((ValueContainerProvider) MinecraftClient.getInstance().getCurrentServerEntry());
 
+            if (provider == null) {
+                provider = (ValueContainerProvider) MinecraftClient.getInstance().getServer();
+            }
+
             if (provider != null) {
                 return provider;
             }
@@ -77,7 +81,7 @@ public interface ValueContainerProvider {
         return ROOT;
     }
 
-    ValueContainer getValueContainer();
+    ValueContainer getValueContainer(SaveType saveType);
 
     ValueContainer getPlayerValueContainer(UUID playerId);
 
