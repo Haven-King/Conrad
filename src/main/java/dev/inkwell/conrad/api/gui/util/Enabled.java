@@ -37,6 +37,6 @@ public enum Enabled implements BooleanSupplier, Translatable {
 
     @Override
     public TranslatableText getText() {
-        return new TranslatableText("vivian.enabled." + this.value);
+        return new TranslatableText("conrad.enabled." + this.value);
     }
 }

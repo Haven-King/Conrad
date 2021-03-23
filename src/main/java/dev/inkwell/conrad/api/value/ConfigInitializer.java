@@ -22,13 +22,11 @@ import dev.inkwell.conrad.api.value.util.ConfigUpgradeHandler;
 import dev.inkwell.conrad.api.value.util.ConfigValueCollector;
 import dev.inkwell.conrad.api.value.util.DataCollector;
 import dev.inkwell.conrad.api.value.util.Version;
-import net.fabricmc.loader.api.SemanticVersion;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents one config file.
- * <p>
- * See {@link ConfigProvider} for providing multiple config files with one entrypoint.
+ * <p>See {@link ConfigProvider} for providing multiple config files with one entrypoint.</p>
  *
  * @param <R> The representation of a config serializer
  */
@@ -72,20 +70,5 @@ public interface ConfigInitializer<R> extends ConfigUpgradeHandler<R> {
      */
     default @NotNull String[] getSavePath() {
         return new String[0];
-    }
-
-    /**
-     * Upgrades on older config file to the version represented by this initializer.
-     * <p>
-     * Called after post initializers but before the old version is deserialized.
-     * <p>
-     * All ValueKey's should be fully operational by this point.
-     *
-     * @param from           the version represented in the representation
-     * @param representation the intermediate representation of the existing config file
-     * @return whether or not to try to deserialize the existing config file after upgrading
-     */
-    default boolean upgrade(SemanticVersion from, R representation) {
-        return true;
     }
 }

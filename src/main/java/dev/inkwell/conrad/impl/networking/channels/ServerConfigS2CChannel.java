@@ -39,7 +39,7 @@ import net.minecraft.util.Identifier;
 
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayNetworking.PlayChannelHandler.class)
 public class ServerConfigS2CChannel extends S2CChannel {
-    public static final Identifier ID = new Identifier("oliver", "channel/send_server_values");
+    public static final Identifier ID = new Identifier("conrad", "channel/send_server_values");
 
     @Override
     public Identifier getId() {

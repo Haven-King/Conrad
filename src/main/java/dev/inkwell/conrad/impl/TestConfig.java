@@ -7,11 +7,9 @@ import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.data.SyncType;
 import dev.inkwell.conrad.api.value.serialization.ConfigSerializer;
 import dev.inkwell.conrad.api.value.serialization.FlatOwenSerializer;
-import dev.inkwell.conrad.api.value.util.Version;
 import dev.inkwell.owen.OwenElement;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class TestConfig extends Config<OwenElement> {
     public static final ValueKey<String> FAVORITE_WORD = builder("Default")
@@ -22,6 +20,8 @@ public class TestConfig extends Config<OwenElement> {
                 }
             }).build();
 
+    public static final ValueKey<Integer> DELAY = builder(20).bounds(0, 100).build();
+
     @Override
     public @NotNull ConfigSerializer<OwenElement> getSerializer() {
         return FlatOwenSerializer.INSTANCE;
@@ -30,11 +30,6 @@ public class TestConfig extends Config<OwenElement> {
     @Override
     public @NotNull SaveType getSaveType() {
         return SaveType.USER;
-    }
-
-    @Override
-    public boolean upgrade(@Nullable Version from, OwenElement representation) {
-        return true;
     }
 
     @Override

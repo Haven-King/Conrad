@@ -33,9 +33,9 @@ public abstract class ValueWidgetComponent<T> extends WidgetComponent implements
     private final T defaultValue;
     private final Consumer<T> changedListener;
     private final Consumer<T> saveConsumer;
-    private final T initialValue;
     private final Text defaultValueText;
 
+    private T initialValue;
     private T value;
 
     public ValueWidgetComponent(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value) {
@@ -52,7 +52,8 @@ public abstract class ValueWidgetComponent<T> extends WidgetComponent implements
     @Override
     public final void save() {
         if (!this.hasError()) {
-            this.saveConsumer.accept(value);
+            this.saveConsumer.accept(this.value);
+            this.initialValue = this.value;
         }
     }
 
@@ -101,6 +102,6 @@ public abstract class ValueWidgetComponent<T> extends WidgetComponent implements
             tooltips.add(LiteralText.EMPTY);
         }
 
-        tooltips.add(new TranslatableText("vivian.default", this.getDefaultValueAsText()));
+        tooltips.add(new TranslatableText("conrad.default", this.getDefaultValueAsText()));
     }
 }

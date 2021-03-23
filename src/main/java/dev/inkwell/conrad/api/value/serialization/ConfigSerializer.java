@@ -23,6 +23,7 @@ import dev.inkwell.conrad.api.value.util.Version;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.impl.exceptions.ConfigSerializationException;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.VersionParsingException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -100,6 +101,18 @@ public interface ConfigSerializer<R> {
      */
     default void deserialize(ConfigDefinition<R> configDefinition, ValueContainer valueContainer) throws IOException {
         Path path = this.getPath(configDefinition, valueContainer);
+
+        Path migrationCandidate = configDefinition.getMigrationCandidate();
+
+        if (migrationCandidate != null) {
+            migrationCandidate = FabricLoader.getInstance().getConfigDir().normalize().resolve(configDefinition.getMigrationCandidate());
+
+            if (Files.exists(migrationCandidate)) {
+                if (configDefinition.migrate(migrationCandidate)) {
+                    Files.delete(migrationCandidate);
+                }
+            }
+        }
 
         if (Files.exists(path)) {
             Version version = null;

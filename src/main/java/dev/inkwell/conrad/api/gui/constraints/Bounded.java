@@ -40,11 +40,11 @@ public interface Bounded<T extends Number> extends Constraint {
 
     default void addConstraintTooltips(List<Text> tooltips) {
         if (getMin() != null) {
-            tooltips.add(new TranslatableText("vivian.constraint.min", getMin()));
+            tooltips.add(new TranslatableText("conrad.constraint.min", getMin()));
         }
 
         if (getMax() != null) {
-            tooltips.add(new TranslatableText("vivian.constraint.max", getMax()));
+            tooltips.add(new TranslatableText("conrad.constraint.max", getMax()));
         }
     }
 }

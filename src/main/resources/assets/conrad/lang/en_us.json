@@ -19,5 +19,7 @@
   "conrad:gui.comment": "Controls config GUI visuals",
   "conrad:gui/animations": "Animations",
   "conrad:gui/animations/enabled": "Enabled",
-  "conrad:gui/animations/speed": "Speed"
+  "conrad:gui/animations/speed": "Speed",
+  "conrad:test/delay.comment0": "Test0",
+  "conrad:test/delay.comment1": "Test1"
 }

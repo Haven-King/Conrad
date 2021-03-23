@@ -11,14 +11,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, OwenElement> {
     public static final OwenTreeSerializer INSTANCE = new OwenTreeSerializer(new Owen.Builder());
 
     private final Owen owen;
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public OwenTreeSerializer(Owen.Builder builder) {
         this.owen = builder.build();
 
@@ -35,7 +38,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
     @Override
     protected OwenElement start(@Nullable Iterable<String> comments) {
-        return new OwenElement();
+        return Owen.empty();
     }
 
     @Override
@@ -64,16 +67,20 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
     }
 
     @Override
-    public @Nullable Version getVersion(InputStream inputStream) throws VersionParsingException {
+    public @Nullable Version getVersion(InputStream inputStream) throws VersionParsingException, IOException {
         return Version.parse(this.getRepresentation(inputStream).get("version").asString());
     }
 
     @Override
-    public @NotNull OwenElement getRepresentation(InputStream inputStream) {
+    public @NotNull OwenElement getRepresentation(InputStream inputStream) throws IOException {
         String text = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines()
                 .collect(Collectors.joining("\n"));
 
-        return this.owen.parse(text);
+        try {
+            return Owen.parse(text);
+        } catch (ParseException e) {
+            throw new IOException(e);
+        }
     }
 
     interface OwenValueSerializer<V> extends ValueSerializer<OwenElement, OwenElement, V> {
@@ -84,7 +91,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public OwenElement serialize(Boolean value) {
-            return Owen.string(value.toString());
+            return Owen.literal(value.toString());
         }
 
         @Override
@@ -98,7 +105,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public OwenElement serialize(Integer value) {
-            return Owen.string(value.toString());
+            return Owen.literal(value.toString());
         }
 
         @Override
@@ -112,7 +119,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public OwenElement serialize(Long value) {
-            return Owen.string(value.toString());
+            return Owen.literal(value.toString());
         }
 
         @Override
@@ -126,7 +133,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public OwenElement serialize(String value) {
-            return Owen.string(value);
+            return Owen.literal(value);
         }
 
         @Override
@@ -140,7 +147,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public OwenElement serialize(Float value) {
-            return Owen.string(value.toString());
+            return Owen.literal(value.toString());
         }
 
         @Override
@@ -154,7 +161,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public OwenElement serialize(Double value) {
-            return Owen.string(value.toString());
+            return Owen.literal(value.toString());
         }
 
         @Override
@@ -172,7 +179,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public OwenElement serialize(Array<T> value) {
-            OwenElement array = new OwenElement();
+            OwenElement array = Owen.empty();
             ValueSerializer<? extends OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(value.getValueClass());
 
             for (T t : value) {
@@ -208,7 +215,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public OwenElement serialize(Table<T> table) {
-            OwenElement object = new OwenElement();
+            OwenElement object = Owen.empty();
             ValueSerializer<? extends OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(this.defaultValue.getValueClass());
 
             for (Table.Entry<String, T> t : table) {

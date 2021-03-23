@@ -43,7 +43,7 @@ import java.util.function.Consumer;
 
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientLoginNetworking.LoginQueryRequestHandler.class)
 public class VersionCheckChannel extends LoginQueryChannel {
-    private static final Identifier ID = new Identifier("oliver", "channel/versions");
+    private static final Identifier ID = new Identifier("conrad", "channel/versions");
 
     @Override
     public Identifier getId() {
@@ -105,7 +105,7 @@ public class VersionCheckChannel extends LoginQueryChannel {
             int serverMajorVersion = buf.readVarInt();
             int userMajorVersion = buf.readVarInt();
 
-            handler.disconnect(new TranslatableText("oliver.invalid_version",
+            handler.disconnect(new TranslatableText("conrad.invalid_version",
                     configDefinitionString,
                     userMajorVersion,
                     serverMajorVersion));

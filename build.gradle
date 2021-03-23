@@ -25,20 +25,22 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modCompileOnly("com.terraformersmc:modmenu:${modmenu_version}") {
+    modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}") {
         transitive(false)
     }
 
-    modRuntime("com.terraformersmc:modmenu:${modmenu_version}") {
+    modRuntime("com.terraformersmc:modmenu:${project.modmenu_version}") {
         transitive(false)
     }
 
-    modImplementation "io.github.ladysnake:Satin:${satin_version}"
-    include "io.github.ladysnake:Satin:${satin_version}"
+    modImplementation "io.github.ladysnake:Satin:${project.satin_version}"
+    include "io.github.ladysnake:Satin:${project.satin_version}"
 
-    modImplementation "dev.inkwell:owen:${owen_version}"
-    include "dev.inkwell:owen:${owen_version}"
+    modImplementation "dev.inkwell:just-owen:${project.owen_version}"
+    include "dev.inkwell:just-owen:${project.owen_version}"
 
+    // This is just hard coded cause like...
+    // It's probably never gonna need to update.
     modImplementation "dev.inkwell:hermes:1.0.1"
 }
 

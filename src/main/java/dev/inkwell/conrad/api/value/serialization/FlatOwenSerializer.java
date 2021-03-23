@@ -1,12 +1,12 @@
 package dev.inkwell.conrad.api.value.serialization;
 
 import dev.inkwell.conrad.api.value.ConfigDefinition;
+import dev.inkwell.conrad.api.value.ValueContainer;
+import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.util.Array;
 import dev.inkwell.conrad.api.value.util.Table;
 import dev.inkwell.conrad.api.value.util.Version;
-import dev.inkwell.conrad.api.value.ValueContainer;
-import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.impl.util.ReflectionUtil;
 import dev.inkwell.owen.Owen;
 import dev.inkwell.owen.OwenElement;
@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -29,6 +30,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
     private final HashMap<Class<?>, Function<ValueKey<?>, ValueSerializer<?>>> typeDependentSerializers = new HashMap<>();
     private final Owen owen;
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public FlatOwenSerializer(Owen.Builder builder) {
         this.owen = builder.build();
 
@@ -77,7 +79,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
 
     @Override
     public void serialize(ConfigDefinition<OwenElement> configDefinition, OutputStream outputStream, ValueContainer valueContainer, Predicate<ValueKey<?>> valuePredicate, boolean minimal) throws IOException {
-        OwenElement root = new OwenElement();
+        OwenElement root = Owen.empty();
 
         if (!minimal) {
             configDefinition.getData(DataType.COMMENT).forEach(root::addComment);
@@ -108,7 +110,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
     }
 
     @Override
-    public void deserialize(ConfigDefinition<OwenElement> configDefinition, InputStream inputStream, ValueContainer valueContainer) {
+    public void deserialize(ConfigDefinition<OwenElement> configDefinition, InputStream inputStream, ValueContainer valueContainer) throws IOException {
         OwenElement root = this.getRepresentation(inputStream);
 
         for (ValueKey<?> valueKey : configDefinition) {
@@ -131,16 +133,20 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
     }
 
     @Override
-    public @Nullable Version getVersion(InputStream inputStream) throws VersionParsingException {
+    public @Nullable Version getVersion(InputStream inputStream) throws VersionParsingException, IOException {
         return Version.parse(this.getRepresentation(inputStream).get("version").asString());
     }
 
     @Override
-    public @NotNull OwenElement getRepresentation(InputStream inputStream) {
+    public @NotNull OwenElement getRepresentation(InputStream inputStream) throws IOException {
         String text = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines()
                 .collect(Collectors.joining("\n"));
 
-        return this.owen.parse(text);
+        try {
+            return Owen.parse(text);
+        } catch (ParseException e) {
+            throw new IOException(e);
+        }
     }
 
     public interface ValueSerializer<V> {
@@ -160,7 +166,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
 
         @Override
         public OwenElement serialize(V value) {
-            return Owen.string(this.serializer.apply(value));
+            return Owen.literal(this.serializer.apply(value));
         }
 
         @Override
@@ -178,7 +184,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
 
         @Override
         public OwenElement serialize(Array<T> value) {
-            OwenElement array = new OwenElement();
+            OwenElement array = Owen.empty();
             ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(value.getValueClass());
 
             for (T t : value) {
@@ -214,7 +220,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
 
         @Override
         public OwenElement serialize(Table<T> table) {
-            OwenElement object = new OwenElement();
+            OwenElement object = Owen.empty();
             ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(this.defaultValue.getValueClass());
 
             for (Table.Entry<String, T> t : table) {

@@ -94,19 +94,19 @@ public interface ConfigManager {
         }
 
         if (dataStrings.size() > 0) {
-            comments.add(Translator.translate("oliver.data"));
+            comments.add(Translator.translate("conrad.data"));
             dataStrings.forEach(string -> comments.add("  " + string));
         }
 
         List<String> flagStrings = new ArrayList<>();
         value.getFlags().forEach(flag -> flag.addLines(flagStrings::add));
 
-        if (comments.size() > 0 && flagStrings.size() > 0) {
+        if ((comments.size() > 0 || dataStrings.size() > 0) && flagStrings.size() > 0) {
             comments.add("");
         }
 
         if (flagStrings.size() > 0) {
-            comments.add(Translator.translate("oliver.flags"));
+            comments.add(Translator.translate("conrad.flags"));
             flagStrings.forEach(string -> comments.add("  " + string));
         }
 
@@ -124,12 +124,12 @@ public interface ConfigManager {
         }
 
         if (constraintStrings.size() + keyConstraintStrings.size() > 0) {
-            comments.add(Translator.translate("oliver.constraints"));
+            comments.add(Translator.translate("conrad.constraints"));
             constraintStrings.forEach(string -> comments.add("  " + string));
 
             if (constraintStrings.size() > 0 && keyConstraintStrings.size() > 0) {
                 comments.add("");
-                comments.add(Translator.translate("oliver.key_constraints"));
+                comments.add(Translator.translate("conrad.key_constraints"));
             }
 
             keyConstraintStrings.forEach(string -> comments.add("  " + string));

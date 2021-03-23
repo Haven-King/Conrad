@@ -40,7 +40,7 @@ import java.util.UUID;
 
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayNetworking.PlayChannelHandler.class)
 public class ForwardUserConfigsS2CChannel extends S2CChannel {
-    public static final Identifier ID = new Identifier("oliver", "channel/forward_user_values");
+    public static final Identifier ID = new Identifier("conrad", "channel/forward_user_values");
 
     @Override
     public Identifier getId() {

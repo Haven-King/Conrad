@@ -15,7 +15,8 @@
     ],
     "config": [
       "dev.inkwell.conrad.impl.Conrad",
-      "dev.inkwell.conrad.impl.gui.ConradGuiConfig"
+      "dev.inkwell.conrad.impl.gui.ConradGuiConfig",
+      "dev.inkwell.conrad.impl.TestConfig"
     ],
     "main": [
       "dev.inkwell.conrad.impl.networking.ConfigNetworking"

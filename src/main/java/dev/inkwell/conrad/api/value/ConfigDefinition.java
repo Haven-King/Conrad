@@ -35,7 +35,7 @@ import java.util.*;
 /**
  * A top-level intermediate representation for several of the characteristics a config file needs.
  */
-public class ConfigDefinition<R> implements Comparable<ConfigDefinition<?>>, Iterable<ValueKey<?>> {
+public class ConfigDefinition<R> implements Comparable<ConfigDefinition<?>>, Iterable<ValueKey<?>>, ConfigUpgradeHandler<R> {
     private final String namespace;
     private final String name;
     private final Version version;
@@ -180,8 +180,19 @@ public class ConfigDefinition<R> implements Comparable<ConfigDefinition<?>>, Ite
         return this.saveType;
     }
 
+    @Override
     public boolean upgrade(@Nullable Version from, R representation) {
         return this.upgrade.upgrade(from, representation);
+    }
+
+    @Override
+    public @Nullable Path getMigrationCandidate() {
+        return this.upgrade.getMigrationCandidate();
+    }
+
+    @Override
+    public boolean migrate(Path path) {
+        return this.upgrade.migrate(path);
     }
 
     @SafeVarargs

@@ -48,7 +48,7 @@ import net.minecraft.util.Identifier;
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientModInitializer.class)
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayConnectionEvents.Join.class)
 public class ConfigValueC2SChannel extends C2SChannel implements ServerPlayConnectionEvents.Disconnect {
-    private static final Identifier ID = new Identifier("oliver", "channel/send_client_values");
+    private static final Identifier ID = new Identifier("conrad", "channel/send_client_values");
 
     @Override
     public Identifier getId() {

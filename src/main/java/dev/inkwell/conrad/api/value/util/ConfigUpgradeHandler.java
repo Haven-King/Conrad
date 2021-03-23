@@ -16,15 +16,39 @@
 
 package dev.inkwell.conrad.api.value.util;
 
-import dev.inkwell.conrad.api.value.util.Version;
 import org.jetbrains.annotations.Nullable;
 
-@FunctionalInterface
+import java.nio.file.Path;
+
 public interface ConfigUpgradeHandler<R> {
     /**
+     * Upgrades on older config file to the version represented by this initializer.
+     * <p>Called after post initializers but before the old version is deserialized.<p>
+     * <p>All ValueKey's should be fully operational by this point.</p>
+     *
      * @param from           the version represented in the representation
      * @param representation the intermediate representation of the existing config file
      * @return whether or not to try to deserialize the existing config file after upgrading
      */
-    boolean upgrade(@Nullable Version from, R representation);
+    default boolean upgrade(@Nullable Version from, R representation) {
+        return false;
+    }
+
+    /**
+     * @return a relative path to the config file this config replaces. See {@link #migrate}
+     */
+    default @Nullable Path getMigrationCandidate() {
+        return null;
+    }
+
+    /**
+     * Migrates a config file created using another, possibly absent system.
+     * <p>Called after post initializers.</p>
+     *
+     * @param path the full path of the config file to migrate
+     * @return whether or not the old config file should be deleted
+     */
+    default boolean migrate(Path path) {
+        return false;
+    }
 }

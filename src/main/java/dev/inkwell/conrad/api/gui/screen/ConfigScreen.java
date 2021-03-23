@@ -52,7 +52,7 @@ import static dev.inkwell.conrad.impl.Conrad.BLUR;
 
 // TODO: This class needs to be cleaned up/split up in general
 public class ConfigScreen extends Screen implements DrawableExtensions {
-    public final List<Text> tooltips = new ArrayList<>();
+    private final List<Text> tooltips = new ArrayList<>();
     private final Screen parent;
     private ConfigScreenBuilder provider;
     private List<Category> categories;
@@ -160,7 +160,10 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
                 buttonWidth,
                 buttonHeight,
                 new TranslatableText("gui.no"),
-                button -> this.onClose()
+                button -> {
+                    this.andThen.run();
+                    this.andThen = this::onClose;
+                }
         );
 
         yesButton.visible = false;
@@ -273,8 +276,8 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
             int buttonHeight = 20;
 
             int changedCount = this.changedCount();
-            drawCenteredText(matrices, textRenderer, new TranslatableText("vivian.unsaved.count." + (changedCount > 1 ? "plural" : "singular"), changedCount), width / 2F, height / 2F - textRenderer.fontHeight / 2F - buttonHeight, 0xFFFFFFFF, 1.25F * scale);
-            drawCenteredText(matrices, textRenderer, new TranslatableText("vivian.unsaved.prompt"), width / 2F, height / 2F - (buttonHeight / 4F) * 3, 0xFFFFFFFF, 1.25F * scale);
+            drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.unsaved.count." + (changedCount > 1 ? "plural" : "singular"), changedCount), width / 2F, height / 2F - textRenderer.fontHeight / 2F - buttonHeight, 0xFFFFFFFF, 1.25F * scale);
+            drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.unsaved.prompt"), width / 2F, height / 2F - (buttonHeight / 4F) * 3, 0xFFFFFFFF, 1.25F * scale);
 
             yesButton.render(matrices, mouseX, mouseY, tickDelta);
             noButton.render(matrices, mouseX, mouseY, tickDelta);
@@ -451,7 +454,7 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
         return changed.getValue();
     }
 
-    public boolean tryLeave(@NotNull Runnable andThen) {
+    public void tryLeave(@NotNull Runnable andThen) {
         int changed = this.changedCount();
 
         if (changed > 0) {
@@ -461,12 +464,10 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
             this.andThen = andThen;
 
-            return false;
+            return;
         }
 
         andThen.run();
-
-        return true;
     }
 
     @Override
