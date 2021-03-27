@@ -23,7 +23,6 @@ import dev.inkwell.conrad.api.value.util.Version;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.impl.exceptions.ConfigSerializationException;
-import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.VersionParsingException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -105,7 +104,7 @@ public interface ConfigSerializer<R> {
         Path migrationCandidate = configDefinition.getMigrationCandidate();
 
         if (migrationCandidate != null) {
-            migrationCandidate = FabricLoader.getInstance().getConfigDir().normalize().resolve(configDefinition.getMigrationCandidate());
+            migrationCandidate = valueContainer.getSaveDirectory().resolve(configDefinition.getMigrationCandidate());
 
             if (Files.exists(migrationCandidate)) {
                 if (configDefinition.migrate(migrationCandidate)) {
