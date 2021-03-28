@@ -124,8 +124,8 @@ public abstract class Config<R> implements ConfigInitializer<R> {
 
     @SafeVarargs
     @SuppressWarnings("unchecked")
-    protected static <T> ValueKey<Array<T>> array(Supplier<T> defaultValue, T... values) {
-        return new ValueKey.Builder<>(() -> new Array<>((Class<T>) defaultValue.get().getClass(), defaultValue, values)).build();
+    protected static <T> ValueKey.CollectionBuilder<Array<T>, T> array(Supplier<T> defaultValue, T... values) {
+        return new ValueKey.CollectionBuilder<>(() -> new Array<>((Class<T>) defaultValue.get().getClass(), defaultValue, values));
     }
 
     protected static <T> Builders.Table<T> table(@NotNull Supplier<@NotNull T> defaultValue) {

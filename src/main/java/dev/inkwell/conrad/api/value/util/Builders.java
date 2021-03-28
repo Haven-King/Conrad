@@ -77,7 +77,7 @@ public class Builders {
         }
     }
 
-    public static class Table<T> extends ValueKey.Builder<dev.inkwell.conrad.api.value.util.Table<T>> {
+    public static class Table<T> extends ValueKey.TableBuilder<dev.inkwell.conrad.api.value.util.Table<T>, T> {
         public Table(@NotNull Supplier<@NotNull T> defaultValue) {
             //noinspection unchecked
             super(() -> new dev.inkwell.conrad.api.value.util.Table<>((Class<T>) defaultValue.get().getClass(), defaultValue));

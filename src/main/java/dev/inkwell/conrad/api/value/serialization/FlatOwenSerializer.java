@@ -23,6 +23,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Serializes configs in a flat structure, versus {@link OwenTreeSerializer}'s JSON-like structure.
+ */
 public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
     public static final FlatOwenSerializer INSTANCE = new FlatOwenSerializer(new Owen.Builder());
 
