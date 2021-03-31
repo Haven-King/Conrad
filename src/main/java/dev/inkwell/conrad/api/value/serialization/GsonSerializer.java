@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.Map;
 
 public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObject> {
@@ -67,6 +68,16 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
         reader.close();
 
         return object;
+    }
+
+    @Override
+    protected <V> ValueSerializer<JsonElement, ?, V> getDataSerializer(Class<V> clazz) {
+        return new DataClassSerializer<>(clazz);
+    }
+
+    @Override
+    protected <V> ValueSerializer<JsonElement, ?, V> getEnumSerializer(Class<V> valueClass) {
+        return new EnumSerializer<>(valueClass);
     }
 
     @Override
@@ -251,6 +262,83 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
             }
 
             return new Table<>(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue(), values);
+        }
+    }
+
+    private static class EnumSerializer<T> implements GsonValueSerializer<JsonPrimitive, T> {
+        private final Class<T> enumClass;
+        private final T[] values;
+
+        @SuppressWarnings("unchecked")
+        private EnumSerializer(Class<?> enumClass) {
+            this.enumClass = (Class<T>) enumClass;
+            this.values = (T[]) enumClass.getEnumConstants();
+        }
+
+        @Override
+        public JsonPrimitive serialize(T value) {
+            return new JsonPrimitive(((Enum<?>) value).name());
+        }
+
+        @Override
+        public T deserialize(JsonElement representation) {
+            for (T value : this.values) {
+                if (((Enum<?>) value).name().equals(representation.getAsString())) {
+                    return value;
+                }
+            }
+
+            throw new UnsupportedOperationException("Invalid value '" + representation.getAsString() + "' for enum '" + enumClass.getSimpleName());
+        }
+    }
+
+    private class DataClassSerializer<T> implements GsonValueSerializer<JsonObject, T> {
+        private final Class<T> valueClass;
+
+        private DataClassSerializer(Class<T> valueClass) {
+            this.valueClass = valueClass;
+        }
+
+        @Override
+        public JsonObject serialize(T value) {
+            JsonObject object = new JsonObject();
+
+            for (Field field : this.valueClass.getDeclaredFields()) {
+                object.add(field.getName(), this.serialize(field, value, field.getType()));
+            }
+
+            return object;
+        }
+
+        @Override
+        public T deserialize(JsonElement representation) {
+            try {
+                T value = this.valueClass.newInstance();
+
+                for (Field field : this.valueClass.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    field.set(value, this.deserialize(field, representation.getAsJsonObject(), field.getType()));
+                }
+
+                return value;
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private <D> JsonElement serialize(Field field, T value, Class<D> clazz) {
+            try {
+                field.setAccessible(true);
+                D d = (D) field.get(value);
+                return GsonSerializer.this.getSerializer(clazz).serialize(d);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private <D> D deserialize(Field field, JsonObject from, Class<D> clazz) {
+            return GsonSerializer.this.getSerializer(clazz).deserialize(from.get(field.getName()));
         }
     }
 }

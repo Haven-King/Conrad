@@ -119,7 +119,6 @@ public class ConfigScreenProvider implements ModMenuApi {
     private void makeScreenBuilder(ConfigDefinition<?> config, CategoryBuilder category, Deque<ValueKey<?>> values, int level, @Nullable SectionBuilder section, @Nullable String sectionName) {
         category.setSaveCallback(() -> Conrad.syncAndSave(config));
 
-
         String currentSectionName = sectionName;
 
         while (!values.isEmpty()) {

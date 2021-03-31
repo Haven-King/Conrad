@@ -16,7 +16,6 @@
 
 package dev.inkwell.conrad.api.gui.widgets.compound;
 
-import dev.inkwell.conrad.api.value.util.Table;
 import dev.inkwell.conrad.api.gui.Category;
 import dev.inkwell.conrad.api.gui.builders.ConfigScreenBuilder;
 import dev.inkwell.conrad.api.gui.builders.WidgetComponentFactory;
@@ -24,11 +23,15 @@ import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
 import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
 import dev.inkwell.conrad.api.gui.util.Alignment;
 import dev.inkwell.conrad.api.gui.util.Group;
+import dev.inkwell.conrad.api.gui.util.KeySuggestionProvider;
+import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
 import dev.inkwell.conrad.api.gui.widgets.TextButton;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.containers.RowContainer;
 import dev.inkwell.conrad.api.gui.widgets.value.ValueWidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.value.entry.StringEntryWidget;
+import dev.inkwell.conrad.api.gui.widgets.value.entry.TextWidgetComponent;
+import dev.inkwell.conrad.api.value.util.Table;
 import dev.inkwell.conrad.impl.gui.widgets.Mutable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -36,7 +39,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,6 +57,9 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
     private ConfigScreen screen;
     private boolean changed;
 
+    private KeySuggestionProvider<T> keySuggestionProvider = (v, s) -> Collections.emptyList();
+    private SuggestionProvider suggestionProvider = s -> Collections.emptyList();
+
     public TableWidget(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder, boolean mutable) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, new Table<>(value));
         this.name = name;
@@ -67,6 +72,16 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
         this(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value, name, builder, true);
     }
 
+    public TableWidget<T> withKeySuggestions(KeySuggestionProvider suggestionProvider) {
+        this.keySuggestionProvider = suggestionProvider;
+        return this;
+    }
+
+    public TableWidget<T> withSuggestions(SuggestionProvider suggestionProvider) {
+        this.suggestionProvider = suggestionProvider;
+        return this;
+    }
+
     @Override
     public ScreenStyle getStyle() {
         return this.parent.getStyle();
@@ -75,7 +90,7 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
     @Override
     public List<Category> build(ConfigScreen parent, int contentLeft, int contentWidth, int y) {
         Group<WidgetComponent> section = new Group<>();
-        List<Category> categories = Collections.singletonList(new Category((MutableText) this.name));
+        List<Category> categories = Collections.singletonList(new Category(this.name.copy()));
         categories.get(0).add(section);
 
         int i = 0;
@@ -111,7 +126,9 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
                     v -> this.setValue(this.getValue().setKey(index, v)),
                     v -> this.changed = true,
                     value.getKey()
-            );
+            ).withSuggestions(s -> {
+                return keySuggestionProvider.getSuggestions(this.getValue(), s);
+            });
 
             WidgetComponent valueWidget = this.builder.build(
                     parent,
@@ -125,11 +142,19 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
                     value.getValue()
             );
 
-            if (this.mutable) {
-                section.add(new RowContainer(parent, contentLeft, dY, index, false, remove, keyWidget, valueWidget));
-            } else {
-                section.add(new RowContainer(parent, contentLeft, dY, index, false, keyWidget, valueWidget));
+            if (valueWidget instanceof TextWidgetComponent) {
+                ((TextWidgetComponent<?>) valueWidget).withSuggestions(this.suggestionProvider);
             }
+
+            RowContainer row;
+
+            if (this.mutable) {
+                row = new RowContainer(parent, contentLeft, dY, index, false, remove, keyWidget, valueWidget);
+            } else {
+                row = new RowContainer(parent, contentLeft, dY, index, false, keyWidget, valueWidget);
+            }
+
+            section.add(row.withMainComponent((mouseX, mouseY) -> mouseX >= this.x + this.width / 2D ? valueWidget : keyWidget));
 
             dY += valueWidget.getHeight();
         }

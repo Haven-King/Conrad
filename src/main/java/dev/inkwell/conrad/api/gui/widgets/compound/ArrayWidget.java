@@ -16,6 +16,8 @@
 
 package dev.inkwell.conrad.api.gui.widgets.compound;
 
+import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
+import dev.inkwell.conrad.api.gui.widgets.value.entry.TextWidgetComponent;
 import dev.inkwell.conrad.api.value.util.Array;
 import dev.inkwell.conrad.api.gui.Category;
 import dev.inkwell.conrad.api.gui.builders.ConfigScreenBuilder;
@@ -52,11 +54,18 @@ public class ArrayWidget<T> extends ValueWidgetComponent<Array<T>> implements Co
     private ConfigScreen screen;
     private boolean changed;
 
+    private SuggestionProvider suggestionProvider = s -> Collections.emptyList();
+
     public ArrayWidget(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Array<T>> defaultValueSupplier, Consumer<Array<T>> changedListener, Consumer<Array<T>> saveConsumer, @NotNull Array<T> value, Text name, WidgetComponentFactory<T> builder) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, new Array<>(value));
         this.name = name;
         this.builder = builder;
         this.scale = this.height / parent.getScale();
+    }
+
+    public ArrayWidget<T> withSuggestions(SuggestionProvider suggestionProvider) {
+        this.suggestionProvider = suggestionProvider;
+        return this;
     }
 
     @Override
@@ -122,7 +131,7 @@ public class ArrayWidget<T> extends ValueWidgetComponent<Array<T>> implements Co
             WidgetComponent remove = new TextButton(
                     parent, 0, 0, height, height, 0, new LiteralText("✕"), button ->
             {
-                this.getValue().remove(index);
+                this.setValue(this.getValue().remove(index));
                 this.screen.setProvider(this);
                 this.changed = true;
                 return true;
@@ -200,11 +209,16 @@ public class ArrayWidget<T> extends ValueWidgetComponent<Array<T>> implements Co
                     height,
                     this.getValue().getDefaultValue(),
                     v -> this.setValue(this.getValue().set(index, v)),
-                    v -> this.changed = true,
+                    v -> {},
                     value
             );
 
-            section.add(new RowContainer(parent, contentLeft, dY, index, false, remove, widget, up, down));
+            if (widget instanceof TextWidgetComponent) {
+                ((TextWidgetComponent<?>) widget).withSuggestions(this.suggestionProvider);
+            }
+
+
+            section.add(new RowContainer(parent, contentLeft, dY, index, false, remove, widget, up, down).withMainComponent(widget));
             dY += widget.getHeight();
         }
 

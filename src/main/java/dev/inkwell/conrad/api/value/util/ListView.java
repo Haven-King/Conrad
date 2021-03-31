@@ -46,6 +46,10 @@ public final class ListView<T> implements Iterable<T> {
         return this.list.get(index);
     }
 
+    public boolean contains(T value) {
+        return this.list.contains(value);
+    }
+
     @NotNull
     @Override
     public Iterator<T> iterator() {

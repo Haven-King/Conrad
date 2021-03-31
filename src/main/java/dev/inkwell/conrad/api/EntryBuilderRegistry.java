@@ -16,6 +16,7 @@
 
 package dev.inkwell.conrad.api;
 
+import dev.inkwell.conrad.api.gui.widgets.value.*;
 import dev.inkwell.conrad.impl.Conrad;
 import dev.inkwell.conrad.api.value.data.Bounds;
 import dev.inkwell.conrad.api.value.data.Constraint;
@@ -35,8 +36,6 @@ import dev.inkwell.conrad.api.gui.util.Alignment;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.compound.ArrayWidget;
 import dev.inkwell.conrad.api.gui.widgets.compound.TableWidget;
-import dev.inkwell.conrad.api.gui.widgets.value.ToggleComponent;
-import dev.inkwell.conrad.api.gui.widgets.value.ValueWidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.value.entry.*;
 import dev.inkwell.conrad.api.gui.widgets.value.slider.DoubleSliderWidget;
 import dev.inkwell.conrad.api.gui.widgets.value.slider.FloatSliderWidget;
@@ -45,6 +44,7 @@ import dev.inkwell.conrad.api.gui.widgets.value.slider.LongSliderWidget;
 import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,9 +73,11 @@ public class EntryBuilderRegistry {
         register(clazz, (configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) -> {
             Bounds<T> bounds = null;
 
-            for (Constraint<T> constraint : configValue.getConstraints()) {
-                if (constraint instanceof Bounds) {
-                    bounds = (Bounds<T>) constraint;
+            if (configValue != null) {
+                for (Constraint<T> constraint : configValue.getConstraints()) {
+                    if (constraint instanceof Bounds) {
+                        bounds = (Bounds<T>) constraint;
+                    }
                 }
             }
 
@@ -104,20 +106,52 @@ public class EntryBuilderRegistry {
                             .build(configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
         }
 
-        Class<T> clazz = (Class<T>) configValue.getDefaultValue().getClass();
-        if (DEFAULT_FACTORIES.containsKey(clazz)) {
-            WidgetFactory<T, ?> builder = (WidgetFactory<T, ?>) DEFAULT_FACTORIES.get(clazz);
+        return (WidgetComponentFactory<T>) get(configValue.getDefaultValue().getClass(), t -> Conrad.syncAndSave(configValue.getConfig()));
+    }
+
+    public static <T> WidgetComponentFactory<T> get(Class<T> type, Consumer<T> outerSaveConsumer) {
+        if (DEFAULT_FACTORIES.containsKey(type)) {
+            WidgetFactory<T, ?> builder = (WidgetFactory<T, ?>) DEFAULT_FACTORIES.get(type);
 
             if (builder instanceof WidgetFactory.Default) {
                 return (parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) ->
-                        ((WidgetFactory.Default<T>) builder).build(configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
-            } else if (builder instanceof WidgetFactory.ValueDependent) {
-                return (parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) ->
-                        ((WidgetFactory.ValueDependent<T>) builder).build(configValue, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
+                        builder.build(null, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
             }
         }
 
-        throw new ConfigValueException("Widget builder not registered for class '" + clazz.getName() + "' or provided for value '" + configValue.toString() + "'");
+        if (type.isEnum()) {
+            return (WidgetComponentFactory<T>) enumFactory(type);
+        }
+
+        if (isSimpleCompoundData(type)) {
+            return new DataClassWidgetComponentFactory<>(type, outerSaveConsumer);
+        }
+
+        throw new ConfigValueException("Widget builder not registered for class '" + type.getName() + "' or provided for class '" + type.getName() + "'");
+
+    }
+
+    private static boolean isSimpleCompoundData(Class<?> clazz) {
+        for (Field field : clazz.getDeclaredFields()) {
+            Class<?> fieldType = field.getType();
+
+            if (!fieldType.isEnum() && !isSimpleCompoundData(fieldType) && !DEFAULT_FACTORIES.containsKey(fieldType) && !(DEFAULT_FACTORIES.get(fieldType) instanceof WidgetFactory.ValueDependent)) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
+    private static <T extends Enum<T>> WidgetComponentFactory<T> enumFactory(Class<?> clazz) {
+        T[] enums = (T[]) clazz.getEnumConstants();
+
+        if (enums.length <= 3) {
+            return (EnumSelectorComponent::new);
+        } else {
+            return (EnumDropdownWidget::new);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -145,7 +179,13 @@ public class EntryBuilderRegistry {
                         Conrad.syncAndSave(configValue.getConfig());
                     };
 
-                    return new ArrayWidget<T>(parent, x, y, width, height, defaultValueSupplier, changedListener, saveAndSave, value, new TranslatableText(configValue.toString()), builder);
+                    ArrayWidget<T> array = new ArrayWidget<T>(parent, x, y, width, height, defaultValueSupplier, changedListener, saveAndSave, value, new TranslatableText(configValue.toString()), builder);
+
+                    if (configValue.getDataTypes().contains(DataType.SUGGESTION_PROVIDER)) {
+                        array.withSuggestions(configValue.getData(DataType.SUGGESTION_PROVIDER).get(0));
+                    }
+
+                    return array;
                 }
         );
 
@@ -161,7 +201,17 @@ public class EntryBuilderRegistry {
                         Conrad.syncAndSave(configValue.getConfig());
                     };
 
-                    return new TableWidget<>(parent, x, y, width, height, defaultValueSupplier, changedListener, syncAndSave, value, new TranslatableText(configValue.toString()), factory);
+                    TableWidget<T> table = new TableWidget<>(parent, x, y, width, height, defaultValueSupplier, changedListener, syncAndSave, value, new TranslatableText(configValue.toString()), factory);
+
+                    if (configValue.getDataTypes().contains(DataType.KEY_SUGGESTION_PROVIDER)) {
+                        table.withKeySuggestions(configValue.getData(DataType.KEY_SUGGESTION_PROVIDER).get(0));
+                    }
+
+                    if (configValue.getDataTypes().contains(DataType.SUGGESTION_PROVIDER)) {
+                        table.withSuggestions(configValue.getData(DataType.SUGGESTION_PROVIDER).get(0));
+                    }
+
+                    return table;
                 }
         );
     }
@@ -235,4 +285,25 @@ public class EntryBuilderRegistry {
         }
     }
 
+    public static class DataClassWidgetComponentFactory<T> implements WidgetComponentFactory<T> {
+        private final Class<T> type;
+        private Consumer<T> outerSaveConsumer;
+
+        private DataClassWidgetComponentFactory(Class<T> type, Consumer<T> outerSaveConsumer) {
+            this.type = type;
+            this.outerSaveConsumer = outerSaveConsumer;
+        }
+
+        public void setOuterSaveConsumer(Consumer<T> saveConsumer) {
+            this.outerSaveConsumer = saveConsumer;
+        }
+
+        @Override
+        public WidgetComponent build(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value) {
+            return new DataClassWidgetComponent<>(parent, x, y, width, height, defaultValueSupplier, changedListener, t -> {
+                saveConsumer.accept(t);
+                outerSaveConsumer.accept(t);
+            }, value, type);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package dev.inkwell.conrad.api.value.serialization;
 
+import com.google.common.collect.ImmutableCollection;
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueKey;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -29,8 +31,11 @@ import java.util.stream.Collectors;
 public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
     public static final FlatOwenSerializer INSTANCE = new FlatOwenSerializer(new Owen.Builder());
 
-    private final HashMap<Class<?>, ValueSerializer<?>> serializableTypes = new HashMap<>();
-    private final HashMap<Class<?>, Function<ValueKey<?>, ValueSerializer<?>>> typeDependentSerializers = new HashMap<>();
+    private final Map<Class<?>, ValueSerializer<?>> serializableTypes = new HashMap<>();
+    private final Map<Class<?>, Function<ValueKey<?>, ValueSerializer<?>>> typeDependentSerializers = new HashMap<>();
+    private final Map<Class<?>, EnumSerializer<?>> enumSerializerCache = new HashMap<>();
+    private final Map<Class<?>, DataClassSerializer<?>> dataClassSerializerCache = new HashMap<>();
+
     private final Owen owen;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -66,7 +71,19 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
 
     @SuppressWarnings("unchecked")
     protected final <V> ValueSerializer<V> getSerializer(Class<V> valueClass) {
-        return (ValueSerializer<V>) serializableTypes.get(valueClass);
+        if (valueClass.isEnum()) {
+            return (ValueSerializer<V>) this.enumSerializerCache.computeIfAbsent(valueClass, EnumSerializer::new);
+        }
+
+        if (this.serializableTypes.containsKey(valueClass)) {
+            return (ValueSerializer<V>) serializableTypes.get(valueClass);
+        }
+
+        if (this.isDataClass(valueClass)) {
+            return (ValueSerializer<V>) this.dataClassSerializerCache.computeIfAbsent(valueClass, DataClassSerializer::new);
+        }
+
+        throw new RuntimeException("Cannot get serializer for unregistered type '" + valueClass.getName() + "'");
     }
 
     @SuppressWarnings("unchecked")
@@ -78,6 +95,18 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
         }
 
         return (ValueSerializer<V>) this.getSerializer(defaultValue.getClass());
+    }
+
+    private boolean isDataClass(Class<?> clazz) {
+        for (Field field : clazz.getDeclaredFields()) {
+            Class<?> fieldType = field.getType();
+
+            if (this.getSerializer(fieldType) == null && !this.isDataClass(fieldType) && !ImmutableCollection.class.isAssignableFrom(fieldType)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -178,7 +207,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
         }
     }
 
-        private class ArraySerializer<T> implements ValueSerializer<Array<T>> {
+    private class ArraySerializer<T> implements ValueSerializer<Array<T>> {
         private final Array<T> defaultValue;
 
         private ArraySerializer(Array<T> defaultValue) {
@@ -211,6 +240,33 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
             }
 
             return new Array<>(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue(), values);
+        }
+    }
+
+    private static class EnumSerializer<T> implements ValueSerializer<T> {
+        private final Class<T> enumClass;
+        private final T[] values;
+
+        @SuppressWarnings("unchecked")
+        private EnumSerializer(Class<?> enumClass) {
+            this.enumClass = (Class<T>) enumClass;
+            this.values = (T[]) enumClass.getEnumConstants();
+        }
+
+        @Override
+        public OwenElement serialize(T value) {
+            return Owen.literal(((Enum<?>) value).name());
+        }
+
+        @Override
+        public T deserialize(OwenElement representation) {
+            for (T value : this.values) {
+                if (((Enum<?>) value).name().equals(representation.asString())) {
+                    return value;
+                }
+            }
+
+            throw new UnsupportedOperationException("Invalid value '" + representation.asString() + "' for enum '" + enumClass.getSimpleName());
         }
     }
 
@@ -247,6 +303,56 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
             }
 
             return new Table<>(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue(), values);
+        }
+    }
+
+    private class DataClassSerializer<T> implements ValueSerializer<T> {
+        private final Class<T> valueClass;
+
+        private DataClassSerializer(Class<T> valueClass) {
+            this.valueClass = valueClass;
+        }
+
+        @Override
+        public OwenElement serialize(T value) {
+            OwenElement element = Owen.empty();
+
+            for (Field field : this.valueClass.getDeclaredFields()) {
+                element.put(field.getName(), this.serialize(field, value, field.getType()));
+            }
+
+            return element;
+        }
+
+        @Override
+        public T deserialize(OwenElement representation) {
+            try {
+                T value = this.valueClass.newInstance();
+
+                for (Field field : this.valueClass.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    field.set(value, this.deserialize(field, representation, field.getType()));
+                }
+
+                return value;
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private <D> OwenElement serialize(Field field, T value, Class<D> clazz) {
+            try {
+                field.setAccessible(true);
+                D d = (D) field.get(value);
+                return FlatOwenSerializer.this.getSerializer(clazz).serialize(d);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private <D> D deserialize(Field field, OwenElement from, Class<D> clazz) {
+            return FlatOwenSerializer.this.getSerializer(clazz).deserialize(from.get(field.getName()));
         }
     }
 }

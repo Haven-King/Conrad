@@ -16,6 +16,7 @@
 
 package dev.inkwell.conrad.api.value.serialization;
 
+import com.google.common.collect.ImmutableCollection;
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.ConfigManager;
 import dev.inkwell.conrad.api.value.data.DataType;
@@ -25,9 +26,11 @@ import dev.inkwell.conrad.impl.util.ReflectionUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -39,8 +42,10 @@ import java.util.function.Predicate;
  */
 public abstract class AbstractTreeSerializer<E, O extends E> implements ConfigSerializer<O> {
     @SuppressWarnings("rawtypes")
-    private final HashMap<Class<?>, ValueSerializer> serializableTypes = new HashMap<>();
-    private final HashMap<Class<?>, Function<ValueKey<?>, ValueSerializer<E, ?, ?>>> typeDependentSerializers = new HashMap<>();
+    private final Map<Class<?>, ValueSerializer> serializableTypes = new HashMap<>();
+    private final Map<Class<?>, Function<ValueKey<?>, ValueSerializer<E, ?, ?>>> typeDependentSerializers = new HashMap<>();
+    @SuppressWarnings("rawtypes")
+    private final Map<Class<?>, ValueSerializer> dataSerializeCache = new HashMap<>();
 
     /**
      * @param valueClass      the class to be (de)serialized by the specified value serializer
@@ -75,7 +80,35 @@ public abstract class AbstractTreeSerializer<E, O extends E> implements ConfigSe
 
     @SuppressWarnings("unchecked")
     protected final <V> ValueSerializer<E, ?, V> getSerializer(Class<V> valueClass) {
-        return (ValueSerializer<E, ?, V>) serializableTypes.get(valueClass);
+        if (valueClass.isEnum()) {
+            return this.getEnumSerializer(valueClass);
+        }
+
+        if (this.serializableTypes.containsKey(valueClass)) {
+            return (ValueSerializer<E, ?, V>) serializableTypes.get(valueClass);
+        }
+
+        if (this.isDataClass(valueClass)) {
+            return this.dataSerializeCache.computeIfAbsent(valueClass, this::getDataSerializer);
+        }
+
+        throw new RuntimeException("Cannot get serializer for unregistered type '" + valueClass.getName() + "'");
+    }
+
+    protected abstract <V> ValueSerializer<E, ?, V> getDataSerializer(Class<V> clazz);
+
+    protected abstract <V> ValueSerializer<E,?,V> getEnumSerializer(Class<V> valueClass);
+
+    private boolean isDataClass(Class<?> clazz) {
+        for (Field field : clazz.getDeclaredFields()) {
+            Class<?> fieldType = field.getType();
+
+            if (this.getSerializer(fieldType) == null && !this.isDataClass(fieldType) && !ImmutableCollection.class.isAssignableFrom(fieldType)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override

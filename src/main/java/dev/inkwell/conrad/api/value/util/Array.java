@@ -57,7 +57,9 @@ public class Array<T> extends StronglyTypedImmutableList<T, T> {
         for (int j = 0; j < this.values.length; ++i, ++j) {
             if (j == index) ++j;
 
-            values[i] = this.values[j];
+            if (j < this.values.length) {
+                values[i] = this.values[j];
+            }
         }
 
         return new Array<>(this.valueClass, this.defaultValue, values);
@@ -67,6 +69,14 @@ public class Array<T> extends StronglyTypedImmutableList<T, T> {
     @Override
     public Iterator<T> iterator() {
         return Arrays.asList(this.values).iterator();
+    }
+
+    public boolean contains(T value) {
+        for (T t : this.values) {
+            if (t.equals(value)) return true;
+        }
+
+        return false;
     }
 
     @Override

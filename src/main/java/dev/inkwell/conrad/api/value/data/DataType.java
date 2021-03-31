@@ -16,9 +16,11 @@
 
 package dev.inkwell.conrad.api.value.data;
 
-import dev.inkwell.conrad.api.value.util.ListView;
-import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
+import dev.inkwell.conrad.api.gui.util.KeySuggestionProvider;
+import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
+import dev.inkwell.conrad.api.value.ValueKey;
+import dev.inkwell.conrad.api.value.util.ListView;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +46,9 @@ public class DataType<T> extends StringIdentifiable {
 
     @Environment(EnvType.CLIENT)
     public static final DataType<ScreenStyle> SCREEN_STYLE = new DataType<>("screen_style");
+
+    public static final DataType<SuggestionProvider> SUGGESTION_PROVIDER = new DataType<>("suggestion_provider");
+    public static final DataType<KeySuggestionProvider> KEY_SUGGESTION_PROVIDER = new DataType<KeySuggestionProvider>("key_suggestion_provider");
 
     public DataType(@NotNull String name) {
         super(name);

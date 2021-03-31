@@ -19,7 +19,9 @@ package dev.inkwell.conrad.api.gui.widgets.value.entry;
 import dev.inkwell.conrad.api.gui.constraints.Matches;
 import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
 import dev.inkwell.conrad.api.gui.util.Alignment;
-import dev.inkwell.conrad.api.gui.widgets.value.ValueWidgetComponent;
+import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
+import dev.inkwell.conrad.api.gui.widgets.value.ShadedWidgetComponent;
+import dev.inkwell.conrad.impl.Conrad;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -32,12 +34,13 @@ import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
-public abstract class TextWidgetComponent<T> extends ValueWidgetComponent<T> implements Matches {
+public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> implements Matches {
     private final Alignment alignment;
     protected String text;
     private int maxLength = 32;
@@ -48,6 +51,8 @@ public abstract class TextWidgetComponent<T> extends ValueWidgetComponent<T> imp
     private int focusedTicks;
     private String regex = null;
     private Predicate<String> textPredicate = this::matches;
+    private SuggestionProvider suggestionProvider = s -> Collections.emptyList();
+    private List<String> recentSuggestions = new ArrayList<>();
 
     public TextWidgetComponent(ConfigScreen parent, int x, int y, int width, int height, Alignment alignment, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
@@ -55,14 +60,14 @@ public abstract class TextWidgetComponent<T> extends ValueWidgetComponent<T> imp
         this.text = this.valueOf(value);
     }
 
-    @Override
-    public boolean hasError() {
-        return !passes();
+    public TextWidgetComponent<T> withSuggestions(SuggestionProvider suggestionProvider) {
+        this.suggestionProvider = suggestionProvider;
+        return this;
     }
 
     @Override
-    public void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-
+    public boolean hasError() {
+        return !passes();
     }
 
     @Override
@@ -77,7 +82,8 @@ public abstract class TextWidgetComponent<T> extends ValueWidgetComponent<T> imp
                 - w2 * this.alignment.mod;
 
         float y1 = this.textYPos() + 1;
-        float y2 = y1 + 2 + textRenderer.fontHeight * parent.getScale();
+        float height = + 2 + textRenderer.fontHeight * parent.getScale();
+        float y2 = y1 + height;
 
         if (this.isFocused()) {
             if (selectionStart != selectionEnd) {
@@ -94,6 +100,45 @@ public abstract class TextWidgetComponent<T> extends ValueWidgetComponent<T> imp
                     fill(matrixStack, x1 - 0.25F, y1, x1 + 0.25F, y2, 0xFFFFFFFF, 1F);
                 }
             }
+
+            this.recentSuggestions = this.suggestionProvider.getSuggestions(this.text);
+
+            if (!recentSuggestions.isEmpty()) {
+                y2 = this.y + this.getHeight();
+
+                float dX = MinecraftClient.getInstance().getWindow().getWidth();
+                float dZ = MinecraftClient.getInstance().getWindow().getHeight();
+
+                Conrad.BLUR.setUniformValue("Start", this.x / dX, y2 / dZ);
+                Conrad.BLUR.setUniformValue("End", (this.x / dX) + this.width / dX, (y2 + this.getHeight() * recentSuggestions.size()) / dZ);
+                Conrad.BLUR.render(1F);
+
+                for (String suggestion : recentSuggestions) {
+                    float w21 = textRenderer.getWidth(suggestion) * this.parent.getScale() * 0.5F;
+                    float x1 = this.x + this.width / 2F
+                            + ((this.width / 2F - 3) * this.alignment.mod)
+                            - w21 * this.alignment.mod;
+
+                    y1 = y2;
+                    y2 = y1 + this.getHeight();
+
+                    fill(matrixStack, this.x, y1, this.x + this.width, y2, 0x80000000, 0.5F);
+
+                    if (mouseX >= this.x && mouseX <= this.x + this.width && mouseY >= y1 && mouseY <= y2) {
+                        fill(matrixStack, this.x, y1, this.x + this.width, y2, this.highlightColor(), 0.5F);
+                    }
+
+                    drawCenteredText(
+                            matrixStack,
+                            textRenderer,
+                            new LiteralText(suggestion),
+                            x1,
+                            this.textYPos() - this.y + y1,
+                            this.hasError() ? 0xFF5555 : this.getColor(),
+                            this.parent.getScale()
+                    );
+                }
+            }
         }
 
         drawCenteredText(
@@ -105,7 +150,6 @@ public abstract class TextWidgetComponent<T> extends ValueWidgetComponent<T> imp
                 this.hasError() ? 0xFF5555 : this.getColor(),
                 this.parent.getScale()
         );
-
     }
 
     protected int getColor() {
@@ -372,6 +416,20 @@ public abstract class TextWidgetComponent<T> extends ValueWidgetComponent<T> imp
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (mouseX >= this.x && mouseX <= this.x + this.width && this.isFocused() && mouseY > this.y + this.height && !this.recentSuggestions.isEmpty()) {
+            int i = MathHelper.floor((mouseY - this.y - this.height)) / this.height;
+
+            if (i < this.recentSuggestions.size()) {
+                String string = this.recentSuggestions.get(i);
+                Optional<T> value = this.parse(string);
+
+                this.text = string;
+                value.ifPresent(this::setValue);
+                this.setFocused(false);
+                return true;
+            }
+        }
+
         boolean isMouseOver = this.isMouseOver(mouseX, mouseY);
         this.setFocused(isMouseOver);
 

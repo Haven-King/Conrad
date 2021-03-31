@@ -395,7 +395,7 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
                             widget.setFocused(widget.isMouseOver(mouseX, mouseY));
 
                             if (widget.isFocused()) {
-                                this.setFocused(widget);
+                                this.setFocused(widget.getFocusElement(mouseX, mouseY));
                             }
                         }
 
