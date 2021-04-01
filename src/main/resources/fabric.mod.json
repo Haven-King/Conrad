@@ -43,6 +43,9 @@
     "fabric-resource-loader-v0": "*",
     "minecraft": ">=1.16.2"
   },
+  "breaks": {
+    "modmenu": "<1.15.0"
+  },
   "custom": {
     "hermes": true,
     "modmenu": {
