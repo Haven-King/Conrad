@@ -110,11 +110,6 @@ public abstract class SliderWidget<T extends Number> extends ValueWidgetComponen
     protected abstract String stringValue();
 
     @Override
-    public boolean hasError() {
-        return false;
-    }
-
-    @Override
     public @NotNull T getMin() {
         return this.min;
     }

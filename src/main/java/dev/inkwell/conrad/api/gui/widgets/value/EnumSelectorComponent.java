@@ -47,11 +47,6 @@ public class EnumSelectorComponent<T extends Enum<T>> extends ValueWidgetCompone
     }
 
     @Override
-    public boolean hasError() {
-        return false;
-    }
-
-    @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float delta, boolean shouldRenderHighlight) {
         super.render(matrixStack, mouseX, mouseY, delta, shouldRenderHighlight);
 

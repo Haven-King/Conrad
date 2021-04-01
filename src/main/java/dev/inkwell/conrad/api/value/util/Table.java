@@ -120,6 +120,10 @@ public class Table<T> extends StronglyTypedImmutableCollection<Integer, T, Table
 
     }
 
+    public boolean containsKey(String key) {
+        return this.valueMap.containsKey(key);
+    }
+
     public static class Entry<K, V> {
         private K key;
         private V value;

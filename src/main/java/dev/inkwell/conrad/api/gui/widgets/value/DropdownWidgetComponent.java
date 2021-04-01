@@ -33,10 +33,7 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
     public DropdownWidgetComponent(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value, T[] possibleValues) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
 
-        this.button = new TextButton(parent, x, y, width, height, 0, this.fromValue(value), button -> {
-            this.isShadeDrawn = true;
-            return true;
-        });
+        this.button = new TextButton(parent, x, y, width, height, 0, this.fromValue(value), button -> true);
 
         this.buttons = new TextButton[possibleValues.length];
 
@@ -45,7 +42,6 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
             buttons[i] = new TextButton(parent, x, y + height * i, width, height, i % 2 == 0 ? 0x30FFFFFF : 0x20FFFFFF, this.fromValue(possibleValues[i]), button -> {
                 this.setValue(possibleValues[j]);
                 this.button.setText(this.fromValue(possibleValues[j]));
-                this.isShadeDrawn = false;
                 this.setFocused(false);
                 parent.setFocused(null);
                 return true;
@@ -57,7 +53,7 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float delta, boolean shouldRenderHighlight) {
         super.render(matrixStack, mouseX, mouseY, delta, shouldRenderHighlight);
 
-        if (this.isShadeDrawn) {
+        if (this.isShadeDrawn()) {
             for (TextButton button : this.buttons) {
                 button.render(matrixStack, mouseX, mouseY, delta, shouldRenderHighlight);
             }
@@ -75,7 +71,7 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         boolean bl;
 
-        if (this.isShadeDrawn) {
+        if (this.isShadeDrawn()) {
             bl = false;
 
             for (TextButton btn : this.buttons) {
@@ -115,24 +111,13 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
     public void tick() {
         super.tick();
 
-        if (this.isShadeDrawn) {
+        if (this.isShadeDrawn()) {
             for (TextButton button : this.buttons) {
                 button.tick();
             }
         } else {
             this.button.tick();
         }
-    }
-
-    @Override
-    public void setFocused(boolean focused) {
-        super.setFocused(focused);
-        this.isShadeDrawn = this.isFocused();
-    }
-
-    @Override
-    public boolean hasError() {
-        return false;
     }
 
     protected abstract MutableText fromValue(T value);

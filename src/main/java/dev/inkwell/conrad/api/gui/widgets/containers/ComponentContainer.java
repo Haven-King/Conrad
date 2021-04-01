@@ -20,16 +20,21 @@ import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
 import dev.inkwell.conrad.api.gui.widgets.ListComponent;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
 import dev.inkwell.conrad.impl.gui.widgets.Mutable;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.util.math.MatrixStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
 
 public class ComponentContainer extends ListComponent implements Mutable {
     protected final List<WidgetComponent> children = new ArrayList<>();
     private final boolean shouldRenderHighlight;
+
+    private WidgetComponent mainComponent = null;
+    private BiFunction<Double, Double, WidgetComponent> getFocusElement = null;
 
     public ComponentContainer(ConfigScreen parent, int x, int y, int index, boolean shouldRenderHighlight, @NotNull WidgetComponent child, WidgetComponent... children) {
         super(parent, x, y, 0, 0, index);
@@ -37,6 +42,31 @@ public class ComponentContainer extends ListComponent implements Mutable {
         this.children.addAll(Arrays.asList(children));
         this.init();
         this.shouldRenderHighlight = shouldRenderHighlight;
+    }
+
+    public ComponentContainer withMainComponent(BiFunction<Double, Double, WidgetComponent> getFocusElement) {
+        this.getFocusElement = getFocusElement;
+
+        return this;
+    }
+
+    public ComponentContainer withMainComponent(WidgetComponent child) {
+        if (!this.children.contains(child)) {
+            throw new UnsupportedOperationException("Main component must be child of this container!");
+        }
+
+        this.mainComponent = child;
+
+        return this;
+    }
+
+    @Override
+    public Element getFocusElement(double mouseX, double mouseY) {
+        return this.getFocusElement == null
+                ? this.mainComponent == null
+                    ? this
+                    : this.mainComponent
+                : this.getFocusElement.apply(mouseX, mouseY);
     }
 
     protected void init() {

@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 import static dev.inkwell.conrad.impl.Conrad.BLUR;
 
 public abstract class ShadedWidgetComponent<T> extends ValueWidgetComponent<T> {
-    protected boolean isShadeDrawn = false;
+    private boolean isShadeDrawn = false;
 
     public ShadedWidgetComponent(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
@@ -45,7 +45,17 @@ public abstract class ShadedWidgetComponent<T> extends ValueWidgetComponent<T> {
     }
 
     @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        this.isShadeDrawn = this.isFocused();
+    }
+
+    @Override
     public boolean holdsFocus() {
         return true;
+    }
+
+    protected boolean isShadeDrawn() {
+        return this.isShadeDrawn;
     }
 }

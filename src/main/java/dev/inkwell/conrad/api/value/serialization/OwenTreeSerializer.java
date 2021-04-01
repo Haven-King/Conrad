@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Map;
@@ -34,6 +35,16 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         this.addSerializer(Array.class, valueKey -> new ArraySerializer<>(valueKey.getDefaultValue()));
         this.addSerializer(Table.class, valueKey -> new TableSerializer<>(valueKey.getDefaultValue()));
+    }
+
+    @Override
+    protected <V> ValueSerializer<OwenElement, ?, V> getDataSerializer(Class<V> clazz) {
+        return new DataClassSerializer<>(clazz);
+    }
+
+    @Override
+    protected <V> ValueSerializer<OwenElement, ?, V> getEnumSerializer(Class<V> valueClass) {
+        return new EnumSerializer<>(valueClass);
     }
 
     @Override
@@ -239,6 +250,83 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
             }
 
             return new Table<>(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue(), values);
+        }
+    }
+
+    private static class EnumSerializer<T> implements OwenValueSerializer<T> {
+        private final Class<T> enumClass;
+        private final T[] values;
+
+        @SuppressWarnings("unchecked")
+        private EnumSerializer(Class<?> enumClass) {
+            this.enumClass = (Class<T>) enumClass;
+            this.values = (T[]) enumClass.getEnumConstants();
+        }
+
+        @Override
+        public OwenElement serialize(T value) {
+            return Owen.literal(((Enum<?>) value).name());
+        }
+
+        @Override
+        public T deserialize(OwenElement representation) {
+            for (T value : this.values) {
+                if (((Enum<?>) value).name().equals(representation.asString())) {
+                    return value;
+                }
+            }
+
+            throw new UnsupportedOperationException("Invalid value '" + representation.asString() + "' for enum '" + enumClass.getSimpleName());
+        }
+    }
+
+    private class DataClassSerializer<T> implements OwenValueSerializer<T> {
+        private final Class<T> valueClass;
+
+        private DataClassSerializer(Class<T> valueClass) {
+            this.valueClass = valueClass;
+        }
+
+        @Override
+        public OwenElement serialize(T value) {
+            OwenElement element = Owen.empty();
+
+            for (Field field : this.valueClass.getDeclaredFields()) {
+                element.put(field.getName(), this.serialize(field, value, field.getType()));
+            }
+
+            return element;
+        }
+
+        @Override
+        public T deserialize(OwenElement representation) {
+            try {
+                T value = this.valueClass.newInstance();
+
+                for (Field field : this.valueClass.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    field.set(value, this.deserialize(field, representation, field.getType()));
+                }
+
+                return value;
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private <D> OwenElement serialize(Field field, T value, Class<D> clazz) {
+            try {
+                field.setAccessible(true);
+                D d = (D) field.get(value);
+                return OwenTreeSerializer.this.getSerializer(clazz).serialize(d);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private <D> D deserialize(Field field, OwenElement from, Class<D> clazz) {
+            return OwenTreeSerializer.this.getSerializer(clazz).deserialize(from.get(field.getName()));
         }
     }
 }

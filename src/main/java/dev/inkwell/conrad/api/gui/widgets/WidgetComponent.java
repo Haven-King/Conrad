@@ -169,4 +169,8 @@ public abstract class WidgetComponent implements Element, DrawableExtensions, Ti
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         return this.y + this.height / 2F - (textRenderer.fontHeight * parent.getScale() + 4 * parent.getScale()) / 2F;
     }
+
+    public Element getFocusElement(double mouseX, double mouseY) {
+        return this;
+    }
 }

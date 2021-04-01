@@ -16,9 +16,12 @@
 
 package dev.inkwell.conrad.api.value.util;
 
-import dev.inkwell.conrad.api.value.data.Bounds;
-import dev.inkwell.conrad.api.value.data.Matches;
+import dev.inkwell.conrad.api.gui.util.KeySuggestionProvider;
+import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
 import dev.inkwell.conrad.api.value.ValueKey;
+import dev.inkwell.conrad.api.value.data.Bounds;
+import dev.inkwell.conrad.api.value.data.DataType;
+import dev.inkwell.conrad.api.value.data.Matches;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -75,6 +78,11 @@ public class Builders {
             this.with(new Matches(regex));
             return this;
         }
+
+        public String suggests(SuggestionProvider suggestionProvider) {
+            this.with(DataType.SUGGESTION_PROVIDER, suggestionProvider);
+            return this;
+        }
     }
 
     public static class Table<T> extends ValueKey.TableBuilder<dev.inkwell.conrad.api.value.util.Table<T>, T> {
@@ -94,6 +102,11 @@ public class Builders {
                 return table;
             };
 
+            return this;
+        }
+
+        public Table<T> suggestsKey(KeySuggestionProvider<T> suggestionProvider) {
+            this.with(DataType.KEY_SUGGESTION_PROVIDER, suggestionProvider);
             return this;
         }
     }

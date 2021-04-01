@@ -16,6 +16,7 @@
 
 package dev.inkwell.conrad.api.value.serialization;
 
+import com.google.common.collect.ImmutableCollection;
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.ConfigManager;
 import dev.inkwell.conrad.api.value.data.DataType;
@@ -25,9 +26,11 @@ import dev.inkwell.conrad.impl.util.ReflectionUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -38,9 +41,20 @@ import java.util.function.Predicate;
  * @param <O> The "object" or "map" equivalent for this tree
  */
 public abstract class AbstractTreeSerializer<E, O extends E> implements ConfigSerializer<O> {
+    private static final Map<Class<? extends AbstractTreeSerializer>, Map<Class<?>, ValueSerializer>> CLASS_DEFAULTS = new HashMap<>();
+
     @SuppressWarnings("rawtypes")
-    private final HashMap<Class<?>, ValueSerializer> serializableTypes = new HashMap<>();
-    private final HashMap<Class<?>, Function<ValueKey<?>, ValueSerializer<E, ?, ?>>> typeDependentSerializers = new HashMap<>();
+    private final Map<Class<?>, ValueSerializer> serializableTypes = new HashMap<>();
+    private final Map<Class<?>, Function> serializersRequiringDefaults = new HashMap<>();
+    private final Map<Class<?>, ValueSerializer> enumSerializerCache = new HashMap<>();
+    @SuppressWarnings("rawtypes")
+    private final Map<Class<?>, ValueSerializer> dataSerializeCache = new HashMap<>();
+
+    protected AbstractTreeSerializer() {
+        for (Map.Entry<Class<?>, ValueSerializer> entry : CLASS_DEFAULTS.computeIfAbsent(this.getClass(), c -> new HashMap<>()).entrySet()) {
+            this.addSerializer(entry.getKey(), entry.getValue());
+        }
+    }
 
     /**
      * @param valueClass      the class to be (de)serialized by the specified value serializer
@@ -57,32 +71,59 @@ public abstract class AbstractTreeSerializer<E, O extends E> implements ConfigSe
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected final <T> void addSerializer(Class<T> valueClass, Function<ValueKey<T>, ValueSerializer<E, ?, T>> serializerBuilder) {
-        this.typeDependentSerializers.putIfAbsent(valueClass, (Function) serializerBuilder);
+    protected final <T> void addSerializer(Class<T> valueClass, Function<T, ValueSerializer<?, ?, T>> serializerBuilder) {
+        this.serializersRequiringDefaults.putIfAbsent(valueClass, serializerBuilder);
     }
 
     @SuppressWarnings("unchecked")
     protected final <V> ValueSerializer<E, ?, V> getSerializer(ValueKey<V> valueKey) {
         V defaultValue = valueKey.getDefaultValue();
 
-        if (typeDependentSerializers.containsKey(defaultValue.getClass())) {
-            return (ValueSerializer<E, ?, V>) typeDependentSerializers.get(defaultValue.getClass()).apply(valueKey);
-        }
-
-        return (ValueSerializer<E, ?, V>) this.getSerializer(defaultValue.getClass());
+        return this.getSerializer((Class<V>) defaultValue.getClass(), defaultValue);
     }
 
     @SuppressWarnings("unchecked")
-    protected final <V> ValueSerializer<E, ?, V> getSerializer(Class<V> valueClass) {
-        return (ValueSerializer<E, ?, V>) serializableTypes.get(valueClass);
+    protected final <V> ValueSerializer<E, ?, V> getSerializer(Class<V> valueClass, V defaultValue) {
+        if (valueClass.isEnum()) {
+            return this.enumSerializerCache.computeIfAbsent(valueClass, this::getEnumSerializer);
+        }
+
+        if (this.serializableTypes.containsKey(valueClass)) {
+            return (ValueSerializer<E, ?, V>) serializableTypes.get(valueClass);
+        }
+
+        if (this.serializersRequiringDefaults.containsKey(valueClass)) {
+            return (ValueSerializer<E, ?, V>) serializersRequiringDefaults.get(valueClass).apply(defaultValue);
+        }
+
+        if (this.isDataClass(valueClass)) {
+            return this.dataSerializeCache.computeIfAbsent(valueClass, this::getDataSerializer);
+        }
+
+        throw new RuntimeException("Cannot get serializer for unregistered type '" + valueClass.getName() + "'");
+    }
+
+    protected abstract <V> ValueSerializer<E, ?, V> getDataSerializer(Class<V> clazz);
+
+    protected abstract <V> ValueSerializer<E,?,V> getEnumSerializer(Class<V> valueClass);
+
+    private boolean isDataClass(Class<?> clazz) {
+        for (Field field : clazz.getDeclaredFields()) {
+            Class<?> fieldType = field.getType();
+
+            if (this.serializableTypes.containsKey(clazz) && !this.isDataClass(fieldType) && !ImmutableCollection.class.isAssignableFrom(fieldType)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
     public void serialize(ConfigDefinition<O> configDefinition, OutputStream outputStream, ValueContainer valueContainer, Predicate<ValueKey<?>> valuePredicate, boolean minimal) throws IOException {
         O root = this.start(configDefinition.getData(DataType.COMMENT));
 
-        this.add(root, "version", this.getSerializer(String.class).serializeValue(configDefinition.getVersion().toString()), Collections.emptyList());
+        this.add(root, "version", this.getSerializer(String.class, "1.0.0").serializeValue(configDefinition.getVersion().toString()), Collections.emptyList());
 
         for (ValueKey<?> value : configDefinition) {
             if (valuePredicate.test(value)) {

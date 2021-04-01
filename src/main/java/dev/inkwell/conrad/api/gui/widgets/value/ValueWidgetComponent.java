@@ -18,12 +18,17 @@ package dev.inkwell.conrad.api.gui.widgets.value;
 
 import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
+import dev.inkwell.conrad.api.value.data.Constraint;
+import dev.inkwell.conrad.api.value.util.ListView;
 import dev.inkwell.conrad.impl.gui.widgets.Mutable;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -34,6 +39,7 @@ public abstract class ValueWidgetComponent<T> extends WidgetComponent implements
     private final Consumer<T> changedListener;
     private final Consumer<T> saveConsumer;
     private final Text defaultValueText;
+    private final Collection<Constraint<T>> constraints = new HashSet<>();
 
     private T initialValue;
     private T value;
@@ -55,6 +61,23 @@ public abstract class ValueWidgetComponent<T> extends WidgetComponent implements
             this.saveConsumer.accept(this.value);
             this.initialValue = this.value;
         }
+    }
+
+    public void addConstraints(Collection<Constraint<T>> constraints) {
+        this.constraints.addAll(constraints);
+    }
+
+    public void addConstraints(Iterable<Constraint<T>> constraints) {
+        constraints.forEach(this.constraints::add);
+    }
+
+    public ListView<Constraint<T>> getConstraints() {
+        return new ListView<>(this.constraints);
+    }
+
+    @Override
+    public final boolean hasError() {
+        return this.passes(this.value);
     }
 
     @Override
@@ -103,5 +126,13 @@ public abstract class ValueWidgetComponent<T> extends WidgetComponent implements
         }
 
         tooltips.add(new TranslatableText("conrad.default", this.getDefaultValueAsText()));
+    }
+
+    protected boolean passes(T s) {
+        for (Constraint<T> constraint : this.constraints) {
+            if (!constraint.passes(s)) return true;
+        }
+
+        return false;
     }
 }

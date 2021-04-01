@@ -10,6 +10,7 @@ import dev.inkwell.conrad.api.value.serialization.ConfigSerializer;
 import dev.inkwell.conrad.api.value.serialization.FlatOwenSerializer;
 import dev.inkwell.owen.OwenElement;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Pattern;
@@ -34,6 +35,10 @@ public class TestConfig extends Config<OwenElement> {
             .build();
 
     public static final ValueKey<Integer> DELAY = builder(20).bounds(0, 100).build();
+
+    public static final ValueKey<Direction> DIRECTION = value(() -> Direction.DOWN);
+
+    public static final ValueKey<TestDataClass> DATA_CLASS_TEST = value(TestDataClass::new);
 
     @Override
     public @NotNull ConfigSerializer<OwenElement> getSerializer() {

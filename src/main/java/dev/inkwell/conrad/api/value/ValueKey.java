@@ -16,13 +16,11 @@
 
 package dev.inkwell.conrad.api.value;
 
+import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
 import dev.inkwell.conrad.api.value.data.Constraint;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.data.Flag;
-import dev.inkwell.conrad.api.value.util.ListView;
-import dev.inkwell.conrad.api.value.util.StronglyTypedImmutableCollection;
-import dev.inkwell.conrad.api.value.util.Table;
-import dev.inkwell.conrad.api.value.util.TriConsumer;
+import dev.inkwell.conrad.api.value.util.*;
 import dev.inkwell.conrad.impl.ConfigManagerImpl;
 import dev.inkwell.conrad.impl.data.KeyView;
 import dev.inkwell.conrad.impl.exceptions.ConfigIdentifierException;
@@ -514,6 +512,11 @@ public final class ValueKey<T> implements Comparable<ValueKey<?>>, KeyView<T> {
 
 
             return new ValueKey<>(this.defaultValue, c, this.flags, this.data, this.listeners, this.playerListeners);
+        }
+
+        public CollectionBuilder<T, V> suggestsValue(SuggestionProvider suggestionProvider) {
+            this.with(DataType.SUGGESTION_PROVIDER, suggestionProvider);
+            return this;
         }
     }
 
