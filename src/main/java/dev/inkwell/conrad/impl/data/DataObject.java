@@ -21,7 +21,26 @@ import dev.inkwell.conrad.api.value.data.Flag;
 import dev.inkwell.conrad.api.value.util.ListView;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+
 public interface DataObject {
+    DataObject EMPTY = new DataObject() {
+        @Override
+        public <D> @NotNull ListView<D> getData(DataType<D> dataType) {
+            return ListView.empty();
+        }
+
+        @Override
+        public @NotNull ListView<DataType<?>> getDataTypes() {
+            return ListView.empty();
+        }
+
+        @Override
+        public @NotNull ListView<Flag> getFlags() {
+            return ListView.empty();
+        }
+    };
+
     <D> @NotNull ListView<D> getData(DataType<D> dataType);
 
     @NotNull ListView<DataType<?>> getDataTypes();

@@ -66,11 +66,6 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
     }
 
     @Override
-    public boolean hasError() {
-        return !passes();
-    }
-
-    @Override
     public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
@@ -454,7 +449,10 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
     protected abstract Optional<T> parse(String value);
 
     public void setTextPredicate(Predicate<String> predicate) {
-        this.textPredicate = predicate;
+        this.textPredicate = s -> {
+            Optional<T> t;
+            return s.length() <= this.maxLength && predicate.test(s) && (t = this.parse(s)).isPresent() && !this.passes(t.get());
+        };
     }
 
     public TextWidgetComponent<T> setMaxLength(int length) {

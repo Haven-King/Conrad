@@ -31,7 +31,10 @@ import dev.inkwell.conrad.api.gui.widgets.containers.RowContainer;
 import dev.inkwell.conrad.api.gui.widgets.value.ValueWidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.value.entry.StringEntryWidget;
 import dev.inkwell.conrad.api.gui.widgets.value.entry.TextWidgetComponent;
+import dev.inkwell.conrad.api.value.ConfigDefinition;
+import dev.inkwell.conrad.api.value.util.ListView;
 import dev.inkwell.conrad.api.value.util.Table;
+import dev.inkwell.conrad.impl.data.DataObject;
 import dev.inkwell.conrad.impl.gui.widgets.Mutable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -49,6 +52,7 @@ import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements ConfigScreenBuilder {
+    private final ConfigDefinition<?> config;
     private final Text name;
     private final WidgetComponentFactory<T> builder;
     private final float scale;
@@ -60,16 +64,17 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
     private KeySuggestionProvider<T> keySuggestionProvider = (v, s) -> Collections.emptyList();
     private SuggestionProvider suggestionProvider = s -> Collections.emptyList();
 
-    public TableWidget(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder, boolean mutable) {
+    public TableWidget(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder, boolean mutable) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, new Table<>(value));
+        this.config = config;
         this.name = name;
         this.scale = this.height / parent.getScale();
         this.builder = builder;
         this.mutable = mutable;
     }
 
-    public TableWidget(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder) {
-        this(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value, name, builder, true);
+    public TableWidget(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder) {
+        this(config, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value, name, builder, true);
     }
 
     public TableWidget<T> withKeySuggestions(KeySuggestionProvider suggestionProvider) {
@@ -115,7 +120,7 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
                 }
             };
 
-            WidgetComponent keyWidget = new StringEntryWidget(
+            TextWidgetComponent<String> keyWidget = new StringEntryWidget(
                     parent,
                     0,
                     dY,
@@ -131,6 +136,10 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
             });
 
             WidgetComponent valueWidget = this.builder.build(
+                    new LiteralText(keyWidget.getValue()),
+                    this.config,
+                    ListView.empty(),
+                    DataObject.EMPTY,
                     parent,
                     0,
                     dY,
@@ -171,11 +180,6 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
         section.add(new Dummy());
 
         return categories;
-    }
-
-    @Override
-    public boolean hasError() {
-        return false;
     }
 
     @Override

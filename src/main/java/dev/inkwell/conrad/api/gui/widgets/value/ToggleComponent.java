@@ -64,9 +64,4 @@ public class ToggleComponent extends ValueWidgetComponent<Boolean> {
             fill(matrixStack, x1 + padding, y1 + padding, x2 - padding, y2 - padding, 0xFFFFFFFF, 0.8F);
         }
     }
-
-    @Override
-    public boolean hasError() {
-        return false;
-    }
 }

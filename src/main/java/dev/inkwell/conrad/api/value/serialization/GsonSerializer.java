@@ -33,8 +33,9 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
 
     private final Gson gson;
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public GsonSerializer(Gson gson) {
+        super();
+
         this.gson = gson;
 
         this.addSerializer(Boolean.class, BooleanSerializer.INSTANCE);
@@ -44,8 +45,8 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
         this.addSerializer(Float.class, FloatSerializer.INSTANCE);
         this.addSerializer(Double.class, DoubleSerializer.INSTANCE);
 
-        this.addSerializer(Array.class, valueKey -> new ArraySerializer<>(valueKey.getDefaultValue()));
-        this.addSerializer(Table.class, valueKey -> new TableSerializer<>(valueKey.getDefaultValue()));
+        this.addSerializer(Array.class, t -> new ArraySerializer<>(t));
+        this.addSerializer(Table.class, t -> new TableSerializer<>(t));
     }
 
     @Override
@@ -199,7 +200,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
         @Override
         public JsonArray serialize(Array<T> value) {
             JsonArray array = new JsonArray();
-            ValueSerializer<? extends JsonElement, ?, T> serializer = GsonSerializer.this.getSerializer(value.getValueClass());
+            ValueSerializer<JsonElement, ?, T> serializer = GsonSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             for (T t : value) {
                 array.add(serializer.serialize(t));
@@ -210,7 +211,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
 
         @Override
         public Array<T> deserialize(JsonElement representation) {
-            ValueSerializer<JsonElement, ?, T> serializer = GsonSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<JsonElement, ?, T> serializer = GsonSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             JsonArray array = (JsonArray) representation;
 
@@ -237,7 +238,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
         @Override
         public JsonObject serialize(Table<T> table) {
             JsonObject object = new JsonObject();
-            ValueSerializer<? extends JsonElement, ?, T> serializer = GsonSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<JsonElement, ?, T> serializer = GsonSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             for (Table.Entry<String, T> t : table) {
                 object.add(t.getKey(), serializer.serialize(t.getValue()));
@@ -248,7 +249,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
 
         @Override
         public Table<T> deserialize(JsonElement representation) {
-            ValueSerializer<JsonElement, ?, T> serializer = GsonSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<JsonElement, ?, T> serializer = GsonSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             JsonObject object = (JsonObject) representation;
 
@@ -317,7 +318,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
 
                 for (Field field : this.valueClass.getDeclaredFields()) {
                     field.setAccessible(true);
-                    field.set(value, this.deserialize(field, representation.getAsJsonObject(), field.getType()));
+                    field.set(value, this.deserialize(field, representation.getAsJsonObject(), (Class<T>) field.getType(), (T) field.get(value)));
                 }
 
                 return value;
@@ -331,14 +332,14 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
             try {
                 field.setAccessible(true);
                 D d = (D) field.get(value);
-                return GsonSerializer.this.getSerializer(clazz).serialize(d);
+                return GsonSerializer.this.getSerializer(clazz, d).serialize(d);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private <D> D deserialize(Field field, JsonObject from, Class<D> clazz) {
-            return GsonSerializer.this.getSerializer(clazz).deserialize(from.get(field.getName()));
+        private <D> D deserialize(Field field, JsonObject from, Class<D> clazz, D defaultValue) {
+            return GsonSerializer.this.getSerializer(clazz, defaultValue).deserialize(from.get(field.getName()));
         }
     }
 }

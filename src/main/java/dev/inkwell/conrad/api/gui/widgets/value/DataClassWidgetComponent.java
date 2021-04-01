@@ -11,6 +11,10 @@ import dev.inkwell.conrad.api.gui.util.Group;
 import dev.inkwell.conrad.api.gui.widgets.LabelComponent;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.containers.RowContainer;
+import dev.inkwell.conrad.api.value.ConfigDefinition;
+import dev.inkwell.conrad.api.value.util.ListView;
+import dev.inkwell.conrad.impl.Conrad;
+import dev.inkwell.conrad.impl.data.DataObject;
 import dev.inkwell.conrad.impl.gui.widgets.Mutable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -27,12 +31,14 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> implements ConfigScreenBuilder {
+    private final ConfigDefinition<?> config;
     private final Class<D> dataClass;
     private final Text name;
     private ConfigScreen screen;
 
-    public DataClassWidgetComponent(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull D> defaultValueSupplier, Consumer<D> changedListener, Consumer<D> saveConsumer, @NotNull D value, Class<D> dataClass) {
+    public DataClassWidgetComponent(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull D> defaultValueSupplier, Consumer<D> changedListener, Consumer<D> saveConsumer, @NotNull D value, Class<D> dataClass) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
+        this.config = config;
         this.dataClass = dataClass;
         this.name = new TranslatableText(dataClass.getName());
     }
@@ -49,8 +55,9 @@ public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> impleme
 
         int i = 0;
         for (Field field : this.dataClass.getDeclaredFields()) {
-            WidgetComponent widget = this.build(parent, field.getType(), field, contentWidth / 2, dY);
-            WidgetComponent label = new LabelComponent(parent, 0, dY, contentWidth / 2, widget.getHeight(), new TranslatableText(this.dataClass.getName() + "." + field.getName()), false);
+            Text name = new TranslatableText(this.dataClass.getName() + "." + field.getName());
+            WidgetComponent widget = this.build(name, parent, field.getType(), field, contentWidth / 2, dY);
+            WidgetComponent label = new LabelComponent(parent, 0, dY, contentWidth / 2, widget.getHeight(), name, false);
 
             section.add(new RowContainer(parent, contentLeft, dY, i++, false, label, widget));
             dY += widget.getHeight();
@@ -65,7 +72,7 @@ public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> impleme
         return categories;
     }
 
-    private <T> WidgetComponent build(ConfigScreen parent, Class<T> type, Field field, int contentWidth, int dY) {
+    private <T> WidgetComponent build(Text name, ConfigScreen parent, Class<T> type, Field field, int contentWidth, int dY) {
         try {
             field.setAccessible(true);
             T value = (T) field.get(this.getValue());
@@ -78,6 +85,10 @@ public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> impleme
             }
 
             return factory.build(
+                    name,
+                    this.config,
+                    ListView.empty(),
+                    DataObject.EMPTY,
                     parent,
                     0,
                     dY,
@@ -112,6 +123,7 @@ public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> impleme
             }
 
             this.setValue(newValue);
+            this.save();
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -150,11 +162,6 @@ public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> impleme
             this.parent.tryLeave(() -> MinecraftClient.getInstance().openScreen((this.screen = new ConfigScreen(this.parent, this))));
         }
 
-        return false;
-    }
-
-    @Override
-    public boolean hasError() {
         return false;
     }
 

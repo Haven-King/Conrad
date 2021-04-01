@@ -18,12 +18,12 @@ package dev.inkwell.conrad.api.value.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public final class ListView<T> implements Iterable<T> {
+    @SuppressWarnings("rawtypes")
+    private static final ListView EMPTY = new ListView<>(Collections.emptyList());
+
     private final List<T> list;
 
     public ListView(List<T> list) {
@@ -54,5 +54,11 @@ public final class ListView<T> implements Iterable<T> {
     @Override
     public Iterator<T> iterator() {
         return this.list.iterator();
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public static <D> ListView<D> empty() {
+        return EMPTY;
     }
 }

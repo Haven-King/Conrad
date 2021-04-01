@@ -32,7 +32,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
     public static final FlatOwenSerializer INSTANCE = new FlatOwenSerializer(new Owen.Builder());
 
     private final Map<Class<?>, ValueSerializer<?>> serializableTypes = new HashMap<>();
-    private final Map<Class<?>, Function<ValueKey<?>, ValueSerializer<?>>> typeDependentSerializers = new HashMap<>();
+    private final Map<Class<?>, Function> serializersRequiringDefaults = new HashMap<>();
     private final Map<Class<?>, EnumSerializer<?>> enumSerializerCache = new HashMap<>();
     private final Map<Class<?>, DataClassSerializer<?>> dataClassSerializerCache = new HashMap<>();
 
@@ -49,8 +49,8 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
         this.addSerializer(Float.class, new SimpleSerializer<>(Object::toString, Float::parseFloat));
         this.addSerializer(Double.class, new SimpleSerializer<>(Object::toString, Double::parseDouble));
 
-        this.addSerializer(Array.class, valueKey -> new ArraySerializer<>(valueKey.getDefaultValue()));
-        this.addSerializer(Table.class, valueKey -> new TableSerializer<>(valueKey.getDefaultValue()));
+        this.addSerializer(Array.class, t -> new ArraySerializer<>(t));
+        this.addSerializer(Table.class, t -> new TableSerializer<>(t));
     }
 
     public final <T> void addSerializer(Class<T> valueClass, ValueSerializer<T> valueSerializer) {
@@ -64,19 +64,23 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected final <T> void addSerializer(Class<T> valueClass, Function<ValueKey<T>, ValueSerializer<T>> serializerBuilder) {
-        this.typeDependentSerializers.putIfAbsent(valueClass, (Function) serializerBuilder);
+    @SuppressWarnings({"rawtypes"})
+    protected final <T> void addSerializer(Class<T> valueClass, Function<T, ValueSerializer<T>> serializerBuilder) {
+        this.serializersRequiringDefaults.putIfAbsent(valueClass, (Function) serializerBuilder);
     }
 
     @SuppressWarnings("unchecked")
-    protected final <V> ValueSerializer<V> getSerializer(Class<V> valueClass) {
+    protected final <V> ValueSerializer<V> getSerializer(Class<V> valueClass, V defaultValue) {
         if (valueClass.isEnum()) {
             return (ValueSerializer<V>) this.enumSerializerCache.computeIfAbsent(valueClass, EnumSerializer::new);
         }
 
         if (this.serializableTypes.containsKey(valueClass)) {
             return (ValueSerializer<V>) serializableTypes.get(valueClass);
+        }
+
+        if (this.serializersRequiringDefaults.containsKey(valueClass)) {
+            return (ValueSerializer<V>) serializersRequiringDefaults.get(valueClass).apply(defaultValue);
         }
 
         if (this.isDataClass(valueClass)) {
@@ -90,18 +94,14 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
     protected final <V> ValueSerializer<V> getSerializer(ValueKey<V> valueKey) {
         V defaultValue = valueKey.getDefaultValue();
 
-        if (typeDependentSerializers.containsKey(defaultValue.getClass())) {
-            return (ValueSerializer<V>) typeDependentSerializers.get(defaultValue.getClass()).apply(valueKey);
-        }
-
-        return (ValueSerializer<V>) this.getSerializer(defaultValue.getClass());
+        return this.getSerializer((Class<V>) defaultValue.getClass(), valueKey.getDefaultValue());
     }
 
     private boolean isDataClass(Class<?> clazz) {
         for (Field field : clazz.getDeclaredFields()) {
             Class<?> fieldType = field.getType();
 
-            if (this.getSerializer(fieldType) == null && !this.isDataClass(fieldType) && !ImmutableCollection.class.isAssignableFrom(fieldType)) {
+            if (!this.serializersRequiringDefaults.containsKey(clazz) && !this.isDataClass(fieldType) && !ImmutableCollection.class.isAssignableFrom(fieldType)) {
                 return false;
             }
         }
@@ -217,7 +217,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
         @Override
         public OwenElement serialize(Array<T> value) {
             OwenElement array = Owen.empty();
-            ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(value.getValueClass());
+            ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(value.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             for (T t : value) {
                 array.add(serializer.serialize(t));
@@ -228,15 +228,17 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
 
         @Override
         public Array<T> deserialize(OwenElement representation) {
-            ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             //noinspection unchecked
-            T[] values = (T[]) java.lang.reflect.Array.newInstance(defaultValue.getValueClass(), representation.asList().size());
+            T[] values = (T[]) java.lang.reflect.Array.newInstance(defaultValue.getValueClass(), representation == null ? 0 : representation.asList().size());
 
             int i = 0;
 
-            for (OwenElement element : representation.asList()) {
-                values[i++] = serializer.deserialize(element);
+            if (representation != null) {
+                for (OwenElement element : representation.asList()) {
+                    values[i++] = serializer.deserialize(element);
+                }
             }
 
             return new Array<>(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue(), values);
@@ -280,7 +282,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
         @Override
         public OwenElement serialize(Table<T> table) {
             OwenElement object = Owen.empty();
-            ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             for (Table.Entry<String, T> t : table) {
                 object.put(t.getKey(), serializer.serialize(t.getValue()));
@@ -291,15 +293,17 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
 
         @Override
         public Table<T> deserialize(OwenElement representation) {
-            ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<T> serializer = FlatOwenSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             //noinspection unchecked
-            Table.Entry<String, T>[] values = (Table.Entry<String, T>[]) java.lang.reflect.Array.newInstance(Table.Entry.class, representation.asMap().size());
+            Table.Entry<String, T>[] values = (Table.Entry<String, T>[]) java.lang.reflect.Array.newInstance(Table.Entry.class, representation == null ? 0 : representation.asMap().size());
 
             int i = 0;
 
-            for (Map.Entry<String, OwenElement> entry : representation.asMap().entrySet()) {
-                values[i++] = new Table.Entry<>(entry.getKey(), serializer.deserialize(entry.getValue()));
+            if (representation != null) {
+                for (Map.Entry<String, OwenElement> entry : representation.asMap().entrySet()) {
+                    values[i++] = new Table.Entry<>(entry.getKey(), serializer.deserialize(entry.getValue()));
+                }
             }
 
             return new Table<>(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue(), values);
@@ -331,7 +335,7 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
 
                 for (Field field : this.valueClass.getDeclaredFields()) {
                     field.setAccessible(true);
-                    field.set(value, this.deserialize(field, representation, field.getType()));
+                    field.set(value, this.deserialize(field, representation, (Class<T>) field.getType(), (T) field.get(value)));
                 }
 
                 return value;
@@ -345,14 +349,14 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
             try {
                 field.setAccessible(true);
                 D d = (D) field.get(value);
-                return FlatOwenSerializer.this.getSerializer(clazz).serialize(d);
+                return FlatOwenSerializer.this.getSerializer(clazz, d).serialize(d);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private <D> D deserialize(Field field, OwenElement from, Class<D> clazz) {
-            return FlatOwenSerializer.this.getSerializer(clazz).deserialize(from.get(field.getName()));
+        private <D> D deserialize(Field field, OwenElement from, Class<D> clazz, D defaultValue) {
+            return FlatOwenSerializer.this.getSerializer(clazz, defaultValue).deserialize(from.get(field.getName()));
         }
     }
 }

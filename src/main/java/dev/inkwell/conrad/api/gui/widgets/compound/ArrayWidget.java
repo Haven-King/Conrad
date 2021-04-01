@@ -18,6 +18,7 @@ package dev.inkwell.conrad.api.gui.widgets.compound;
 
 import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
 import dev.inkwell.conrad.api.gui.widgets.value.entry.TextWidgetComponent;
+import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.util.Array;
 import dev.inkwell.conrad.api.gui.Category;
 import dev.inkwell.conrad.api.gui.builders.ConfigScreenBuilder;
@@ -29,6 +30,8 @@ import dev.inkwell.conrad.api.gui.widgets.TextButton;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.containers.RowContainer;
 import dev.inkwell.conrad.api.gui.widgets.value.ValueWidgetComponent;
+import dev.inkwell.conrad.api.value.util.ListView;
+import dev.inkwell.conrad.impl.data.DataObject;
 import dev.inkwell.conrad.impl.gui.widgets.Mutable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -47,6 +50,7 @@ import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class ArrayWidget<T> extends ValueWidgetComponent<Array<T>> implements ConfigScreenBuilder {
+    private final ConfigDefinition<?> config;
     private final Text name;
     private final WidgetComponentFactory<T> builder;
     private final float scale;
@@ -56,8 +60,9 @@ public class ArrayWidget<T> extends ValueWidgetComponent<Array<T>> implements Co
 
     private SuggestionProvider suggestionProvider = s -> Collections.emptyList();
 
-    public ArrayWidget(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Array<T>> defaultValueSupplier, Consumer<Array<T>> changedListener, Consumer<Array<T>> saveConsumer, @NotNull Array<T> value, Text name, WidgetComponentFactory<T> builder) {
+    public ArrayWidget(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Array<T>> defaultValueSupplier, Consumer<Array<T>> changedListener, Consumer<Array<T>> saveConsumer, @NotNull Array<T> value, Text name, WidgetComponentFactory<T> builder) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, new Array<>(value));
+        this.config = config;
         this.name = name;
         this.builder = builder;
         this.scale = this.height / parent.getScale();
@@ -92,11 +97,6 @@ public class ArrayWidget<T> extends ValueWidgetComponent<Array<T>> implements Co
                     MinecraftClient.getInstance().openScreen((this.screen = new ConfigScreen(this.parent, this))));
         }
 
-        return false;
-    }
-
-    @Override
-    public boolean hasError() {
         return false;
     }
 
@@ -202,6 +202,10 @@ public class ArrayWidget<T> extends ValueWidgetComponent<Array<T>> implements Co
             );
 
             WidgetComponent widget = this.builder.build(
+                    LiteralText.EMPTY,
+                    this.config,
+                    ListView.empty(),
+                    DataObject.EMPTY,
                     parent,
                     0,
                     dY,

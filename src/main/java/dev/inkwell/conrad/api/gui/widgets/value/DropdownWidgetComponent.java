@@ -120,11 +120,6 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
         }
     }
 
-    @Override
-    public boolean hasError() {
-        return false;
-    }
-
     protected abstract MutableText fromValue(T value);
 
     @Override

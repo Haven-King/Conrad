@@ -185,7 +185,7 @@ public class ConfigScreenProvider implements ModMenuApi {
 
             WidgetComponentFactory<T> factory = EntryBuilderRegistry.get(configValue);
             ValueContainer container = ValueContainerProvider.getInstance(configDefinition.getSaveType()).getValueContainer(configDefinition.getSaveType());
-            WidgetComponent widget = factory.build(parent, x, y, width / 2, (int) (30 * parent.getScale()),
+            WidgetComponent widget = factory.build(new TranslatableText(configValue.toString()), configValue.getConfig(), configValue.getConstraints(), configValue, parent, x, y, width / 2, (int) (30 * parent.getScale()),
                     configValue::getDefaultValue, t -> {
                     },
                     v -> configValue.setValue(v, container),
