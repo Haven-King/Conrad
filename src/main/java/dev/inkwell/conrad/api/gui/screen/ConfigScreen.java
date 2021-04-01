@@ -76,6 +76,7 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
     private AbstractButtonWidget yesButton;
     private AbstractButtonWidget noButton;
+    private AbstractButtonWidget backButton;
 
     private Runnable andThen = this::onClose;
 
@@ -165,6 +166,21 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
                     this.andThen = this::onClose;
                 }
         );
+
+        backButton = new FancyButton(this, (int) margin, headerSize / 4 - 5, 10, 10, new LiteralText("◀"), button -> {
+                if (!this.isSaveDialogOpen) {
+                    if (this.changedCount() > 0) {
+                        this.isSaveDialogOpen = true;
+                        yesButton.visible = true;
+                        noButton.visible = true;
+                    } else if (this.client != null) {
+                        this.client.openScreen(this.parent);
+                    }
+                }
+            }
+        ).withBackgroundColor(0x00000000).withTooltips(new TranslatableText("gui.back"));
+
+        this.addButton(this.backButton);
 
         yesButton.visible = false;
         noButton.visible = false;
@@ -479,15 +495,11 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
             return false;
         } else {
-            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-                int changed = this.changedCount();
-
-                if (changed > 0) {
-                    this.isSaveDialogOpen = true;
-                    yesButton.visible = true;
-                    noButton.visible = true;
-                    return false;
-                }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE && this.changedCount() > 0) {
+                this.isSaveDialogOpen = true;
+                yesButton.visible = true;
+                noButton.visible = true;
+                return false;
             }
 
             boolean bl = false;

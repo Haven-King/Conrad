@@ -27,8 +27,17 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
 @Environment(EnvType.CLIENT)
-public class FancyButton extends ButtonWidget implements DrawableExtensions {
+public class FancyButton extends ButtonWidget implements DrawableExtensions, TooltipAccess {
+    private final List<Text> tooltips = new ArrayList<>();
+
+    private int hoverColor = 0xFFFFFFFF;
+    private int backgroundColor = 0x44FFFFFF;
     private final ConfigScreen parent;
     private float hoverOpacity = 0F;
 
@@ -37,11 +46,32 @@ public class FancyButton extends ButtonWidget implements DrawableExtensions {
         this.parent = parent;
     }
 
+    public FancyButton withBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
+        return this;
+    }
+
+    public FancyButton withHoverColor(int hoverColor) {
+        this.hoverColor = hoverColor;
+        return this;
+    }
+
+    public FancyButton withColors(int backgroundColor, int hoverColor) {
+        this.backgroundColor = backgroundColor;
+        this.hoverColor = hoverColor;
+        return this;
+    }
+
+    public FancyButton withTooltips(Text... tooltips) {
+        this.tooltips.addAll(Arrays.asList(tooltips));
+        return this;
+    }
+
     @Override
     public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         TextRenderer textRenderer = minecraftClient.textRenderer;
-        DrawableHelper.fill(matrices, this.x, this.y, this.x + this.width, this.y + this.height, 0x44FFFFFF);
+        DrawableHelper.fill(matrices, this.x, this.y, this.x + this.width, this.y + this.height, this.backgroundColor);
 
         if (ConradGuiConfig.Animations.ENABLED.getValue()) {
             if (isMouseOver(mouseX, mouseY) && (this.parent.getFocused() == null || this.parent.getFocused() == this)) {
@@ -53,7 +83,16 @@ public class FancyButton extends ButtonWidget implements DrawableExtensions {
             hoverOpacity = this.isMouseOver(mouseX, mouseY) ? 1F : 0F;
         }
 
-        fill(matrices, x, y, x + width, y + getHeight(), 0xFFFFFFFF, hoverOpacity * 0.75F);
+        if (isMouseOver(mouseX, mouseY)) {
+            this.parent.addTooltips(this);
+        }
+
+        fill(matrices, x, y, x + width, y + getHeight(), hoverColor, hoverOpacity * 0.75F);
         drawCenteredText(matrices, textRenderer, this.getMessage(), this.x + this.width / 2F, this.y + (this.height - 8) / 2F, 0xFFFFFFFF, 1.25F * parent.getScale());
+    }
+
+    @Override
+    public void addTooltips(Consumer<Text> tooltipConsumer) {
+        this.tooltips.forEach(tooltipConsumer);
     }
 }

@@ -22,7 +22,6 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
     private final Owen owen;
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public OwenTreeSerializer(Owen.Builder builder) {
         this.owen = builder.build();
 
@@ -33,8 +32,8 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
         this.addSerializer(Float.class, FloatSerializer.INSTANCE);
         this.addSerializer(Double.class, DoubleSerializer.INSTANCE);
 
-        this.addSerializer(Array.class, valueKey -> new ArraySerializer<>(valueKey.getDefaultValue()));
-        this.addSerializer(Table.class, valueKey -> new TableSerializer<>(valueKey.getDefaultValue()));
+        this.addSerializer(Array.class, t -> new ArraySerializer<>(t));
+        this.addSerializer(Table.class, t -> new TableSerializer<>(t));
     }
 
     @Override
@@ -191,7 +190,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
         @Override
         public OwenElement serialize(Array<T> value) {
             OwenElement array = Owen.empty();
-            ValueSerializer<? extends OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(value.getValueClass());
+            ValueSerializer<OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             for (T t : value) {
                 array.add(serializer.serialize(t));
@@ -202,7 +201,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public Array<T> deserialize(OwenElement representation) {
-            ValueSerializer<OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             //noinspection unchecked
             T[] values = (T[]) java.lang.reflect.Array.newInstance(defaultValue.getValueClass(), representation.asList().size());
@@ -227,7 +226,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
         @Override
         public OwenElement serialize(Table<T> table) {
             OwenElement object = Owen.empty();
-            ValueSerializer<? extends OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             for (Table.Entry<String, T> t : table) {
                 object.put(t.getKey(), serializer.serialize(t.getValue()));
@@ -238,7 +237,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
         @Override
         public Table<T> deserialize(OwenElement representation) {
-            ValueSerializer<OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(this.defaultValue.getValueClass());
+            ValueSerializer<OwenElement, ?, T> serializer = OwenTreeSerializer.this.getSerializer(this.defaultValue.getValueClass(), this.defaultValue.getDefaultValue().get());
 
             //noinspection unchecked
             Table.Entry<String, T>[] values = (Table.Entry<String, T>[]) java.lang.reflect.Array.newInstance(Table.Entry.class, representation.asMap().size());
@@ -305,7 +304,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
 
                 for (Field field : this.valueClass.getDeclaredFields()) {
                     field.setAccessible(true);
-                    field.set(value, this.deserialize(field, representation, field.getType()));
+                    field.set(value, this.deserialize(field, representation, (Class<T>) field.getType(), (T) field.get(value)));
                 }
 
                 return value;
@@ -319,14 +318,14 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
             try {
                 field.setAccessible(true);
                 D d = (D) field.get(value);
-                return OwenTreeSerializer.this.getSerializer(clazz).serialize(d);
+                return OwenTreeSerializer.this.getSerializer(clazz, d).serialize(d);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private <D> D deserialize(Field field, OwenElement from, Class<D> clazz) {
-            return OwenTreeSerializer.this.getSerializer(clazz).deserialize(from.get(field.getName()));
+        private <D> D deserialize(Field field, OwenElement from, Class<D> clazz, D defaultValue) {
+            return OwenTreeSerializer.this.getSerializer(clazz, defaultValue).deserialize(from.get(field.getName()));
         }
     }
 }
