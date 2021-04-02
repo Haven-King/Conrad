@@ -18,18 +18,7 @@ package dev.inkwell.conrad.impl;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
-import com.terraformersmc.modmenu.api.ModMenuApi;
 import dev.inkwell.conrad.api.EntryBuilderRegistry;
-import dev.inkwell.conrad.api.value.ConfigDefinition;
-import dev.inkwell.conrad.api.value.ConfigManager;
-import dev.inkwell.conrad.api.value.data.DataType;
-import dev.inkwell.conrad.api.value.data.SaveType;
-import dev.inkwell.conrad.api.value.lang.Translator;
-import dev.inkwell.conrad.api.value.util.ListView;
-import dev.inkwell.conrad.api.value.ValueContainer;
-import dev.inkwell.conrad.api.value.ValueContainerProvider;
-import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.gui.builders.CategoryBuilder;
 import dev.inkwell.conrad.api.gui.builders.ConfigScreenBuilderImpl;
 import dev.inkwell.conrad.api.gui.builders.SectionBuilder;
@@ -41,9 +30,15 @@ import dev.inkwell.conrad.api.gui.widgets.LabelComponent;
 import dev.inkwell.conrad.api.gui.widgets.TextButton;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.containers.RowContainer;
+import dev.inkwell.conrad.api.value.*;
+import dev.inkwell.conrad.api.value.data.DataType;
+import dev.inkwell.conrad.api.value.data.SaveType;
+import dev.inkwell.conrad.api.value.lang.Translator;
+import dev.inkwell.conrad.api.value.util.ListView;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -51,19 +46,24 @@ import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
-public class ConfigScreenProvider implements ModMenuApi {
+public final class ConfigScreenProviderImpl {
     private static final Multimap<String, ListView<ValueKey<?>>> CONFIGS = LinkedHashMultimap.create();
+    private static final Map<String, Function<Screen, ? extends Screen>> FACTORIES = new TreeMap<>();
 
-    private final Map<String, ConfigScreenFactory<?>> factories = new HashMap<>();
+    private ConfigScreenProviderImpl() {
 
-    public ConfigScreenProvider() {
+    }
+
+    public static void init() {
         for (String modId : CONFIGS.keySet()) {
             ConfigScreenBuilderImpl builder = new ConfigScreenBuilderImpl();
             ScreenStyle screenStyle = ScreenStyle.DEFAULT;
-            this.factories.put(modId, parent -> new ConfigScreen(parent, builder));
+            FACTORIES.put(modId, parent -> new ConfigScreen(parent, builder));
 
             for (ListView<ValueKey<?>> values : CONFIGS.get(modId)) {
                 ConfigDefinition<?> config = values.get(0).getConfig();
@@ -89,12 +89,13 @@ public class ConfigScreenProvider implements ModMenuApi {
                 if (!category.getTooltips().isEmpty()) {
                     category.addTooltip(LiteralText.EMPTY);
                 }
+
                 category.addTooltip(new TranslatableText("conrad.tooltip.save_type", config.getSaveType()));
 
                 Deque<ValueKey<?>> deque = new ArrayDeque<>();
                 values.forEach(deque::add);
 
-                this.makeScreenBuilder(config, category, deque, 0, null, null);
+                makeScreenBuilder(config, category, deque, 0, null, null);
             }
 
             builder.setStyle(screenStyle);
@@ -116,7 +117,7 @@ public class ConfigScreenProvider implements ModMenuApi {
         return builder.toString();
     }
 
-    private void makeScreenBuilder(ConfigDefinition<?> config, CategoryBuilder category, Deque<ValueKey<?>> values, int level, @Nullable SectionBuilder section, @Nullable String sectionName) {
+    private static void makeScreenBuilder(ConfigDefinition<?> config, CategoryBuilder category, Deque<ValueKey<?>> values, int level, @Nullable SectionBuilder section, @Nullable String sectionName) {
         category.setSaveCallback(() -> Conrad.syncAndSave(config));
 
         String currentSectionName = sectionName;
@@ -177,7 +178,7 @@ public class ConfigScreenProvider implements ModMenuApi {
 
     }
 
-    private <T> void addEntry(SectionBuilder section, ValueKey<T> configValue) {
+    private static <T> void addEntry(SectionBuilder section, ValueKey<T> configValue) {
         ConfigDefinition<?> configDefinition = configValue.getConfig();
 
         section.add((parent, width, x, y, index) -> {
@@ -201,13 +202,11 @@ public class ConfigScreenProvider implements ModMenuApi {
         });
     }
 
-    @Override
-    public Map<String, ConfigScreenFactory<?>> getProvidedConfigScreenFactories() {
-        return factories;
+    public static void forEach(BiConsumer<String, Function<Screen, ? extends Screen>> consumer) {
+        FACTORIES.forEach(consumer);
     }
 
-    @Override
-    public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return factories.get("conrad");
+    public static Screen get(String modId, Screen parent) {
+        return FACTORIES.get(modId).apply(parent);
     }
 }

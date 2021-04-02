@@ -52,6 +52,10 @@ public class Conrad implements ConfigPostInitializer {
         }
     }
 
+    public static Identifier id(String string, String... strings) {
+        return new Identifier("conrad", string + (strings.length > 0 ? String.join("/", strings) : ""));
+    }
+
     @Override
     public void onConfigsLoaded() {
         boolean client = FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
@@ -65,7 +69,7 @@ public class Conrad implements ConfigPostInitializer {
             }
 
             if (client) {
-                ConfigScreenProvider.register(ConfigManager.getValues(configDefinition));
+                ConfigScreenProviderImpl.register(ConfigManager.getValues(configDefinition));
             }
 
             if (dev) {
@@ -127,6 +131,11 @@ public class Conrad implements ConfigPostInitializer {
                     e.printStackTrace();
                 }
             }
+        }
+
+
+        if (client) {
+            ConfigScreenProviderImpl.init();
         }
     }
 }

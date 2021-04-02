@@ -18,6 +18,7 @@ package dev.inkwell.conrad.api.gui.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.inkwell.conrad.api.gui.DrawableExtensions;
+import dev.inkwell.conrad.impl.mixin.TitleScreenAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -32,6 +33,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Style;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.MathHelper;
 
 import static dev.inkwell.conrad.impl.Conrad.BLUR;
 
@@ -103,8 +106,19 @@ public class ScreenStyle extends DrawableHelper implements DrawableExtensions {
     }
 
     protected void renderBackground(ConfigScreen screen, Screen parent, MatrixStack matrices, float tickDelta) {
-        if (parent == null && backgroundTexture == null) {
-            screen.renderBackground(matrices);
+        if (parent != null && backgroundTexture == null) {
+            if (parent instanceof TitleScreen) {
+                TitleScreenAccessor accessor = (TitleScreenAccessor) parent;
+                if (accessor.getBackgroundFadeStart() == 0L && accessor.getDoBackgroundFade()) {
+                    accessor.setBackgroundFadeStart(Util.getMeasuringTimeMs());
+                }
+
+                float f = accessor.getDoBackgroundFade() ? (float)(Util.getMeasuringTimeMs() - accessor.getBackgroundFadeStart()) / 1000.0F : 1.0F;
+                fill(matrices, 0, 0, parent.width, parent.height, -1);
+                accessor.getBackgroundRenderer().render(tickDelta, MathHelper.clamp(f, 0.0F, 1.0F));
+            } else {
+                parent.renderBackground(matrices);
+            }
         } else if (backgroundTexture != null) {
             int a = this.backgroundColor >> 24;
             int r = (this.backgroundColor >> 16) & 0xFF;

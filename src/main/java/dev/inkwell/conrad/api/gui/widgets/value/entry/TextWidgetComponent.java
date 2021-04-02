@@ -119,7 +119,7 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
 
                     fill(matrixStack, this.x, y1, this.x + this.width, y2, 0x80000000, 0.5F);
 
-                    if (mouseX >= this.x && mouseX <= this.x + this.width && mouseY >= y1 && mouseY <= y2) {
+                    if (mouseX >= this.x && mouseX < this.x + this.width && mouseY >= y1 && mouseY < y2) {
                         fill(matrixStack, this.x, y1, this.x + this.width, y2, this.highlightColor(), 0.5F);
                     }
 
@@ -411,7 +411,7 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (mouseX >= this.x && mouseX <= this.x + this.width && this.isFocused() && mouseY > this.y + this.height && !this.recentSuggestions.isEmpty()) {
+        if (mouseX >= this.x && mouseX < this.x + this.width && this.isFocused() && mouseY > this.y + this.height && !this.recentSuggestions.isEmpty()) {
             int i = MathHelper.floor((mouseY - this.y - this.height)) / this.height;
 
             if (i < this.recentSuggestions.size()) {

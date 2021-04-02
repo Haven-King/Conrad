@@ -3,15 +3,21 @@
   "id": "conrad",
   "version": "${version}",
   "name": "Conrad",
-  "description": "",
-  "authors": [],
-  "contact": {},
+  "description": "A highly flexible config library for the Fabric modding platform.",
+  "authors": [
+    "Haven King"
+  ],
+  "contact": {
+    "issues": "https://github.com/Haven-King/Conrad/issues",
+    "sources": "https://github.com/Haven-King/Conrad"
+  },
   "license": "Apache-2.0",
   "icon": "assets/conrad/icon.png",
   "environment": "*",
   "entrypoints": {
     "client": [
-      "dev.inkwell.conrad.impl.networking.ConfigNetworking"
+      "dev.inkwell.conrad.impl.networking.ConfigNetworking",
+      "dev.inkwell.conrad.impl.gui.ModConfigsScreen"
     ],
     "config": [
       "dev.inkwell.conrad.impl.Conrad",
@@ -25,7 +31,7 @@
       "dev.inkwell.conrad.impl.ConfigManagerImpl"
     ],
     "modmenu": [
-      "dev.inkwell.conrad.impl.ConfigScreenProvider"
+      "dev.inkwell.conrad.impl.compat.ModMenuCompat"
     ],
     "channel": [
       "dev.inkwell.conrad.impl.networking.channels.ForwardUserConfigsS2CChannel",

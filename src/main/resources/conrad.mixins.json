@@ -11,7 +11,8 @@
   ],
   "client": [
     "MixinClientPlayNetworkHandler",
-    "MixinServerInfo"
+    "MixinServerInfo",
+    "TitleScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

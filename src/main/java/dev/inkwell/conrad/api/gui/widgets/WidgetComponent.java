@@ -125,8 +125,8 @@ public abstract class WidgetComponent implements Element, DrawableExtensions, Ti
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return mouseX >= this.x && mouseX <= this.x + this.width
-                && mouseY >= this.y && mouseY <= this.y + this.height;
+        return mouseX >= this.x && mouseX < this.x + this.width
+                && mouseY >= this.y && mouseY < this.y + this.height;
     }
 
     public int getX() {

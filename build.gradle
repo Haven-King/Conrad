@@ -29,10 +29,6 @@ dependencies {
         transitive(false)
     }
 
-    modRuntime("com.terraformersmc:modmenu:${project.modmenu_version}") {
-        transitive(false)
-    }
-
     modImplementation "io.github.ladysnake:Satin:${project.satin_version}"
     include "io.github.ladysnake:Satin:${project.satin_version}"
 

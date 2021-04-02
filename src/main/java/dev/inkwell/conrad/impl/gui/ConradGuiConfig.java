@@ -31,8 +31,14 @@ import net.fabricmc.api.EnvironmentInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@EnvironmentInterface(value = EnvType.CLIENT, itf = Stylable.class)
 public class ConradGuiConfig extends Config<OwenElement> implements Stylable  {
+    public static final ValueKey<Boolean> SHOW_MODS_CONFIG_BUTTON = value(false);
+
+    public static final class Animations {
+        public static final ValueKey<Boolean> ENABLED = value(true);
+        public static final ValueKey<Float> SPEED = value(0.2F);
+    }
+
     @Override
     public @NotNull ConfigSerializer<OwenElement> getSerializer() {
         return FlatOwenSerializer.INSTANCE;
@@ -49,18 +55,7 @@ public class ConradGuiConfig extends Config<OwenElement> implements Stylable  {
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
-    public ScreenStyle getStyle() {
-        return new ConfigStyle();
-    }
-
-    @Override
     public @NotNull String getName() {
         return "gui";
-    }
-
-    public static final class Animations {
-        public static final ValueKey<Boolean> ENABLED = value(true);
-        public static final ValueKey<Float> SPEED = value(0.2F);
     }
 }
