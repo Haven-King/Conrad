@@ -16,15 +16,11 @@
 
 package dev.inkwell.conrad.impl;
 
-import dev.inkwell.conrad.api.value.ConfigDefinition;
-import dev.inkwell.conrad.api.value.ConfigInitializer;
-import dev.inkwell.conrad.api.value.ConfigPostInitializer;
-import dev.inkwell.conrad.api.value.ConfigProvider;
+import dev.inkwell.conrad.api.Config;
+import dev.inkwell.conrad.api.value.*;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.serialization.ConfigSerializer;
 import dev.inkwell.conrad.api.value.util.ListView;
-import dev.inkwell.conrad.api.value.ValueContainer;
-import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.impl.exceptions.ConfigSerializationException;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -77,6 +73,7 @@ public class ConfigManagerImpl implements PreLaunchEntrypoint {
     public void onPreLaunch() {
         Map<String, Collection<ConfigInitializer<?>>> configInitializers = new HashMap<>();
         Collection<ConfigPostInitializer> postInitializers = new ArrayList<>();
+        boolean client = FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
 
         // We use one entrypoint to reduce the number of excess entrypoint keys
         for (EntrypointContainer<Object> container : FabricLoader.getInstance().getEntrypointContainers("config", Object.class)) {
@@ -101,7 +98,11 @@ public class ConfigManagerImpl implements PreLaunchEntrypoint {
 
         for (String modId : configInitializers.keySet()) {
             for (ConfigInitializer<?> initializer : configInitializers.get(modId)) {
-                initialize(modId, initializer);
+                ConfigDefinition<?> config = initialize(modId, initializer);
+
+                if (initializer instanceof Config && client) {
+                    ConfigScreenProviderImpl.register(modId, getValues(config));
+                }
             }
         }
 
@@ -116,7 +117,7 @@ public class ConfigManagerImpl implements PreLaunchEntrypoint {
         FINISHED = true;
     }
 
-    private static <T1> void initialize(String modId, ConfigInitializer<T1> initializer) {
+    private static <T1> @Nullable ConfigDefinition<T1> initialize(String modId, ConfigInitializer<T1> initializer) {
         Map<DataType<?>, Collection<?>> data = new HashMap<>();
 
         initializer.addConfigData(data::put);
@@ -125,7 +126,7 @@ public class ConfigManagerImpl implements PreLaunchEntrypoint {
 
         if (CONFIGS.containsKey(configDefinition)) {
             LOGGER.warn("Attempted to register duplicate config '{}'", configDefinition.toString());
-            return;
+            return null;
         }
 
         initializer.addConfigValues(((configValue, path0, path) -> {
@@ -140,6 +141,8 @@ public class ConfigManagerImpl implements PreLaunchEntrypoint {
             CONFIG_VALUES.put(configValue.toString(), configValue);
             CONFIG_DEFINITIONS.put(configDefinition.toString(), configDefinition);
         }));
+
+        return configDefinition;
     }
 
     public static <R> void doSerialization(ConfigDefinition<R> configDefinition, ValueContainer valueContainer) {

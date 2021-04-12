@@ -18,10 +18,13 @@ package dev.inkwell.conrad.api.gui.builders;
 
 import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
 import dev.inkwell.conrad.api.gui.util.Group;
+import dev.inkwell.conrad.api.gui.widgets.SpacerComponent;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.value.SectionHeaderComponent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+
+import java.util.Iterator;
 
 public class SectionBuilder extends Group<SectionBuilder.WidgetBuilder> {
     public SectionBuilder(MutableText title) {
@@ -41,16 +44,22 @@ public class SectionBuilder extends Group<SectionBuilder.WidgetBuilder> {
         int offset = y;
 
         if (!this.getName().getString().isEmpty()) {
-            WidgetComponent component = new SectionHeaderComponent(parent, contentLeft, offset, contentWidth, (int) (45 * parent.getScale()), this.name, false).withColor(parent.getStyle().sectionColor);
+            WidgetComponent component = new SectionHeaderComponent(parent, contentLeft + contentWidth / 2, offset, contentWidth, 25, this.name, false);
             component.addTooltips(this.tooltips);
             section.add(component);
             offset += component.getHeight();
         }
 
-        for (WidgetBuilder builder : this) {
+        for (Iterator<WidgetBuilder> iterator = this.iterator(); iterator.hasNext(); ) {
+            WidgetBuilder builder = iterator.next();
             WidgetComponent component = builder.build(parent, contentWidth, contentLeft, offset, index++);
             section.add(component);
             offset += component.getHeight();
+
+            if (iterator.hasNext()) {
+                section.add(new SpacerComponent(parent, contentLeft, offset, contentWidth, 7));
+                offset += 7;
+            }
         }
 
         return section;

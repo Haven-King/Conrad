@@ -22,20 +22,23 @@ import dev.inkwell.conrad.api.gui.DrawableExtensions;
 import dev.inkwell.conrad.api.gui.builders.ConfigScreenBuilder;
 import dev.inkwell.conrad.api.gui.util.Group;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
-import dev.inkwell.conrad.api.gui.widgets.value.SectionHeaderComponent;
+import dev.inkwell.conrad.api.gui.widgets.value.ValueWidgetComponent;
 import dev.inkwell.conrad.impl.gui.widgets.Mutable;
+import dev.inkwell.conrad.impl.mixin.TitleScreenAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -45,26 +48,26 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
-
-import static dev.inkwell.conrad.impl.Conrad.BLUR;
 
 // TODO: This class needs to be cleaned up/split up in general
 public class ConfigScreen extends Screen implements DrawableExtensions {
+    public static final int CONTENT_WIDTH = 330;
+    public static final int HEADER_SIZE = 43;
+    public static final int FOOTER_SIZE = 32;
+
     private final List<Text> tooltips = new ArrayList<>();
     private final Screen parent;
     private ConfigScreenBuilder provider;
     private List<Category> categories;
     private boolean isSaveDialogOpen = false;
-    private ScreenStyle style = ScreenStyle.DEFAULT;
     private int activeCategory = 0;
     private int scrollAmount = 0;
-    private int contentWidth;
-    private int headerSize;
     private int visibleHeight;
     private float margin;
-    private float scale;
     private int lastMouseX;
     private int lastMouseY;
     private double clickedX;
@@ -76,12 +79,11 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
     private AbstractButtonWidget yesButton;
     private AbstractButtonWidget noButton;
-    private AbstractButtonWidget backButton;
 
     private Runnable andThen = this::onClose;
 
-    public ConfigScreen(Screen parent, ConfigScreenBuilder provider) {
-        super(LiteralText.EMPTY);
+    public ConfigScreen(Screen parent, ConfigScreenBuilder provider, Text title) {
+        super(title);
         this.provider = provider;
         this.parent = parent;
     }
@@ -92,29 +94,18 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
         this.init(this.client, this.width, this.height);
     }
 
-    public ConfigScreen withStyle(ScreenStyle style) {
-        this.style = style;
-        return this;
-    }
-
     @Override
     public void init(MinecraftClient client, int width, int height) {
         super.init(client, width, height);
 
-        this.headerSize = client.textRenderer.fontHeight * 3;
-        this.contentWidth = height > width ? (width - 12) : width / 2;
-        this.visibleHeight = this.height - headerSize;
-        this.margin = height > width ? 6 : width / 4F;
-
-        double test = client.getWindow().getScaleFactor();
-
-        this.scale = (float) (0.5 + 0.125 * ((3 - (test - 1))));
+        this.visibleHeight = this.height - HEADER_SIZE - FOOTER_SIZE;
+        this.margin = (width - CONTENT_WIDTH) / 2F;
 
         int padding = 3;
-        int buttonWidth = 45;
-        int buttonHeight = 15;
+        int buttonWidth = 60;
+        int buttonHeight = 20;
 
-        this.categories = this.provider.build(this, (int) margin, contentWidth, headerSize);
+        this.categories = this.provider.build(this, (int) margin, CONTENT_WIDTH, HEADER_SIZE + 5);
 
         MutableInt contentHeight = new MutableInt();
         this.iterateActive(widget -> contentHeight.add(widget.getHeight()));
@@ -126,12 +117,12 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         for (Group<?> group : this.categories) {
-            l = Math.max(l, textRenderer.getWidth(group.getName()));
+            l = MathHelper.ceil(Math.max(l, textRenderer.getWidth(group.getName())));
         }
 
-        int categoryWidth = l;
+        int categoryWidth = l + 20;
 
-        yesButton = new FancyButton(this,
+        yesButton = new ButtonWidget(
                 width / 2 - buttonWidth - padding,
                 height / 2,
                 buttonWidth,
@@ -155,7 +146,7 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
                 }
         );
 
-        noButton = new FancyButton(this,
+        noButton = new ButtonWidget(
                 width / 2 + padding,
                 height / 2,
                 buttonWidth,
@@ -167,47 +158,91 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
                 }
         );
 
-        backButton = new FancyButton(this, (int) margin, headerSize / 4 - 5, 10, 10, new LiteralText("◀"), button -> {
-                if (!this.isSaveDialogOpen) {
-                    if (this.changedCount() > 0) {
-                        this.isSaveDialogOpen = true;
-                        yesButton.visible = true;
-                        noButton.visible = true;
-                    } else if (this.client != null) {
-                        this.client.openScreen(this.parent);
-                    }
+        AbstractButtonWidget backButton = new ConradButtonWidget(this, (int) margin + CONTENT_WIDTH / 2 + 7, this.height - 26, this.CONTENT_WIDTH / 2 - 20, 20, new TranslatableText("gui.back"), button -> {
+            if (!this.isSaveDialogOpen) {
+                if (this.changedCount() > 0) {
+                    this.isSaveDialogOpen = true;
+                    yesButton.visible = true;
+                    noButton.visible = true;
+                } else if (this.client != null) {
+                    this.client.openScreen(this.parent);
                 }
             }
-        ).withBackgroundColor(0x00000000).withTooltips(new TranslatableText("gui.back"));
+        }, Collections.emptyList());
 
-        this.addButton(this.backButton);
+        this.addButton(backButton);
 
         yesButton.visible = false;
         noButton.visible = false;
 
+        int categoryButtonsSpan = ((categoryWidth + 5) * categories.size());
+
+        int x = this.width / 2 - categoryButtonsSpan / 2;
+
         for (int i = 0; i < categories.size(); ++i) {
             int categoryId = i;
-            ButtonWidget button = new CategoryButtonWidget(
+            ButtonWidget button = new ConradButtonWidget(
                     this,
-                    (int) (margin + i * (contentWidth / categories.size()) + (contentWidth / (categories.size() * 2)) - categoryWidth / 2),
-                    0,
+                    x,
+                    20,
                     categoryWidth,
-                    12,
+                    20,
                     categories.get(i).getName(),
                     (b) -> this.tryLeave(() -> this.setActiveCategory(categoryId)),
-                    categories.get(categoryId).getTooltips());
+                    categories.get(categoryId).getTooltips(),
+                    categories.size() > 1
+            );
 
             if (i == activeCategory) {
                 button.active = false;
             }
 
             this.addButton(button);
+
+            x += categoryWidth + 5;
         }
     }
 
     @Override
     public void renderBackground(MatrixStack matrices) {
-        this.style.renderBackgroundFromPresets(this, this.parent, matrices, lastTickDelta);
+        Optional<Identifier> backgroundTexture = this.provider.getStyle().getBackgroundTexture();
+
+
+        if (parent != null && !backgroundTexture.isPresent()) {
+            if (parent instanceof TitleScreen) {
+                TitleScreenAccessor accessor = (TitleScreenAccessor) parent;
+                if (accessor.getBackgroundFadeStart() == 0L && accessor.getDoBackgroundFade()) {
+                    accessor.setBackgroundFadeStart(Util.getMeasuringTimeMs());
+                }
+
+                float f = accessor.getDoBackgroundFade() ? (float)(Util.getMeasuringTimeMs() - accessor.getBackgroundFadeStart()) / 1000.0F : 1.0F;
+                fill(matrices, 0, 0, parent.width, parent.height, -1);
+                accessor.getBackgroundRenderer().render(lastTickDelta, MathHelper.clamp(f, 0.0F, 1.0F));
+            } else {
+                parent.renderBackground(matrices);
+            }
+        } else if (backgroundTexture.isPresent()) {
+            int backgroundColor = this.provider.getStyle().getBackgroundColor();
+            int a = backgroundColor >> 24;
+            int r = (backgroundColor >> 16) & 0xFF;
+            int g = (backgroundColor >> 8) & 0xFF;
+            int b = (backgroundColor) & 0xFF;
+
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder bufferBuilder = tessellator.getBuffer();
+            MinecraftClient.getInstance().getTextureManager().bindTexture(backgroundTexture.get());
+            //noinspection deprecation
+            RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+            //noinspection deprecation
+            bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
+            bufferBuilder.vertex(0.0D, this.height, 0.0D).texture(0.0F, (float) this.height / 32.0F).color(r, g, b, a).next();
+            bufferBuilder.vertex(this.width, this.height, 0.0D).texture(this.width / 32.0F, this.height / 32.0F).color(r, g, b, a).next();
+            bufferBuilder.vertex(this.width, 0.0D, 0.0D).texture(this.width / 32.0F, 0).color(r, g, b, a).next();
+            bufferBuilder.vertex(0.0D, 0.0D, 0.0D).texture(0.0F, 0).color(r, g, b, a).next();
+            tessellator.draw();
+        } else {
+            super.renderBackground(matrices);
+        }
     }
 
     @Override
@@ -236,19 +271,19 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
         this.lastTickDelta = tickDelta;
         this.renderBackground(matrices);
-        this.style.renderDecorations(matrices, useMouseX, useMouseY, tickDelta, this.width, this.height, this.headerSize);
+
+        fill(matrices, 0, this.HEADER_SIZE, this.width, this.height - this.FOOTER_SIZE, 0x80000000);
 
         if (contentHeight > visibleHeight) {
-            WidgetComponent firstWidget = (this.categories.get(this.activeCategory).get(0).get(0));
-            int padding = (firstWidget instanceof SectionHeaderComponent ? firstWidget.getHeight() : 0);
+            float ratio = 1F - (contentHeight - visibleHeight) / (float) contentHeight;
+            int startX = (int) (this.margin + this.CONTENT_WIDTH + 3);
 
-            float ratio = (visibleHeight - headerSize - padding / 2F) / (float) contentHeight;
-            int startX = height > width ? (int) (contentWidth + margin + 2) : (int) (margin * 3 + 2);
-
-            int startY = (int) (this.headerSize - scrollAmount * ratio) + padding;
-            int height = (int) (ratio * (visibleHeight - padding)) - this.headerSize;
-            boolean hovered = useMouseX >= startX && useMouseY >= startY && useMouseX <= startX + 3 && useMouseY <= startY + height;
-            this.style.renderScrollbar(matrices, startX, startY, 3, height, false, hovered);
+            int width = 6;
+            int height = (int) (ratio * visibleHeight);
+            int startY = scrollAmount == 0 ? HEADER_SIZE : HEADER_SIZE + (int) ((visibleHeight - height) * this.scrollAmount / (float) this.minScrollAmount());
+            fill(matrices, startX, HEADER_SIZE, startX + width, HEADER_SIZE + visibleHeight, 0xFF000000, 1F);
+            fill(matrices, startX, startY, startX + width, startY + height, 0xFF808080, 1F);
+            fill(matrices, startX, startY, startX + width - 1, startY + height - 1, 0xFFC0C0C0, 1F);
         }
 
         super.render(matrices, useMouseX, useMouseY, tickDelta);
@@ -257,14 +292,18 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         Window window = client.getWindow();
-        float test = ((this.height - this.headerSize) / (float) this.height);
-        GL11.glScissor(0, 0, window.getFramebufferWidth(), (int) (window.getFramebufferHeight() * test));
+        float test = ((this.height - this.HEADER_SIZE - this.FOOTER_SIZE) / (float) this.height);
+        GL11.glScissor(0, (int) (window.getFramebufferHeight() * (this.FOOTER_SIZE / (float) this.height)), window.getFramebufferWidth(), (int) (window.getFramebufferHeight() * test));
 
         this.hasError = false;
 
         this.iterateActive(widget -> {
             if (widget != this.getFocused()) {
                 widget.render(matrices, mouseX, mouseY, tickDelta, true);
+
+                if (widget instanceof ValueWidgetComponent) {
+                    this.hasError |= ((ValueWidgetComponent<?>) widget).hasError();
+                }
             }
         });
 
@@ -273,27 +312,26 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
         }
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        fillGradient(matrices, 0, this.HEADER_SIZE, this.width, this.HEADER_SIZE + 4, 0xFF000000, 0);
+        fillGradient(matrices, 0, this.height - this.FOOTER_SIZE - 4, this.width, this.height - this.FOOTER_SIZE, 0, 0xFF000000);
 
         matrices.pop();
 
         if (!tooltips.isEmpty()) {
-            this.renderTooltip(matrices, tooltips, useMouseX, useMouseY);
+            List<OrderedText> lines = new ArrayList<>();
+            this.tooltips.forEach(tooltip -> lines.addAll(textRenderer.wrapLines(tooltip, (int) (this.width * (2/3F)))));
+            this.renderOrderedTooltip(matrices, lines, useMouseX, useMouseY);
             tooltips.clear();
         }
 
         if (this.isSaveDialogOpen) {
-            fill(matrices, 0, 0, width, height, 0x80000000);
-            BLUR.setUniformValue("Progress", 1F);
-            BLUR.setUniformValue("Radius", 4F);
-            BLUR.setUniformValue("Start", 0F, 0F);
-            BLUR.setUniformValue("End", 1F, 1F);
-            BLUR.render(1F);
+            fill(matrices, 0, 0, width, height, 0xA0000000);
 
             int buttonHeight = 20;
 
             int changedCount = this.changedCount();
-            drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.unsaved.count." + (changedCount > 1 ? "plural" : "singular"), changedCount), width / 2F, height / 2F - textRenderer.fontHeight / 2F - buttonHeight, 0xFFFFFFFF, 1.25F * scale);
-            drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.unsaved.prompt"), width / 2F, height / 2F - (buttonHeight / 4F) * 3, 0xFFFFFFFF, 1.25F * scale);
+            drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.unsaved.count." + (changedCount > 1 ? "plural" : "singular"), changedCount), width / 2F, height / 2F - textRenderer.fontHeight / 2F - buttonHeight, 0xFFFFFFFF);
+            drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.unsaved.prompt"), width / 2F, height / 2F - (buttonHeight / 4F) * 3, 0xFFFFFFFF);
 
             yesButton.render(matrices, mouseX, mouseY, tickDelta);
             noButton.render(matrices, mouseX, mouseY, tickDelta);
@@ -301,13 +339,15 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
             lastMouseX = mouseX;
             lastMouseY = mouseY;
         }
+
+        drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 0xFFFFFF);
     }
 
     private void setActiveCategory(int category) {
         this.activeCategory = category;
 
         for (int i = 0; i < categories.size(); ++i) {
-            this.buttons.get(i).active = i != category;
+            this.buttons.get(i + 1).active = i != category;
         }
 
         this.scrollAmount = 0;
@@ -345,7 +385,7 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
 
     private int minScrollAmount() {
         if (this.contentHeight > this.visibleHeight) {
-            return -this.contentHeight + this.visibleHeight - this.headerSize;
+            return -this.contentHeight + this.visibleHeight - this.HEADER_SIZE + this.FOOTER_SIZE;
         } else {
             return 0;
         }
@@ -356,13 +396,12 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
         if (this.isSaveDialogOpen) {
             return false;
         } else {
-            boolean bl = height > width
-                    ? clickedX > margin + contentWidth + 3
-                    : clickedX > (margin) * 3 + 2 && clickedX < margin * 3 + 5;
+            boolean bl = clickedX > margin + CONTENT_WIDTH + 3 && clickedX < margin + CONTENT_WIDTH + 9;
+
             if (bl) {
                 float ratio = visibleHeight / (float) contentHeight;
-                int startY = (int) (this.headerSize - scrollAmount * ratio);
-                int height = (int) (ratio * visibleHeight) - this.headerSize;
+                int startY = (int) (this.HEADER_SIZE - scrollAmount * ratio);
+                int height = (int) (ratio * visibleHeight) - this.HEADER_SIZE;
 
                 double centerY = startY + height / 2F;
 
@@ -392,9 +431,10 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
                 yesButton.visible = false;
                 noButton.visible = false;
                 return true;
+            } else {
+                this.isSaveDialogOpen = false;
+                return true;
             }
-
-            return false;
         } else {
             boolean bl = super.mouseClicked(mouseX, mouseY, button);
 
@@ -445,17 +485,6 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
         }
 
         return false;
-    }
-
-    @Override
-    public void tick() {
-        if (!this.isSaveDialogOpen) {
-            if (this.getFocused() instanceof WidgetComponent) {
-                ((WidgetComponent) this.getFocused()).tick();
-            } else {
-                this.iterateActive(WidgetComponent::tick);
-            }
-        }
     }
 
     private int changedCount() {
@@ -513,7 +542,7 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
     }
 
     public ScreenStyle getStyle() {
-        return this.style;
+        return this.provider.getStyle();
     }
 
     public void addTooltips(TooltipAccess widget) {
@@ -525,90 +554,75 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
     @Override
     public void renderOrderedTooltip(MatrixStack matrices, List<? extends OrderedText> lines, int x, int y) {
         if (!lines.isEmpty() && this.client != null) {
-            int i = 0;
+            int textMaxWidth = 0;
 
             for (OrderedText orderedText : lines) {
                 int j = this.textRenderer.getWidth(orderedText);
-                if (j > i) {
-                    i = j;
+                if (j > textMaxWidth) {
+                    textMaxWidth = j;
                 }
             }
 
-            float k = x - (i / 4F);
-            float l = y - 10 - (textRenderer.fontHeight * lines.size() * scale);
+            int textStartX = x - (textMaxWidth / 2);
+            int textStartY = y - 10 - (textRenderer.fontHeight * lines.size());
             int n = 8;
+
             if (lines.size() > 1) {
                 n += 2 + (lines.size() - 1) * 10;
             }
 
-            k *= scale;
-            l *= scale;
-
-            if (l + n + 6 > this.height) {
-                l = this.height - n - 6;
+            if (textStartY + n + 6 > this.height) {
+                textStartY = this.height - n - 6;
             }
-
-            k /= scale;
-            l /= scale;
 
             matrices.push();
 
-            matrices.translate(-k, -l, 0);
-            matrices.scale(scale, scale, 0);
+            matrices.translate(-textStartX, -textStartY, 0);
 
-            k /= scale;
-            l /= scale;
+            matrices.translate(textStartX, textStartY, 0);
 
-            matrices.translate(k, l, 0);
+            float offset = 10;
 
-            int offset = 10;
+            float startY = 1F - (textStartY + n + offset) / (this.height);
+            float endY = 1F - (textStartY - offset) / (this.height);
 
-            float startX = (k - offset) / (this.width / this.scale);
-            float startY = 1F - (l + n + offset) / (this.height / this.scale);
-            float endX = (k + i + offset) / (this.width / this.scale);
-            float endY = 1F - (l - offset) / (this.height / this.scale);
-
-            if (l - offset < 0) {
-                float dY = n + offset + this.textRenderer.fontHeight * 3;
+            if (textStartY - offset < 0) {
+                float dY = (endY - startY) * this.height;
                 matrices.translate(0, dY, 0);
-                startY -= (dY / this.height) * scale;
-                endY -= (dY / this.height) * scale;
             }
 
-            if (k - offset < 0) {
-                float dX = 3 - (k - offset);
+            if (textStartX - offset < 0) {
+                float dX = 3 - (textStartX - offset);
                 matrices.translate(dX, 0, 0);
-                startX += (dX / this.width) * scale;
-                endX += (dX / this.width) * scale;
             }
 
-            if (k + i + offset > (this.width / scale)) {
-                float dX = -(k + i + offset - (this.width / scale)) - 3;
+            if (textStartX + textMaxWidth + offset > (this.width)) {
+                float dX = -(textStartX + textMaxWidth + offset - (this.width)) - 3;
                 matrices.translate(dX, 0, 0);
-                startX += (dX / this.width) * scale;
-                endX += (dX / this.width) * scale;
             }
-
-            BLUR.setUniformValue("Progress", 1F);
-            BLUR.setUniformValue("Radius", 4F);
-            BLUR.setUniformValue("Start", startX, startY);
-            BLUR.setUniformValue("End", endX, endY);
-            BLUR.render(1F);
 
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder bufferBuilder = tessellator.getBuffer();
             bufferBuilder.begin(7, VertexFormats.POSITION_COLOR);
             Matrix4f matrix4f = matrices.peek().getModel();
 
-            int color = 0x80000000;
-
-            fill(matrix4f, bufferBuilder, k - offset, l - offset, k + i + offset, l + n + offset, 400, color);
+            fillGradient(matrix4f, bufferBuilder, textStartX - 3, textStartY - 4, textStartX + textMaxWidth + 3, textStartY - 3, 400, -267386864, -267386864);
+            fillGradient(matrix4f, bufferBuilder, textStartX - 3, textStartY + n + 3, textStartX + textMaxWidth + 3, textStartY + n + 4, 400, -267386864, -267386864);
+            fillGradient(matrix4f, bufferBuilder, textStartX - 3, textStartY - 3, textStartX + textMaxWidth + 3, textStartY + n + 3, 400, -267386864, -267386864);
+            fillGradient(matrix4f, bufferBuilder, textStartX - 4, textStartY - 3, textStartX - 3, textStartY + n + 3, 400, -267386864, -267386864);
+            fillGradient(matrix4f, bufferBuilder, textStartX + textMaxWidth + 3, textStartY - 3, textStartX + textMaxWidth + 4, textStartY + n + 3, 400, -267386864, -267386864);
+            fillGradient(matrix4f, bufferBuilder, textStartX - 3, textStartY - 3 + 1, textStartX - 3 + 1, textStartY + n + 3 - 1, 400, 1347420415, 1344798847);
+            fillGradient(matrix4f, bufferBuilder, textStartX + textMaxWidth + 2, textStartY - 3 + 1, textStartX + textMaxWidth + 3, textStartY + n + 3 - 1, 400, 1347420415, 1344798847);
+            fillGradient(matrix4f, bufferBuilder, textStartX - 3, textStartY - 3, textStartX + textMaxWidth + 3, textStartY - 3 + 1, 400, 1347420415, 1347420415);
+            fillGradient(matrix4f, bufferBuilder, textStartX - 3, textStartY + n + 2, textStartX + textMaxWidth + 3, textStartY + n + 3, 400, 1344798847, 1344798847);
             RenderSystem.enableDepthTest();
             RenderSystem.disableTexture();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
+            RenderSystem.shadeModel(7425);
             bufferBuilder.end();
             BufferRenderer.draw(bufferBuilder);
+            RenderSystem.shadeModel(7424);
             RenderSystem.disableBlend();
             RenderSystem.enableTexture();
             VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
@@ -617,23 +631,19 @@ public class ConfigScreen extends Screen implements DrawableExtensions {
             for (int s = 0; s < lines.size(); ++s) {
                 OrderedText orderedText2 = lines.get(s);
                 if (orderedText2 != null) {
-                    this.textRenderer.draw(orderedText2, k, l, -1, true, matrix4f, immediate, false, 0, 15728880);
+                    this.textRenderer.draw(orderedText2, textStartX, textStartY, -1, true, matrix4f, immediate, false, 0, 15728880);
                 }
 
                 if (s == 0) {
-                    l += 2;
+                    textStartY += 2;
                 }
 
-                l += 10;
+                textStartY += 10;
             }
 
             immediate.draw();
             matrices.pop();
         }
-    }
-
-    public float getScale() {
-        return this.scale;
     }
 
     private void iterate(Consumer<WidgetComponent> action) {

@@ -6,6 +6,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -33,5 +35,9 @@ public final class ConfigScreenProvider {
 
     public static void forEach(BiConsumer<String, Function<Screen, ? extends Screen>> consumer) {
         ConfigScreenProviderImpl.forEach(consumer);
+    }
+
+    public static Iterator<Map.Entry<String, Function<Screen, ? extends Screen>>> getFactories() {
+        return ConfigScreenProviderImpl.getFactories();
     }
 }

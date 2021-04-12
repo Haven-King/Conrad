@@ -118,14 +118,26 @@ public abstract class ValueWidgetComponent<T> extends WidgetComponent implements
     }
 
     @Override
-    public void addTooltipsToList(List<Text> tooltips) {
-        super.addTooltipsToList(tooltips);
+    public void addTooltips(Consumer<Text> consumer) {
+        List<Text> tooltips = new ArrayList<>();
+
+        super.addTooltips(tooltips::add);
+
+        if (tooltips.size() > 0) {
+            tooltips.add(LiteralText.EMPTY);
+        }
+
+        if (this.constraints.size() > 0) {
+            this.constraints.forEach(c -> c.addLines(s -> tooltips.add(new LiteralText(s))));
+        }
 
         if (tooltips.size() > 0) {
             tooltips.add(LiteralText.EMPTY);
         }
 
         tooltips.add(new TranslatableText("conrad.default", this.getDefaultValueAsText()));
+
+        tooltips.forEach(consumer);
     }
 
     protected boolean passes(T s) {

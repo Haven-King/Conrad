@@ -44,7 +44,6 @@ public class DataType<T> extends StringIdentifiable {
     };
     public static final DataType<SyncType> SYNC_TYPE = new DataType<>("sync_type");
 
-    @Environment(EnvType.CLIENT)
     public static final DataType<ScreenStyle> SCREEN_STYLE = new DataType<>("screen_style");
 
     public static final DataType<SuggestionProvider> SUGGESTION_PROVIDER = new DataType<>("suggestion_provider");

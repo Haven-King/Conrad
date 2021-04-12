@@ -37,6 +37,7 @@ import dev.inkwell.conrad.api.value.lang.Translator;
 import dev.inkwell.conrad.api.value.util.ListView;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
@@ -62,15 +63,18 @@ public final class ConfigScreenProviderImpl {
     public static void init() {
         for (String modId : CONFIGS.keySet()) {
             ConfigScreenBuilderImpl builder = new ConfigScreenBuilderImpl();
-            ScreenStyle screenStyle = ScreenStyle.DEFAULT;
-            FACTORIES.put(modId, parent -> new ConfigScreen(parent, builder));
+            Text title = FabricLoader.getInstance().getModContainer(modId)
+                    .map(container -> (Text) new LiteralText(container.getMetadata().getName()))
+                    .orElse(new TranslatableText("conrad.title." + modId));
+
+            FACTORIES.put(modId, parent -> new ConfigScreen(parent, builder, title));
 
             for (ListView<ValueKey<?>> values : CONFIGS.get(modId)) {
                 ConfigDefinition<?> config = values.get(0).getConfig();
 
                 for (ScreenStyle style : config.getData(DataType.SCREEN_STYLE)) {
-                    if (style != ScreenStyle.DEFAULT && screenStyle == ScreenStyle.DEFAULT) {
-                        screenStyle = style;
+                    if (style != ScreenStyle.DEFAULT && builder.getStyle() == ScreenStyle.DEFAULT) {
+                        builder.setStyle(style);
                     }
                 }
 
@@ -95,15 +99,13 @@ public final class ConfigScreenProviderImpl {
                 Deque<ValueKey<?>> deque = new ArrayDeque<>();
                 values.forEach(deque::add);
 
-                makeScreenBuilder(config, category, deque, 0, null, null);
+                makeScreenBuilder(config, category, deque, 0, null, null, builder.getStyle());
             }
-
-            builder.setStyle(screenStyle);
         }
     }
 
-    public static void register(ListView<ValueKey<?>> values) {
-        CONFIGS.put(values.get(0).getConfig().getNamespace(), values);
+    public static void register(String modId, ListView<ValueKey<?>> values) {
+        CONFIGS.put(modId, values);
     }
 
     private static String parent(ValueKey<?> valueKey) {
@@ -117,7 +119,7 @@ public final class ConfigScreenProviderImpl {
         return builder.toString();
     }
 
-    private static void makeScreenBuilder(ConfigDefinition<?> config, CategoryBuilder category, Deque<ValueKey<?>> values, int level, @Nullable SectionBuilder section, @Nullable String sectionName) {
+    private static void makeScreenBuilder(ConfigDefinition<?> config, CategoryBuilder category, Deque<ValueKey<?>> values, int level, @Nullable SectionBuilder section, @Nullable String sectionName, ScreenStyle style) {
         category.setSaveCallback(() -> Conrad.syncAndSave(config));
 
         String currentSectionName = sectionName;
@@ -155,14 +157,19 @@ public final class ConfigScreenProviderImpl {
 
                 addEntry(innerSection, value);
 
-                makeScreenBuilder(config, innerCategory, values, level + 2, innerSection, parent);
+                makeScreenBuilder(config, innerCategory, values, level + 2, innerSection, parent, builder.getStyle());
+
+                SectionBuilder finalSection = section;
+
+                builder.setStyle(builder.getStyle());
 
                 section.add((screen, width, x, y, index) -> {
-                    WidgetComponent label = new LabelComponent(screen, 0, 0, width / 2, (int) (30 * screen.getScale()), new TranslatableText(parent), true);
-                    WidgetComponent widget = new TextButton(screen, 0, 0, width / 2, (int) (30 * screen.getScale()), 0, new LiteralText("▶"), Alignment.RIGHT, button -> {
-                        MinecraftClient.getInstance().openScreen(new ConfigScreen(button.getParent(), builder));
+                    WidgetComponent label = new LabelComponent(screen, 0, 0, width - 20, 20, new TranslatableText(parent));
+                    WidgetComponent widget = new TextButton(screen, 0, 0, 20, 20, 0, new LiteralText("▶"), Alignment.CENTER, button -> {
+                        MinecraftClient.getInstance().openScreen(new ConfigScreen(button.getParent(), builder, finalSection.getName()));
                         return true;
                     });
+
                     WidgetComponent component = new RowContainer(screen, x, y, index, true, label, widget);
                     component.addTooltips(Translator.getComments(parent).stream().map(LiteralText::new).collect(Collectors.toList()));
                     return component;
@@ -182,19 +189,21 @@ public final class ConfigScreenProviderImpl {
         ConfigDefinition<?> configDefinition = configValue.getConfig();
 
         section.add((parent, width, x, y, index) -> {
-            WidgetComponent label = new LabelComponent(parent, 0, 0, width / 2, (int) (30 * parent.getScale()), new TranslatableText(configValue.toString()), true);
+            int componentWidth = width / 2;
 
             WidgetComponentFactory<T> factory = EntryBuilderRegistry.get(configValue);
             ValueContainer container = ValueContainerProvider.getInstance(configDefinition.getSaveType()).getValueContainer(configDefinition.getSaveType());
-            WidgetComponent widget = factory.build(new TranslatableText(configValue.toString()), configValue.getConfig(), configValue.getConstraints(), configValue, parent, x, y, width / 2, (int) (30 * parent.getScale()),
+            WidgetComponent widget = factory.build(new TranslatableText(configValue.toString()), configValue.getConfig(), configValue.getConstraints(), configValue, parent, x, y, componentWidth, 20,
                     configValue::getDefaultValue, t -> {
                     },
                     v -> configValue.setValue(v, container),
                     configValue.getValue(container));
 
+            WidgetComponent label = new LabelComponent(parent, 0, 0, componentWidth + (widget.isFixedSize() ? componentWidth - widget.getWidth() : 0), 20, new TranslatableText(configValue.toString()));
+
             WidgetComponent component = new RowContainer(parent, x, y, index, true, label, widget);
 
-            Collection<Text> comments = new ArrayList<>();
+            List<Text> comments = new ArrayList<>();
             ConfigManager.getComments(configValue).forEach(string -> comments.add(new LiteralText(string)));
             component.addTooltips(comments);
 
@@ -208,5 +217,9 @@ public final class ConfigScreenProviderImpl {
 
     public static Screen get(String modId, Screen parent) {
         return FACTORIES.get(modId).apply(parent);
+    }
+
+    public static Iterator<Map.Entry<String, Function<Screen,? extends Screen>>> getFactories() {
+        return FACTORIES.entrySet().iterator();
     }
 }

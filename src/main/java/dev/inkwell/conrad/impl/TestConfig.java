@@ -24,6 +24,10 @@ public class TestConfig extends Config<OwenElement> {
         }
     };
 
+    public static final ValueKey<Boolean> TEST_BOOLEAN_1 = value(true);
+    public static final ValueKey<Boolean> TEST_BOOLEAN_2 = value(false);
+    public static final ValueKey<Boolean> TEST_BOOLEAN_3 = value(false);
+
     public static final ValueKey<String> FAVORITE_WORD = builder("Default")
             .with(ALPHABETIC_CONSTRAINT) // Words should only be made
             .with(DataType.SYNC_TYPE, SyncType.P2P)

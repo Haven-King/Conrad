@@ -1,5 +1,6 @@
 package dev.inkwell.conrad.api.value.serialization;
 
+import dev.inkwell.conrad.api.value.data.Constraint;
 import dev.inkwell.conrad.api.value.util.Array;
 import dev.inkwell.conrad.api.value.util.Table;
 import dev.inkwell.conrad.api.value.util.Version;
@@ -14,10 +15,20 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, OwenElement> {
+    private static final Pattern PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9./+:_-]*");
+
+    public static final Constraint<String> KEY_CONSTRAINT = new Constraint<String>("owen_key") {
+        @Override
+        public boolean passes(String value) {
+            return PATTERN.matcher(value).matches();
+        }
+    };
+
     public static final OwenTreeSerializer INSTANCE = new OwenTreeSerializer(new Owen.Builder());
 
     private final Owen owen;
@@ -91,6 +102,11 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
         } catch (ParseException e) {
             throw new IOException(e);
         }
+    }
+
+    @Override
+    public @Nullable Constraint<String> getKeyConstraint() {
+        return KEY_CONSTRAINT;
     }
 
     interface OwenValueSerializer<V> extends ValueSerializer<OwenElement, OwenElement, V> {

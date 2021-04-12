@@ -107,19 +107,6 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
         }
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-
-        if (this.isShadeDrawn()) {
-            for (TextButton button : this.buttons) {
-                button.tick();
-            }
-        } else {
-            this.button.tick();
-        }
-    }
-
     protected abstract MutableText fromValue(T value);
 
     @Override

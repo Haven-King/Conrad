@@ -25,8 +25,6 @@ import dev.inkwell.conrad.api.value.lang.Translator;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueContainerProvider;
 import dev.inkwell.conrad.api.value.ValueKey;
-import ladysnake.satin.api.managed.ManagedShaderEffect;
-import ladysnake.satin.api.managed.ShaderEffectManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
@@ -40,7 +38,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Conrad implements ConfigPostInitializer {
-    public static final ManagedShaderEffect BLUR = ShaderEffectManager.getInstance().manage(new Identifier("conrad", "shaders/post/blur.json"));
     private static final String FILE = "%s.%s.lang.json";
     private static final String VALUE = "  \"%s\": \"\"";
     public static void syncAndSave(ConfigDefinition<?> config) {
@@ -66,10 +63,6 @@ public class Conrad implements ConfigPostInitializer {
 
             for (ValueKey<?> valueKey : configDefinition) {
                 valueKey.add(DataType.COMMENT, Translator.getComments(valueKey.toString()));
-            }
-
-            if (client) {
-                ConfigScreenProviderImpl.register(ConfigManager.getValues(configDefinition));
             }
 
             if (dev) {

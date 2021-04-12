@@ -7,7 +7,7 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
-public class ImageWidget extends WidgetComponent{
+public class ImageWidget extends WidgetComponent {
     private final Identifier texture;
 
     public ImageWidget(ConfigScreen parent, int x, int y, int width, int height, Identifier textureId) {

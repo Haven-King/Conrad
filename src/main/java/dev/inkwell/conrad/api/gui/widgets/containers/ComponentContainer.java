@@ -106,19 +106,6 @@ public class ComponentContainer extends ListComponent implements Mutable {
     }
 
     @Override
-    public void renderHighlight(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-        if (this.shouldRenderHighlight) {
-            super.renderHighlight(matrixStack, mouseX, mouseY, delta);
-        }
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        this.children.forEach(WidgetComponent::tick);
-    }
-
-    @Override
     public void scroll(int amount) {
         super.scroll(amount);
         this.children.forEach(child -> child.scroll(amount));

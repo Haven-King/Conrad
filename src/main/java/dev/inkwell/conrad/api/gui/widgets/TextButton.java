@@ -16,6 +16,7 @@
 
 package dev.inkwell.conrad.api.gui.widgets;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
 import dev.inkwell.conrad.api.gui.util.Alignment;
 import net.fabricmc.api.EnvType;
@@ -23,6 +24,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import org.lwjgl.glfw.GLFW;
@@ -49,7 +51,17 @@ public class TextButton extends WidgetComponent {
 
     @Override
     public void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-        DrawableHelper.fill(matrixStack, this.x, this.y, this.x + this.width, this.y + this.height, this.color);
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        minecraftClient.getTextureManager().bindTexture(AbstractButtonWidget.WIDGETS_LOCATION);
+        int textureOffset = this.isMouseOver(mouseX, mouseY) ? 2 : 1;
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        DrawableHelper.drawTexture(matrixStack, this.x, this.y, 0, 0, 46 + textureOffset * 20, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x + this.width / 2, this.y, 0, 200 - this.width / 2F, 46 + textureOffset * 20, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x, this.y + this.height / 2, 0, 0, 46 + textureOffset * 20 + 20 - this.height / 2F, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x + this.width / 2, this.y + this.height / 2, 0, 200 - this.width / 2F, 46 + textureOffset * 20 + 20 - this.height / 2F, this.width / 2, this.height / 2, 256, 256);
     }
 
     @Override
@@ -65,23 +77,21 @@ public class TextButton extends WidgetComponent {
                 x = this.x + 3;
                 break;
             case CENTER:
-                x = this.x + this.width / 2F - (width / 2F * this.parent.getScale());
+                x = this.x + this.width / 2F - (width / 2F);
                 break;
             case RIGHT:
-                x = this.x + this.width - 3 - width * this.parent.getScale();
+                x = this.x + this.width - 3 - width;
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + this.alignment);
         }
 
-        draw(
+        textRenderer.drawWithShadow(
                 matrixStack,
-                textRenderer,
                 this.text,
                 x,
                 this.textYPos(),
-                0xFFFFFFFF,
-                this.parent.getScale()
+                0xFFFFFFFF
         );
     }
 

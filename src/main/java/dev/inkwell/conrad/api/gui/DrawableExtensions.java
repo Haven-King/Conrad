@@ -20,7 +20,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.Tessellator;
@@ -56,45 +55,46 @@ public interface DrawableExtensions {
         RenderSystem.disableBlend();
     }
 
-    default void drawCenteredText(MatrixStack matrices, TextRenderer textRenderer, Text text, float centerX, float y, int color, float scale) {
-        matrices.push();
-        matrices.scale(scale, scale, 1F);
-        matrices.translate(centerX / scale, (y + textRenderer.fontHeight / 2F) / scale, 0);
-        DrawableHelper.drawCenteredText(matrices, textRenderer, text, 0, -textRenderer.fontHeight / 2, color);
-        matrices.pop();
-    }
-
-    default void drawCenteredString(MatrixStack matrices, TextRenderer textRenderer, String string, float centerX, float y, int color, float scale) {
-        matrices.push();
-        matrices.scale(scale, scale, 1F);
-        matrices.translate(centerX / scale, (y + textRenderer.fontHeight / 2F) / scale, 0);
-        DrawableHelper.drawCenteredString(matrices, textRenderer, string, 0, -textRenderer.fontHeight / 2, color);
-        matrices.pop();
-    }
-
-    default void draw(MatrixStack matrices, TextRenderer textRenderer, Text text, float x, float y, int color, float scale) {
-        matrices.push();
-        matrices.scale(scale, scale, 1F);
-        matrices.translate(x / scale, (y + textRenderer.fontHeight / 2F) / scale, 0);
-        textRenderer.draw(matrices, text, 0, -textRenderer.fontHeight / 2F, color);
-        matrices.pop();
-    }
-
-    default void draw(MatrixStack matrices, TextRenderer textRenderer, OrderedText text, int x, int y, int color, float scale) {
-        matrices.push();
-        matrices.scale(scale, scale, 1F);
-        matrices.translate(x / scale, (y + textRenderer.fontHeight / 2F) / scale, 0);
-        textRenderer.draw(matrices, text, 0, -textRenderer.fontHeight / 2F, color);
-        matrices.pop();
-    }
-
-    default void draw(MatrixStack matrices, TextRenderer textRenderer, String text, float x, float y, int color, float scale) {
-        matrices.push();
-        matrices.scale(scale, scale, 1F);
-        matrices.translate(x / scale, (y + textRenderer.fontHeight / 2F) / scale, 0);
-        textRenderer.draw(matrices, text, 0, -textRenderer.fontHeight / 2F, color);
-        matrices.pop();
-    }
+//    default void drawCenteredText(MatrixStack matrices, TextRenderer textRenderer, Text text, float centerX, float y, int color, float scale) {
+//        matrices.push();
+//        matrices.scale(scale, scale, 1F);
+//        matrices.translate(centerX / scale, (y + (textRenderer.fontHeight * scale) / 2F) / scale, 0);
+//        OrderedText orderedText = text.asOrderedText();
+//        textRenderer.drawWithShadow(matrices, orderedText, 0, -(textRenderer.fontHeight * scale) / 2, color);
+//        matrices.pop();
+//    }
+//
+//    default void drawCenteredString(MatrixStack matrices, TextRenderer textRenderer, String string, float centerX, float y, int color, float scale) {
+//        matrices.push();
+//        matrices.scale(scale, scale, 1F);
+//        matrices.translate(centerX / scale, (y + (textRenderer.fontHeight * scale) / 2F) / scale, 0);
+//        textRenderer.drawWithShadow(matrices, string, 0, -(textRenderer.fontHeight * scale) / 2, color);
+//        matrices.pop();
+//    }
+//
+//    default void draw(MatrixStack matrices, TextRenderer textRenderer, Text text, float x, float y, int color, float scale) {
+//        matrices.push();
+//        matrices.scale(scale, scale, 1F);
+//        matrices.translate(x / scale, (y + (textRenderer.fontHeight * scale) / 2F) / scale, 0);
+//        textRenderer.draw(matrices, text, 0, -(textRenderer.fontHeight * scale) / 2F, color);
+//        matrices.pop();
+//    }
+//
+//    default void draw(MatrixStack matrices, TextRenderer textRenderer, OrderedText text, int x, int y, int color, float scale) {
+//        matrices.push();
+//        matrices.scale(scale, scale, 1F);
+//        matrices.translate(x / scale, (y + (textRenderer.fontHeight * scale) / 2F) / scale, 0);
+//        textRenderer.draw(matrices, text, 0, -(textRenderer.fontHeight * scale) / 2F, color);
+//        matrices.pop();
+//    }
+//
+//    default void draw(MatrixStack matrices, TextRenderer textRenderer, String text, float x, float y, int color, float scale) {
+//        matrices.push();
+//        matrices.scale(scale, scale, 1F);
+//        matrices.translate(x / scale, (y + textRenderer.fontHeight / 2F) / scale, 0);
+//        textRenderer.draw(matrices, text, 0, -textRenderer.fontHeight / 2F, color);
+//        matrices.pop();
+//    }
 
     default void fill(Matrix4f matrix, BufferBuilder bufferBuilder, float xStart, float yStart, float xEnd, float yEnd, int z, int color) {
         float f = (float) (color >> 24 & 255) / 255.0F;
@@ -186,12 +186,12 @@ public interface DrawableExtensions {
         RenderSystem.disableBlend();
     }
 
-    default int darken(int color, double amount) {
-        int a = (int) ((color & 0xFF000000) * amount);
-        int r = (int) ((color & 0x00FF0000) * amount);
-        int g = (int) ((color & 0x0000FF00) * amount);
-        int b = (int) ((color & 0x000000FF) * amount);
+    default void drawCenteredText(MatrixStack matrices, TextRenderer textRenderer, Text text, float centerX, float y, int color) {
+        OrderedText orderedText = text.asOrderedText();
+        textRenderer.drawWithShadow(matrices, orderedText, centerX - textRenderer.getWidth(orderedText) / 2F, y, color);
+    }
 
-        return a | r | g | b;
+    default void drawCenteredString(MatrixStack matrices, TextRenderer textRenderer, String text, float centerX, float y, int color) {
+        textRenderer.drawWithShadow(matrices, text, centerX - textRenderer.getWidth(text) / 2F, y, color);
     }
 }

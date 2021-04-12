@@ -28,7 +28,10 @@ import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ModConfigsScreen implements ClientModInitializer {
@@ -55,7 +58,13 @@ public class ModConfigsScreen implements ClientModInitializer {
 
         MutableInt i = new MutableInt();
 
-        ConfigScreenProvider.forEach((modId, screenBuilder) -> {
+        Iterator<Map.Entry<String, Function<Screen, ? extends Screen>>> it = ConfigScreenProvider.getFactories();
+
+        while (it.hasNext()) {
+            Map.Entry<String, Function<Screen, ? extends Screen>> entry = it.next();
+            String modId = entry.getKey();
+            Function<Screen, ? extends Screen> screenBuilder = entry.getValue();
+
             FabricLoader.getInstance().getModContainer(modId).ifPresent(container -> {
                 ModMetadata metadata = container.getMetadata();
 
@@ -64,7 +73,7 @@ public class ModConfigsScreen implements ClientModInitializer {
 
                     WidgetComponent iconComponent = icon != null
                             ? new ImageWidget(parent, 0, 0, 30, 30, icon)
-                            : new LabelComponent(parent, 0, 0, 30, 30, LiteralText.EMPTY, false);
+                            : new LabelComponent(parent, 0, 0, 30, 30, LiteralText.EMPTY);
 
                     WidgetComponent dummy = new SpacerComponent(parent, 0, 0, 0, 30);
                     WidgetComponent spacer = new SpacerComponent(parent, 0, 0, 10, 30);
@@ -73,11 +82,10 @@ public class ModConfigsScreen implements ClientModInitializer {
 
                     LabelComponent label = new LabelComponent(parent,
                             0, 0, width - 80, 30,
-                            name,
-                            false
+                            name
                     );
 
-                    TextButton button = new TextButton(parent, 0, 0, 30, 30, 0, new LiteralText("▶"), b -> {
+                    TextButton button = new TextButton(parent, 0, 0, 20, 20, 0, new LiteralText("▶"), b -> {
                         MinecraftClient.getInstance().openScreen(screenBuilder.apply(parent));
                         return true;
                     });
@@ -102,8 +110,13 @@ public class ModConfigsScreen implements ClientModInitializer {
 
                     return component;
                 }));
+
+//                if (it.hasNext()) {
+//                    section.add(((parent, width, x, y, index) -> new SpacerComponent(parent, x, y, 0, 10)));
+//                }
             });
-        });
+        }
+
     }
 
     private void modifyTitleScreen(Screen screen) {
@@ -148,6 +161,6 @@ public class ModConfigsScreen implements ClientModInitializer {
     }
 
     public void onPress(Screen parent) {
-        MinecraftClient.getInstance().openScreen(new ConfigScreen(parent, this.configScreenBuilder));
+        MinecraftClient.getInstance().openScreen(new ConfigScreen(parent, this.configScreenBuilder, LiteralText.EMPTY));
     }
 }

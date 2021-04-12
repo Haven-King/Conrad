@@ -25,13 +25,11 @@ import net.minecraft.text.Text;
 
 public class LabelComponent extends WidgetComponent {
     protected final Text label;
-    private final boolean shouldRenderHighlight;
     private int color = 0xFFFFFFFF;
 
-    public LabelComponent(ConfigScreen parent, int x, int y, int width, int height, Text label, boolean shouldRenderHighlight) {
+    public LabelComponent(ConfigScreen parent, int x, int y, int width, int height, Text label) {
         super(parent, x, y, width, height);
         this.label = label;
-        this.shouldRenderHighlight = shouldRenderHighlight;
     }
 
     @Override
@@ -42,22 +40,13 @@ public class LabelComponent extends WidgetComponent {
     @Override
     public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        draw(
+        textRenderer.drawWithShadow(
                 matrixStack,
-                textRenderer,
                 this.label,
                 this.x + 3,
                 this.textYPos(),
-                0xFFFFFFFF,
-                this.parent.getScale()
+                0xFFFFFFFF
         );
-    }
-
-    @Override
-    public void renderHighlight(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-        if (this.shouldRenderHighlight) {
-            super.renderHighlight(matrixStack, mouseX, mouseY, delta);
-        }
     }
 
     public LabelComponent withColor(Style sectionColor) {

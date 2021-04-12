@@ -64,15 +64,6 @@ public class EnumSelectorComponent<T extends Enum<T>> extends ValueWidgetCompone
     }
 
     @Override
-    public void tick() {
-        super.tick();
-
-        for (WidgetComponent child : this.children) {
-            child.tick();
-        }
-    }
-
-    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         boolean bl = false;
 

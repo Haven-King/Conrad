@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableCollection;
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueKey;
+import dev.inkwell.conrad.api.value.data.Constraint;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.util.Array;
 import dev.inkwell.conrad.api.value.util.Table;
@@ -23,12 +24,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * Serializes configs in a flat structure, versus {@link OwenTreeSerializer}'s JSON-like structure.
  */
 public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
+    private static final Pattern PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9./+:_-]*");
+
+    public static final Constraint<String> KEY_CONSTRAINT = new Constraint<String>("owen_key") {
+        @Override
+        public boolean passes(String value) {
+            return PATTERN.matcher(value).matches();
+        }
+    };
+
     public static final FlatOwenSerializer INSTANCE = new FlatOwenSerializer(new Owen.Builder());
 
     private final Map<Class<?>, ValueSerializer<?>> serializableTypes = new HashMap<>();
@@ -179,6 +190,11 @@ public class FlatOwenSerializer implements ConfigSerializer<OwenElement> {
         } catch (ParseException e) {
             throw new IOException(e);
         }
+    }
+
+    @Override
+    public @Nullable Constraint<String> getKeyConstraint() {
+        return KEY_CONSTRAINT;
     }
 
     public interface ValueSerializer<V> {

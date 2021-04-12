@@ -156,7 +156,7 @@ public final class ValueKey<T> implements Comparable<ValueKey<?>>, KeyView<T> {
      */
     public T setValue(T newValue) {
         this.assertInitialized();
-        this.assetConstraints(newValue);
+        this.assertConstraints(newValue);
 
         ValueContainer valueContainer = ValueContainerProvider.getInstance(this.config.getSaveType()).getValueContainer(this.config.getSaveType());
 
@@ -178,7 +178,7 @@ public final class ValueKey<T> implements Comparable<ValueKey<?>>, KeyView<T> {
      */
     public T setValue(UUID playerId, T newValue) {
         this.assertInitialized();
-        this.assetConstraints(newValue);
+        this.assertConstraints(newValue);
 
         ValueContainer valueContainer = ValueContainerProvider.getInstance(this.config.getSaveType()).getPlayerValueContainer(playerId);
 
@@ -198,7 +198,7 @@ public final class ValueKey<T> implements Comparable<ValueKey<?>>, KeyView<T> {
      */
     public T setValue(T newValue, ValueContainer valueContainer) {
         this.assertInitialized();
-        this.assetConstraints(newValue);
+        this.assertConstraints(newValue);
 
         T oldValue = valueContainer.put(this, newValue);
 
@@ -317,7 +317,7 @@ public final class ValueKey<T> implements Comparable<ValueKey<?>>, KeyView<T> {
         }
     }
 
-    private void assetConstraints(T value) {
+    private void assertConstraints(T value) {
         if (!isWithinConstraints(value)) {
             throw new ConfigValueException("Value '" + value + "' is not within constraints for key '" + this.string + "'");
         }

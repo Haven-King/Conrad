@@ -23,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static dev.inkwell.conrad.impl.Conrad.BLUR;
 
 public abstract class ShadedWidgetComponent<T> extends ValueWidgetComponent<T> {
     private boolean isShadeDrawn = false;
@@ -33,14 +32,21 @@ public abstract class ShadedWidgetComponent<T> extends ValueWidgetComponent<T> {
     }
 
     @Override
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float delta, boolean shouldRenderHighlight) {
+        matrixStack.push();
+
+        if (this.isShadeDrawn) {
+            matrixStack.translate(0, 0, 300);
+        }
+
+        super.render(matrixStack, mouseX, mouseY, delta, shouldRenderHighlight);
+        matrixStack.pop();
+    }
+
+    @Override
     public void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
         if (this.isShadeDrawn) {
             fill(matrixStack, 0, 0, 10000, 10000, 0, 0.5F);
-            BLUR.setUniformValue("Start", 0F, 0F);
-            BLUR.setUniformValue("End", 1F, 1F);
-            BLUR.setUniformValue("Progress", 1F);
-            BLUR.setUniformValue("Radius", 5F);
-            BLUR.render(delta);
         }
     }
 

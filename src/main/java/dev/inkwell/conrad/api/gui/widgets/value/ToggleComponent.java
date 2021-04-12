@@ -16,18 +16,27 @@
 
 package dev.inkwell.conrad.api.gui.widgets.value;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ToggleComponent extends ValueWidgetComponent<Boolean> {
-    public ToggleComponent(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Boolean> defaultValueSupplier, Consumer<Boolean> changedListener, Consumer<Boolean> saveConsumer, @NotNull Boolean value) {
+    private final Function<Boolean, Text> text;
+
+    public ToggleComponent(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Boolean> defaultValueSupplier, Consumer<Boolean> changedListener, Consumer<Boolean> saveConsumer, @NotNull Boolean value, Function<Boolean, Text> text) {
         super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
+        this.text = text;
     }
 
     @Override
@@ -37,7 +46,17 @@ public class ToggleComponent extends ValueWidgetComponent<Boolean> {
 
     @Override
     public void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        minecraftClient.getTextureManager().bindTexture(AbstractButtonWidget.WIDGETS_LOCATION);
+        int textureOffset = this.isMouseOver(mouseX, mouseY) ? 2 : 1;
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        DrawableHelper.drawTexture(matrixStack, this.x, this.y, 0, 0, 46 + textureOffset * 20, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x + this.width / 2, this.y, 0, 200 - this.width / 2F, 46 + textureOffset * 20, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x, this.y + this.height / 2, 0, 0, 46 + textureOffset * 20 + 20 - this.height / 2F, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x + this.width / 2, this.y + this.height / 2, 0, 200 - this.width / 2F, 46 + textureOffset * 20 + 20 - this.height / 2F, this.width / 2, this.height / 2, 256, 256);
     }
 
     @Override
@@ -52,16 +71,7 @@ public class ToggleComponent extends ValueWidgetComponent<Boolean> {
 
     @Override
     public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-        float x1 = this.x + this.width * 0.5F - 5;
-        float y1 = this.y + this.height / 2F - 5;
-        float x2 = this.x + this.width * 0.5F + 5;
-        float y2 = this.y + this.height / 2F + 5;
-
-        fill(matrixStack, x1, y1, x2, y2, 0xFFFFFFFF, 0.4F);
-
-        if (this.getValue()) {
-            float padding = 2;
-            fill(matrixStack, x1 + padding, y1 + padding, x2 - padding, y2 - padding, 0xFFFFFFFF, 0.8F);
-        }
+        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        drawCenteredText(matrixStack, textRenderer, this.text.apply(this.getValue()), this.x + this.width / 2F, this.textYPos(), 0xFFFFFFFF);
     }
 }

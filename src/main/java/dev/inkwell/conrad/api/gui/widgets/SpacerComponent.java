@@ -33,9 +33,4 @@ public class SpacerComponent extends WidgetComponent {
     public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
 
     }
-
-    @Override
-    public void renderHighlight(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-
-    }
 }

@@ -17,6 +17,8 @@
   "conrad.unsaved.prompt": "Would you like to save?",
   "conrad.mod_configs": "Mod Configs",
   "conrad.authors": "Authors: %s",
+  "conrad.value.true": "§aTrue",
+  "conrad.value.false": "§cFalse",
   "conrad:gui": "GUI",
   "conrad:gui.comment": "Controls config GUI visuals",
   "conrad:gui/show_mods_config_button": "Show Mods Config Button",
@@ -25,5 +27,9 @@
   "conrad:gui/animations/enabled": "Enabled",
   "conrad:gui/animations/speed": "Speed",
   "conrad:test/delay.comment0": "Test0",
-  "conrad:test/delay.comment1": "Test1"
+  "conrad:test/delay.comment1": "Test1",
+  "conrad:test.value.true": "§aOn",
+  "conrad:test.value.false": "§cOff",
+  "conrad:test/test_boolean_2.value.true": "§aFuck yeah",
+  "conrad:test/test_boolean_2.value.false": "§cHell no"
 }

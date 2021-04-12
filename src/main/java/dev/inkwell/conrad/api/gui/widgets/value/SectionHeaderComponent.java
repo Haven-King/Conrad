@@ -25,20 +25,25 @@ import net.minecraft.text.Text;
 
 public class SectionHeaderComponent extends LabelComponent {
     public SectionHeaderComponent(ConfigScreen parent, int x, int y, int width, int height, Text label, boolean shouldRenderHighlight) {
-        super(parent, x, y, width, height, label, shouldRenderHighlight);
+        super(parent, x, y, width, height, label);
     }
 
     @Override
     public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        draw(
+        drawCenteredText(
                 matrixStack,
                 textRenderer,
                 this.label,
                 this.x + 3,
-                (int) (this.y + this.height * 0.9 - (textRenderer.fontHeight * this.parent.getScale() * 1.5)),
-                0xFFFFFFFF,
-                this.parent.getScale()
+                this.textYPos(),
+                0xFFFFFFFF
         );
+    }
+
+    @Override
+    protected float textYPos() {
+        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        return this.y + this.height - textRenderer.fontHeight / 2F - 10;
     }
 }

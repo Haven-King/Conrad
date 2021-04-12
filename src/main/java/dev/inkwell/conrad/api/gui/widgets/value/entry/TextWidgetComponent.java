@@ -25,6 +25,7 @@ import dev.inkwell.conrad.impl.Conrad;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -48,7 +49,6 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
     private int selectionStart;
     private int selectionEnd;
     private boolean selecting;
-    private int focusedTicks;
     private String regex = null;
     private Predicate<String> textPredicate = this::matches;
     private SuggestionProvider suggestionProvider = s -> Collections.emptyList();
@@ -69,31 +69,30 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
     public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
 
+        int color = this.isFocused() ? -1 : 0xffa0a0a0;
+        DrawableHelper.fill(matrixStack, this.x, this.y, this.x + this.width, this.y + this.height, color);
+        DrawableHelper.fill(matrixStack, this.x + 1, this.y + 1, this.x + this.width - 1, this.y + this.height - 1, 0xff000000);
+
         String text = this.text.isEmpty() ? this.valueOf(this.emptyValue()) : this.text;
 
-        float w2 = textRenderer.getWidth(text) * this.parent.getScale() * 0.5F;
+        float w2 = textRenderer.getWidth(text);
         float x = this.x + this.width / 2F
-                + ((this.width / 2F - 3) * this.alignment.mod)
-                - w2 * this.alignment.mod;
+                + ((this.width * 0.45F) * this.alignment.mod)
+                - w2 / 2 * this.alignment.mod;
 
         float y1 = this.textYPos() + 1;
-        float height = + 2 + textRenderer.fontHeight * parent.getScale();
+        float height = + 2 + textRenderer.fontHeight;
         float y2 = y1 + height;
 
         if (this.isFocused()) {
             if (selectionStart != selectionEnd) {
-                float x1 = x - w2 + textRenderer.getWidth(this.text.substring(0, selectionStart)) * parent.getScale();
-                float x2 = x - w2 + textRenderer.getWidth(this.text.substring(0, selectionEnd)) * parent.getScale();
+                float x1 = x - w2 + textRenderer.getWidth(this.text.substring(0, selectionStart));
+                float x2 = x - w2 + textRenderer.getWidth(this.text.substring(0, selectionEnd));
 
                 if (selectionStart == 0) x1 -= 1;
                 if (selectionEnd == text.length()) x2 += 1;
 
                 fill(matrixStack, x1, y1, x2, y2, 0xFF0022AA, 0.5F);
-            } else {
-                if (this.focusedTicks / 6 % 2 == 0) {
-                    float x1 = x - w2 + textRenderer.getWidth(this.text.substring(0, selectionStart)) * parent.getScale();
-                    fill(matrixStack, x1 - 0.25F, y1, x1 + 0.25F, y2, 0xFFFFFFFF, 1F);
-                }
             }
 
             this.recentSuggestions = this.suggestionProvider.getSuggestions(this.text);
@@ -101,15 +100,8 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
             if (!recentSuggestions.isEmpty()) {
                 y2 = this.y + this.getHeight();
 
-                float dX = MinecraftClient.getInstance().getWindow().getWidth();
-                float dZ = MinecraftClient.getInstance().getWindow().getHeight();
-
-                Conrad.BLUR.setUniformValue("Start", this.x / dX, y2 / dZ);
-                Conrad.BLUR.setUniformValue("End", (this.x / dX) + this.width / dX, (y2 + this.getHeight() * recentSuggestions.size()) / dZ);
-                Conrad.BLUR.render(1F);
-
                 for (String suggestion : recentSuggestions) {
-                    float w21 = textRenderer.getWidth(suggestion) * this.parent.getScale() * 0.5F;
+                    float w21 = textRenderer.getWidth(suggestion);
                     float x1 = this.x + this.width / 2F
                             + ((this.width / 2F - 3) * this.alignment.mod)
                             - w21 * this.alignment.mod;
@@ -129,8 +121,7 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
                             new LiteralText(suggestion),
                             x1,
                             this.textYPos() - this.y + y1,
-                            this.hasError() ? 0xFF5555 : this.getColor(),
-                            this.parent.getScale()
+                            this.hasError() ? 0xFF5555 : this.getColor()
                     );
                 }
             }
@@ -142,8 +133,7 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
                 new LiteralText(text),
                 x,
                 this.textYPos(),
-                this.hasError() ? 0xFF5555 : this.getColor(),
-                this.parent.getScale()
+                this.hasError() ? 0xFF5555 : this.getColor()
         );
     }
 
@@ -478,12 +468,5 @@ public abstract class TextWidgetComponent<T> extends ShadedWidgetComponent<T> im
     @Override
     public boolean passes() {
         return matches(this.text) && (this.textPredicate == null || this.textPredicate.test(this.text));
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-
-        this.focusedTicks++;
     }
 }

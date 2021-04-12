@@ -6,20 +6,17 @@ import dev.inkwell.conrad.api.gui.builders.CategoryBuilder;
 import dev.inkwell.conrad.api.gui.builders.ConfigScreenBuilder;
 import dev.inkwell.conrad.api.gui.builders.WidgetComponentFactory;
 import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
-import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
 import dev.inkwell.conrad.api.gui.util.Group;
 import dev.inkwell.conrad.api.gui.widgets.LabelComponent;
+import dev.inkwell.conrad.api.gui.widgets.SpacerComponent;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
+import dev.inkwell.conrad.api.gui.widgets.compound.SubScreenWidget;
 import dev.inkwell.conrad.api.gui.widgets.containers.RowContainer;
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.util.ListView;
-import dev.inkwell.conrad.impl.Conrad;
 import dev.inkwell.conrad.impl.data.DataObject;
 import dev.inkwell.conrad.impl.gui.widgets.Mutable;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
@@ -30,22 +27,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> implements ConfigScreenBuilder {
-    private final ConfigDefinition<?> config;
+public class DataClassWidgetComponent<D> extends SubScreenWidget<D> implements ConfigScreenBuilder {
     private final Class<D> dataClass;
-    private final Text name;
-    private ConfigScreen screen;
 
-    public DataClassWidgetComponent(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull D> defaultValueSupplier, Consumer<D> changedListener, Consumer<D> saveConsumer, @NotNull D value, Class<D> dataClass) {
-        super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
-        this.config = config;
+    public DataClassWidgetComponent(ConfigDefinition<?> config, ConfigScreen parent, int width, int height, Supplier<@NotNull D> defaultValueSupplier, Consumer<D> changedListener, Consumer<D> saveConsumer, @NotNull D value, Class<D> dataClass) {
+        super(config, parent, width, height, defaultValueSupplier, changedListener, saveConsumer, value, new TranslatableText(dataClass.getName()));
         this.dataClass = dataClass;
-        this.name = new TranslatableText(dataClass.getName());
-    }
-
-    @Override
-    public ScreenStyle getStyle() {
-        return this.parent.getStyle();
     }
 
     @Override
@@ -54,13 +41,22 @@ public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> impleme
         int dY = y;
 
         int i = 0;
-        for (Field field : this.dataClass.getDeclaredFields()) {
+        Field[] declaredFields = this.dataClass.getDeclaredFields();
+        for (int j = 0; j < declaredFields.length; j++) {
+            int componentWidth = contentWidth / 2;
+
+            Field field = declaredFields[j];
             Text name = new TranslatableText(this.dataClass.getName() + "." + field.getName());
-            WidgetComponent widget = this.build(name, parent, field.getType(), field, contentWidth / 2, dY);
-            WidgetComponent label = new LabelComponent(parent, 0, dY, contentWidth / 2, widget.getHeight(), name, false);
+            WidgetComponent widget = this.build(name, parent, field.getType(), field, componentWidth, dY);
+            WidgetComponent label = new LabelComponent(parent, 0, dY, componentWidth + (widget.isFixedSize() ? componentWidth - widget.getWidth() : 0), widget.getHeight(), name);
 
             section.add(new RowContainer(parent, contentLeft, dY, i++, false, label, widget));
             dY += widget.getHeight();
+
+            if (j < declaredFields.length - 1) {
+                section.add(new SpacerComponent(parent, contentLeft, dY, contentWidth, 7));
+                dY += 7;
+            }
         }
 
         section.add(new Dummy());
@@ -127,42 +123,6 @@ public class DataClassWidgetComponent<D> extends ValueWidgetComponent<D> impleme
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-
-    }
-
-    @Override
-    public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-
-        int width = textRenderer.getWidth("▶");
-
-        drawCenteredString(
-                matrixStack,
-                textRenderer,
-                "▶",
-                this.x + this.width - 3 - width * this.parent.getScale(),
-                (int) (this.y + (this.height - textRenderer.fontHeight * this.parent.getScale()) / 2F),
-                0xFFFFFFFF,
-                this.parent.getScale()
-        );
-    }
-
-    @Override
-    protected Text getDefaultValueAsText() {
-        return new LiteralText(this.getDefaultValue().toString());
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.isMouseOver(mouseX, mouseY)) {
-            this.parent.tryLeave(() -> MinecraftClient.getInstance().openScreen((this.screen = new ConfigScreen(this.parent, this))));
-        }
-
-        return false;
     }
 
     class Dummy extends WidgetComponent implements Mutable {

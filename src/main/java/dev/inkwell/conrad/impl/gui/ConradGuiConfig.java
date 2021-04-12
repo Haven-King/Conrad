@@ -17,27 +17,23 @@
 package dev.inkwell.conrad.impl.gui;
 
 import dev.inkwell.conrad.api.Config;
-import dev.inkwell.conrad.api.Stylable;
+import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
+import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.serialization.ConfigSerializer;
 import dev.inkwell.conrad.api.value.serialization.FlatOwenSerializer;
+import dev.inkwell.conrad.api.value.util.DataCollector;
 import dev.inkwell.conrad.api.value.util.Version;
 import dev.inkwell.conrad.api.value.ValueKey;
-import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
 import dev.inkwell.owen.OwenElement;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.api.EnvironmentInterface;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ConradGuiConfig extends Config<OwenElement> implements Stylable  {
-    public static final ValueKey<Boolean> SHOW_MODS_CONFIG_BUTTON = value(false);
+public class ConradGuiConfig extends Config<OwenElement>  {
+    private static final ScreenStyle STYLE = new ScreenStyle(new Identifier("textures/block/cobblestone.png"));
 
-    public static final class Animations {
-        public static final ValueKey<Boolean> ENABLED = value(true);
-        public static final ValueKey<Float> SPEED = value(0.2F);
-    }
+    public static final ValueKey<Boolean> SHOW_MODS_CONFIG_BUTTON = value(true);
 
     @Override
     public @NotNull ConfigSerializer<OwenElement> getSerializer() {
@@ -57,5 +53,10 @@ public class ConradGuiConfig extends Config<OwenElement> implements Stylable  {
     @Override
     public @NotNull String getName() {
         return "gui";
+    }
+
+    @Override
+    public void addConfigData(@NotNull DataCollector collector) {
+        collector.add(DataType.SCREEN_STYLE, STYLE);
     }
 }

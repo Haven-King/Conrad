@@ -202,4 +202,7 @@ public interface ConfigSerializer<R> {
                 .resolve(configDefinition.getName() + "-" + suffix + "." + this.getExtension());
     }
 
+    default @Nullable Constraint<String> getKeyConstraint() {
+        return null;
+    }
 }

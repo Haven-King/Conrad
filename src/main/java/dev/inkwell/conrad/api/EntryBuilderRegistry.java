@@ -33,6 +33,7 @@ import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.value.data.Bounds;
 import dev.inkwell.conrad.api.value.data.Constraint;
 import dev.inkwell.conrad.api.value.data.DataType;
+import dev.inkwell.conrad.api.value.lang.Translator;
 import dev.inkwell.conrad.api.value.util.Array;
 import dev.inkwell.conrad.api.value.util.ListView;
 import dev.inkwell.conrad.api.value.util.Table;
@@ -41,6 +42,7 @@ import dev.inkwell.conrad.impl.data.DataObject;
 import dev.inkwell.conrad.impl.exceptions.ConfigValueException;
 import dev.inkwell.conrad.impl.util.ReflectionUtil;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -170,7 +172,19 @@ public class EntryBuilderRegistry {
         }));
 
         register(Boolean.class, (name, config, constraints, data, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) ->
-                        new ToggleComponent(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value));
+                        new ToggleComponent(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value, bl -> {
+                            String translationKey = (name instanceof TranslatableText ? ((TranslatableText) name).getKey() : name.asString()) + ".value." + (bl ? "true" : "false");
+
+                            if (Translator.translate(translationKey) == null) {
+                                translationKey = config.toString() + ".value." + (bl ? "true" : "false");
+                            }
+
+                            if (Translator.translate(translationKey) == null) {
+                                translationKey = bl ? "conrad.value.true" : "conrad.value.false";
+                            }
+
+                            return new TranslatableText(translationKey);
+                        }));
 
         register(Array.class, ((name, config, constraints, data, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value) -> {
             ListView<WidgetComponentFactory<?>> widgetBuilders = data.getData(WidgetComponentFactory.DATA_TYPE);
@@ -184,11 +198,13 @@ public class EntryBuilderRegistry {
                 Conrad.syncAndSave(config);
             };
 
-            ArrayWidget<T> array = new ArrayWidget<T>(config, parent, x, y, width, height, (Supplier<@NotNull Array<T>>) (Object) defaultValueSupplier, (Consumer<Array<T>>) (Object)  changedListener, saveAndSave, value, name, factory);
+            ArrayWidget<T> array = new ArrayWidget<T>(config, parent, x, y, (Supplier<@NotNull Array<T>>) (Object) defaultValueSupplier, (Consumer<Array<T>>) (Object)  changedListener, saveAndSave, value, name, factory);
 
             if (data.getDataTypes().contains(DataType.SUGGESTION_PROVIDER)) {
                 array.withSuggestions(data.getData(DataType.SUGGESTION_PROVIDER).get(0));
             }
+
+            array.addConstraints((ListView<Constraint<Array<T>>>) (Object) constraints);
 
             return array;
         }));
@@ -205,10 +221,16 @@ public class EntryBuilderRegistry {
                 Conrad.syncAndSave(config);
             };
 
-            TableWidget<T> table = new TableWidget<T>(config, parent, x, y, width, height, (Supplier<@NotNull Table<T>>) (Object) defaultValueSupplier, (Consumer<Table<T>>) (Object) changedListener, saveAndSave, value, name, factory);
+            TableWidget<T> table = new TableWidget<T>(config, parent, x, y, (Supplier<@NotNull Table<T>>) (Object) defaultValueSupplier, (Consumer<Table<T>>) (Object) changedListener, saveAndSave, value, name, factory);
 
             if (data.getDataTypes().contains(DataType.SUGGESTION_PROVIDER)) {
                 table.withSuggestions(data.getData(DataType.SUGGESTION_PROVIDER).get(0));
+            }
+
+            table.addConstraints((ListView<Constraint<Table<T>>>) (Object) constraints);
+
+            if (config.getSerializer().getKeyConstraint() != null) {
+                table.addKeyConstraint(config.getSerializer().getKeyConstraint());
             }
 
             return table;
@@ -240,7 +262,7 @@ public class EntryBuilderRegistry {
 
         @Override
         public WidgetComponent build(Text name, ConfigDefinition<?> config, ListView<Constraint<T>> constraints, DataObject data, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull T> defaultValueSupplier, Consumer<T> changedListener, Consumer<T> saveConsumer, @NotNull T value) {
-            return new DataClassWidgetComponent<>(config, parent, x, y, width, height, defaultValueSupplier, changedListener, t -> {
+            return new DataClassWidgetComponent<>(config, parent, x, y, defaultValueSupplier, changedListener, t -> {
                 saveConsumer.accept(t);
                 outerSaveConsumer.accept(t);
             }, value, type);

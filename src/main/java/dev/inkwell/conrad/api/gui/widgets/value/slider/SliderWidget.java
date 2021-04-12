@@ -16,13 +16,17 @@
 
 package dev.inkwell.conrad.api.gui.widgets.value.slider;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.inkwell.conrad.api.gui.constraints.Bounded;
 import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
 import dev.inkwell.conrad.api.gui.widgets.value.ValueWidgetComponent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -42,30 +46,28 @@ public abstract class SliderWidget<T extends Number> extends ValueWidgetComponen
 
     @Override
     public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
+        MinecraftClient.getInstance().getTextureManager().bindTexture(AbstractButtonWidget.WIDGETS_LOCATION);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        int i = (this.isMouseOver(mouseX, mouseY) ? 2 : 1) * 20;
+
+        DrawableHelper.drawTexture(matrixStack, this.x + (int)(this.getPercentage() * (double)(this.width - 8)), this.y, 0, 0, 46 + i, 4, 20, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x + (int)(this.getPercentage() * (double)(this.width - 8)) + 4, this.y, 0, 196, 46 + i, 4, 20, 256, 256);
+
         String string = this.stringValue();
         TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-        int dX = (int) (this.width - 3 - textRenderer.getWidth(string) * parent.getScale());
-        draw(matrixStack, textRenderer, string, this.x + dX, this.textYPos(), 0xFFFFFFFF, parent.getScale());
-
-        int x1 = this.x + 3;
-        int x2 = this.x + this.width - 2 - Math.max(textRenderer.getWidth(String.valueOf(getMin())), textRenderer.getWidth(String.valueOf(getMax())));
-        int barWidth = x2 - x1;
-        float y1 = this.y + this.height / 2F;
-
-        line(matrixStack, x1, x2, y1, y1, 0xFFFFFFFF);
-
-        float mark = x1 + getPercentage() * barWidth;
-
-        matrixStack.push();
-        matrixStack.translate(mark, this.y + this.height / 2F, 0);
-        matrixStack.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(45));
-        fill(matrixStack, -1.5F, -1.5F, 1.5F, 1.5F, 0xFFFFFFFF, 1F);
-        matrixStack.pop();
+        drawCenteredString(matrixStack, textRenderer, string, this.x + this.width / 2F, this.textYPos(), 0xFFFFFFFF);
     }
 
     @Override
     public void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        minecraftClient.getTextureManager().bindTexture(AbstractButtonWidget.WIDGETS_LOCATION);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        DrawableHelper.drawTexture(matrixStack, this.x, this.y, 0, 0, 46, this.width / 2, this.height, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x + this.width / 2, this.y, 0, 200 - this.width / 2F, 46, this.width / 2, this.height, 256, 256);
     }
 
     protected abstract T subtract(T left, T right);
@@ -79,9 +81,8 @@ public abstract class SliderWidget<T extends Number> extends ValueWidgetComponen
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.isMouseOver(mouseX, mouseY) && button == GLFW.GLFW_MOUSE_BUTTON_1) {
-            TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-            int x1 = this.x + 3;
-            int x2 = this.x + this.width - 2 - Math.max(textRenderer.getWidth(String.valueOf(getMin())), textRenderer.getWidth(String.valueOf(getMax())));
+            float x1 = this.x + 4;
+            float x2 = this.x + this.width - 8;
 
             if (mouseX < x1) {
                 this.setValue(this.getMin());
@@ -93,7 +94,7 @@ public abstract class SliderWidget<T extends Number> extends ValueWidgetComponen
                 return true;
             }
 
-            float mark = (float) (mouseX - x1) / (float) (x2 - x1);
+            float mark = (float) (mouseX - x1) / (x2 - x1);
             this.setValue(add((multiply(subtract(this.getMax(), this.getMin()), mark)), getMin()));
 
             return true;

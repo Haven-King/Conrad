@@ -17,21 +17,20 @@
 package dev.inkwell.conrad.api.gui.widgets.compound;
 
 import dev.inkwell.conrad.api.gui.Category;
-import dev.inkwell.conrad.api.gui.builders.ConfigScreenBuilder;
 import dev.inkwell.conrad.api.gui.builders.WidgetComponentFactory;
 import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
-import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
 import dev.inkwell.conrad.api.gui.util.Alignment;
 import dev.inkwell.conrad.api.gui.util.Group;
 import dev.inkwell.conrad.api.gui.util.KeySuggestionProvider;
 import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
+import dev.inkwell.conrad.api.gui.widgets.SpacerComponent;
 import dev.inkwell.conrad.api.gui.widgets.TextButton;
 import dev.inkwell.conrad.api.gui.widgets.WidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.containers.RowContainer;
-import dev.inkwell.conrad.api.gui.widgets.value.ValueWidgetComponent;
 import dev.inkwell.conrad.api.gui.widgets.value.entry.StringEntryWidget;
 import dev.inkwell.conrad.api.gui.widgets.value.entry.TextWidgetComponent;
 import dev.inkwell.conrad.api.value.ConfigDefinition;
+import dev.inkwell.conrad.api.value.data.Constraint;
 import dev.inkwell.conrad.api.value.util.ListView;
 import dev.inkwell.conrad.api.value.util.Table;
 import dev.inkwell.conrad.impl.data.DataObject;
@@ -39,42 +38,37 @@ import dev.inkwell.conrad.impl.gui.widgets.Mutable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
-public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements ConfigScreenBuilder {
-    private final ConfigDefinition<?> config;
-    private final Text name;
+public class TableWidget<T> extends SubScreenWidget<Table<T>> {
     private final WidgetComponentFactory<T> builder;
-    private final float scale;
     private final boolean mutable;
+    private final List<Constraint<String>> keyConstraints = new ArrayList<>();
 
-    private ConfigScreen screen;
     private boolean changed;
 
     private KeySuggestionProvider<T> keySuggestionProvider = (v, s) -> Collections.emptyList();
     private SuggestionProvider suggestionProvider = s -> Collections.emptyList();
 
-    public TableWidget(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder, boolean mutable) {
-        super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, new Table<>(value));
-        this.config = config;
-        this.name = name;
-        this.scale = this.height / parent.getScale();
+    public TableWidget(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder, boolean mutable) {
+        super(config, parent, x, y, defaultValueSupplier, changedListener, saveConsumer, new Table<>(value), name);
         this.builder = builder;
         this.mutable = mutable;
     }
 
-    public TableWidget(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder) {
-        this(config, parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value, name, builder, true);
+    public TableWidget(ConfigDefinition<?> config, ConfigScreen parent, int x, int y, Supplier<@NotNull Table<T>> defaultValueSupplier, Consumer<Table<T>> changedListener, Consumer<Table<T>> saveConsumer, @NotNull Table<T> value, Text name, WidgetComponentFactory<T> builder) {
+        this(config, parent, x, y, defaultValueSupplier, changedListener, saveConsumer, value, name, builder, true);
     }
 
     public TableWidget<T> withKeySuggestions(KeySuggestionProvider suggestionProvider) {
@@ -87,9 +81,8 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
         return this;
     }
 
-    @Override
-    public ScreenStyle getStyle() {
-        return this.parent.getStyle();
+    public void addKeyConstraint(Constraint<String> constraint) {
+        this.keyConstraints.add(constraint);
     }
 
     @Override
@@ -100,9 +93,27 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
 
         int i = 0;
         int dY = y;
-        int height = (int) (this.scale * parent.getScale());
-        for (Table.Entry<String, T> value : this.getValue()) {
+        for (Iterator<Table.Entry<String, T>> iterator = this.getValue().iterator(); iterator.hasNext(); ) {
+            Table.Entry<String, T> value = iterator.next();
             int index = i++;
+
+            WidgetComponent valueWidget = this.builder.build(
+                    new LiteralText(value.getKey()),
+                    this.config,
+                    ListView.empty(),
+                    DataObject.EMPTY,
+                    parent,
+                    0,
+                    dY,
+                    (contentWidth) / 2,
+                    height,
+                    this.getValue().getDefaultValue(),
+                    v -> this.setValue(this.getValue().set(index, v)),
+                    v -> this.changed = true,
+                    value.getValue()
+            );
+
+            int height = valueWidget.getHeight();
 
             @SuppressWarnings("SuspiciousNameCombination")
             WidgetComponent remove = new TextButton(
@@ -124,7 +135,7 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
                     parent,
                     0,
                     dY,
-                    (contentWidth - height * (this.mutable ? 2 : 0)) / 2,
+                    ((contentWidth - height * (this.mutable ? 2 : 0)) / 2) + (valueWidget.isFixedSize() ? (contentWidth / 2 - valueWidget.getWidth()) : 0),
                     height,
                     Alignment.LEFT,
                     () -> "",
@@ -135,21 +146,7 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
                 return keySuggestionProvider.getSuggestions(this.getValue(), s);
             });
 
-            WidgetComponent valueWidget = this.builder.build(
-                    new LiteralText(keyWidget.getValue()),
-                    this.config,
-                    ListView.empty(),
-                    DataObject.EMPTY,
-                    parent,
-                    0,
-                    dY,
-                    (contentWidth) / 2,
-                    height,
-                    this.getValue().getDefaultValue(),
-                    v -> this.setValue(this.getValue().set(index, v)),
-                    v -> this.changed = true,
-                    value.getValue()
-            );
+            keyWidget.addConstraints(this.keyConstraints);
 
             if (valueWidget instanceof TextWidgetComponent) {
                 ((TextWidgetComponent<?>) valueWidget).withSuggestions(this.suggestionProvider);
@@ -164,8 +161,12 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
             }
 
             section.add(row.withMainComponent((mouseX, mouseY) -> mouseX >= this.x + this.width / 2D ? valueWidget : keyWidget));
-
             dY += valueWidget.getHeight();
+
+            if (iterator.hasNext()) {
+                section.add(new SpacerComponent(parent, contentLeft, dY, contentWidth, 7));
+                dY += 7;
+            }
         }
 
         if (this.mutable) {
@@ -183,39 +184,12 @@ public class TableWidget<T> extends ValueWidgetComponent<Table<T>> implements Co
     }
 
     @Override
-    public void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-
-    }
-
-    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.isMouseOver(mouseX, mouseY)) {
-            this.parent.tryLeave(() -> MinecraftClient.getInstance().openScreen((this.screen = new ConfigScreen(this.parent, this))));
+            this.parent.tryLeave(() -> MinecraftClient.getInstance().openScreen((this.screen = new ConfigScreen(this.parent, this, LiteralText.EMPTY))));
         }
 
         return false;
-    }
-
-    @Override
-    public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
-        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-
-        int width = textRenderer.getWidth("▶");
-
-        drawCenteredString(
-                matrixStack,
-                textRenderer,
-                "▶",
-                this.x + this.width - 3 - width * this.parent.getScale(),
-                (int) (this.y + (this.height - textRenderer.fontHeight * this.parent.getScale()) / 2F),
-                0xFFFFFFFF,
-                this.parent.getScale()
-        );
-    }
-
-    @Override
-    protected Text getDefaultValueAsText() {
-        return new LiteralText(this.getDefaultValue().toString());
     }
 
     class Dummy extends WidgetComponent implements Mutable {
