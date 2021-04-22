@@ -1,0 +1,9 @@
+{
+  "vivian.default": "Default: %s",
+  "vivian.unsaved.count.plural": "You have §c%d§r unsaved changes!",
+  "vivian.unsaved.count.singular": "You have §c%d§r unsaved change!",
+  "vivian.unsaved.prompt": "Would you like to save?",
+  "vivian.error.count.plural": "You have §c%d§r errors!",
+  "vivian.error.count.singular": "You have §c%d§r error!",
+  "vivian.error.prompt": "Would you like to discard changes?"
+}

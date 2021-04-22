@@ -32,7 +32,7 @@ public interface Matches extends Constraint {
     @Override
     default void addConstraintTooltips(List<Text> tooltips) {
         if (getRegex() != null) {
-            tooltips.add(new TranslatableText("conrad.constraint.matches", getRegex()));
+            tooltips.add(new TranslatableText("vivian.constraint.matches", getRegex()));
         }
     }
 }

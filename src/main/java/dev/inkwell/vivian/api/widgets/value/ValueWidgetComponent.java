@@ -128,7 +128,7 @@ public abstract class ValueWidgetComponent<T> extends WidgetComponent implements
         Text defaultValue = this.getDefaultValueAsText();
 
         if (defaultValue != null) {
-            this.parent.addTooltips(new TranslatableText("conrad.default", this.getDefaultValueAsText()));
+            this.parent.addTooltips(new TranslatableText("vivian.default", this.getDefaultValueAsText()));
         }
     }
 

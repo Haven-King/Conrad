@@ -19,6 +19,7 @@ package dev.inkwell.vivian.api.widgets.value;
 import dev.inkwell.vivian.api.screen.ConfigScreen;
 import dev.inkwell.vivian.api.widgets.TextButton;
 import dev.inkwell.vivian.api.widgets.WidgetComponent;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import org.jetbrains.annotations.NotNull;
@@ -89,7 +90,6 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
             if (bl) {
                 this.parent.setFocused(this);
             }
-
         }
 
         return bl;
@@ -98,12 +98,6 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
     @Override
     public void scroll(int amount) {
         super.scroll(amount);
-
-        this.button.scroll(amount);
-
-        for (WidgetComponent button : this.buttons) {
-            button.scroll(amount);
-        }
     }
 
     protected abstract MutableText fromValue(T value);
@@ -126,6 +120,12 @@ public abstract class DropdownWidgetComponent<T> extends ShadedWidgetComponent<T
 
         if (this.button != null) {
             this.button.setY(y);
+
+            if (y - this.buttonsHeight / 2 < ConfigScreen.HEADER_SIZE) {
+                y = ConfigScreen.HEADER_SIZE + this.buttonsHeight / 2;
+            } else if (y + this.buttonsHeight / 2 > this.parent.height - ConfigScreen.FOOTER_SIZE) {
+                y = this.parent.height - ConfigScreen.FOOTER_SIZE - this.buttonsHeight / 2;
+            }
 
             for (int i = 0; i < this.buttons.length; ++i) {
                 this.buttons[i].setY(y + i * this.height - this.buttonsHeight / 2);

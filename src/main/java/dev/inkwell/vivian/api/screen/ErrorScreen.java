@@ -66,8 +66,8 @@ public class ErrorScreen extends Screen implements DrawableExtensions {
         super.render(matrices, mouseX, mouseY, delta);
 
         int errorCount = this.parent.getErrorCount();
-        drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.error.count." + (errorCount > 1 ? "plural" : "singular"), errorCount), width / 2F, height / 2F - textRenderer.fontHeight / 2F - 20, 0xFFFFFFFF);
-        drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.error.prompt"), width / 2F, height / 2F - (20 / 4F) * 3, 0xFFFFFFFF);
+        drawCenteredText(matrices, textRenderer, new TranslatableText("vivian.error.count." + (errorCount > 1 ? "plural" : "singular"), errorCount), width / 2F, height / 2F - textRenderer.fontHeight / 2F - 20, 0xFFFFFFFF);
+        drawCenteredText(matrices, textRenderer, new TranslatableText("vivian.error.prompt"), width / 2F, height / 2F - (20 / 4F) * 3, 0xFFFFFFFF);
     }
 
     @Override

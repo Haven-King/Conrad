@@ -66,8 +66,8 @@ public class ConfirmScreen extends Screen implements DrawableExtensions {
         super.render(matrices, mouseX, mouseY, delta);
 
         int changedCount = this.parent.getChangedCount();
-        drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.unsaved.count." + (changedCount > 1 ? "plural" : "singular"), changedCount), width / 2F, height / 2F - textRenderer.fontHeight / 2F - 20, 0xFFFFFFFF);
-        drawCenteredText(matrices, textRenderer, new TranslatableText("conrad.unsaved.prompt"), width / 2F, height / 2F - (20 / 4F) * 3, 0xFFFFFFFF);
+        drawCenteredText(matrices, textRenderer, new TranslatableText("vivian.unsaved.count." + (changedCount > 1 ? "plural" : "singular"), changedCount), width / 2F, height / 2F - textRenderer.fontHeight / 2F - 20, 0xFFFFFFFF);
+        drawCenteredText(matrices, textRenderer, new TranslatableText("vivian.unsaved.prompt"), width / 2F, height / 2F - (20 / 4F) * 3, 0xFFFFFFFF);
     }
 
     @Override
