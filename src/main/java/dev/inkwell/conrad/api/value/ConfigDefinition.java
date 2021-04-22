@@ -47,12 +47,12 @@ public class ConfigDefinition<R> implements Comparable<ConfigDefinition<?>>, Ite
     private final ConfigUpgradeHandler<R> upgrade;
 
     /**
-     * @param namespace namespace of the entity that owns this config file, usually a mod id
-     * @param name      the name of the config file this key represents (without any file extensions)
-     * @param version   the version of this config file, used for upgrades
-     * @param saveType  see {@link SaveType}
-     * @param upgradeHandler   the object that will handle upgrades for this config definition
-     * @param path      the path of the directory this config file, relative to the 'config' folder
+     * @param namespace      namespace of the entity that owns this config file, usually a mod id
+     * @param name           the name of the config file this key represents (without any file extensions)
+     * @param version        the version of this config file, used for upgrades
+     * @param saveType       see {@link SaveType}
+     * @param upgradeHandler the object that will handle upgrades for this config definition
+     * @param path           the path of the directory this config file, relative to the 'config' folder
      */
     public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull Version version, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, @NotNull ConfigUpgradeHandler<R> upgradeHandler, @NotNull Path path, Map<DataType<?>, Collection<?>> data) {
         this.namespace = namespace;
@@ -74,33 +74,33 @@ public class ConfigDefinition<R> implements Comparable<ConfigDefinition<?>>, Ite
     }
 
     /**
-     * @param namespace namespace of the entity that owns this config file, usually a mod id
-     * @param name      the name of the config file this key represents (without any file extensions)
-     * @param version   the version of this config file, used for upgrades
-     * @param saveType  see {@link SaveType}
-     * @param upgradeHandler   the object that will handle upgrades for this config definition
-     * @param path      the path of the directory this config file, relative to the 'config' folder
+     * @param namespace      namespace of the entity that owns this config file, usually a mod id
+     * @param name           the name of the config file this key represents (without any file extensions)
+     * @param version        the version of this config file, used for upgrades
+     * @param saveType       see {@link SaveType}
+     * @param upgradeHandler the object that will handle upgrades for this config definition
+     * @param path           the path of the directory this config file, relative to the 'config' folder
      */
     public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull Version version, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, @NotNull ConfigSerializer<R> serializer, @NotNull ConfigUpgradeHandler<R> upgradeHandler, String... path) {
         this(namespace, name, version, serializer, saveType, upgradeHandler, Paths.get(namespace, path), data);
     }
 
     /**
-     * @param namespace namespace of the entity that owns this config file, usually a mod id
-     * @param name      the name of the config file this key represents (without any file extensions)
-     * @param saveType  see {@link SaveType}
-     * @param version   the version of this config file, used for upgrades
-     * @param upgradeHandler   the object that will handle upgrades for this config definition
+     * @param namespace      namespace of the entity that owns this config file, usually a mod id
+     * @param name           the name of the config file this key represents (without any file extensions)
+     * @param saveType       see {@link SaveType}
+     * @param version        the version of this config file, used for upgrades
+     * @param upgradeHandler the object that will handle upgrades for this config definition
      */
     public ConfigDefinition(@NotNull String namespace, @NotNull String name, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, Version version, ConfigUpgradeHandler<R> upgradeHandler) {
         this(namespace, name, version, serializer, saveType, upgradeHandler, Paths.get("."), data);
     }
 
     /**
-     * @param namespace namespace of the entity that owns this config file, usually a mod id
-     * @param saveType  see {@link SaveType}
-     * @param version   the version of this config file, used for upgrades
-     * @param upgradeHandler   the object that will handle upgrades for this config definition
+     * @param namespace      namespace of the entity that owns this config file, usually a mod id
+     * @param saveType       see {@link SaveType}
+     * @param version        the version of this config file, used for upgrades
+     * @param upgradeHandler the object that will handle upgrades for this config definition
      */
     public ConfigDefinition(@NotNull String namespace, @NotNull ConfigSerializer<R> serializer, @NotNull SaveType saveType, Map<DataType<?>, Collection<?>> data, Version version, ConfigUpgradeHandler<R> upgradeHandler) {
         this(namespace, "config", version, serializer, saveType, upgradeHandler, Paths.get("."), data);

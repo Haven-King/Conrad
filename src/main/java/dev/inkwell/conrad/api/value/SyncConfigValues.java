@@ -16,8 +16,8 @@
 
 package dev.inkwell.conrad.api.value;
 
-import dev.inkwell.conrad.impl.networking.channels.ServerConfigS2CChannel;
 import dev.inkwell.conrad.impl.networking.channels.ConfigValueC2SChannel;
+import dev.inkwell.conrad.impl.networking.channels.ServerConfigS2CChannel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.server.network.ServerPlayerEntity;

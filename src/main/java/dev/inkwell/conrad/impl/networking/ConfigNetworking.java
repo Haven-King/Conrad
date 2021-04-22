@@ -18,15 +18,15 @@ package dev.inkwell.conrad.impl.networking;
 
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.ConfigManager;
+import dev.inkwell.conrad.api.value.ValueContainer;
+import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.data.SyncType;
 import dev.inkwell.conrad.api.value.serialization.ConfigSerializer;
 import dev.inkwell.conrad.api.value.util.Version;
-import dev.inkwell.conrad.api.value.ValueContainer;
-import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.impl.ConfigManagerImpl;
-import dev.inkwell.conrad.impl.networking.channels.*;
+import dev.inkwell.conrad.impl.networking.channels.Channel;
 import dev.inkwell.conrad.impl.networking.util.Disconnector;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
@@ -153,6 +153,20 @@ public class ConfigNetworking implements ModInitializer, ClientModInitializer {
         return null;
     }
 
+    public static boolean isSynced(ConfigDefinition<?> configDefinition) {
+        if (!configDefinition.getData(DataType.SYNC_TYPE).isEmpty()) {
+            return true;
+        }
+
+        for (ValueKey<?> valueKey : configDefinition) {
+            if (!valueKey.getData(DataType.SYNC_TYPE).isEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     @Environment(EnvType.CLIENT)
     public void onInitializeClient() {
@@ -166,20 +180,6 @@ public class ConfigNetworking implements ModInitializer, ClientModInitializer {
         for (EntrypointContainer<Channel> channel : FabricLoader.getInstance().getEntrypointContainers("channel", Channel.class)) {
             channel.getEntrypoint().onInitialize();
         }
-    }
-
-    public static boolean isSynced(ConfigDefinition<?> configDefinition) {
-        if (!configDefinition.getData(DataType.SYNC_TYPE).isEmpty()) {
-            return true;
-        }
-
-        for (ValueKey<?> valueKey : configDefinition) {
-            if (!valueKey.getData(DataType.SYNC_TYPE).isEmpty()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public static final class Result {

@@ -190,6 +190,33 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
         }
     }
 
+    private static class EnumSerializer<T> implements GsonValueSerializer<JsonPrimitive, T> {
+        private final Class<T> enumClass;
+        private final T[] values;
+
+        @SuppressWarnings("unchecked")
+        private EnumSerializer(Class<?> enumClass) {
+            this.enumClass = (Class<T>) enumClass;
+            this.values = (T[]) enumClass.getEnumConstants();
+        }
+
+        @Override
+        public JsonPrimitive serialize(T value) {
+            return new JsonPrimitive(((Enum<?>) value).name());
+        }
+
+        @Override
+        public T deserialize(JsonElement representation) {
+            for (T value : this.values) {
+                if (((Enum<?>) value).name().equals(representation.getAsString())) {
+                    return value;
+                }
+            }
+
+            throw new UnsupportedOperationException("Invalid value '" + representation.getAsString() + "' for enum '" + enumClass.getSimpleName());
+        }
+    }
+
     private class ArraySerializer<T> implements GsonValueSerializer<JsonArray, Array<T>> {
         private final Array<T> defaultValue;
 
@@ -266,33 +293,6 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
         }
     }
 
-    private static class EnumSerializer<T> implements GsonValueSerializer<JsonPrimitive, T> {
-        private final Class<T> enumClass;
-        private final T[] values;
-
-        @SuppressWarnings("unchecked")
-        private EnumSerializer(Class<?> enumClass) {
-            this.enumClass = (Class<T>) enumClass;
-            this.values = (T[]) enumClass.getEnumConstants();
-        }
-
-        @Override
-        public JsonPrimitive serialize(T value) {
-            return new JsonPrimitive(((Enum<?>) value).name());
-        }
-
-        @Override
-        public T deserialize(JsonElement representation) {
-            for (T value : this.values) {
-                if (((Enum<?>) value).name().equals(representation.getAsString())) {
-                    return value;
-                }
-            }
-
-            throw new UnsupportedOperationException("Invalid value '" + representation.getAsString() + "' for enum '" + enumClass.getSimpleName());
-        }
-    }
-
     private class DataClassSerializer<T> implements GsonValueSerializer<JsonObject, T> {
         private final Class<T> valueClass;
 
@@ -311,6 +311,7 @@ public class GsonSerializer extends AbstractTreeSerializer<JsonElement, JsonObje
             return object;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public T deserialize(JsonElement representation) {
             try {

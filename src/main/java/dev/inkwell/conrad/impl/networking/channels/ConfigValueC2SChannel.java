@@ -18,9 +18,9 @@ package dev.inkwell.conrad.impl.networking.channels;
 
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.ConfigManager;
-import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueContainerProvider;
+import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.impl.networking.ConfigNetworking;
 import dev.inkwell.conrad.impl.networking.util.ConfigValueCache;
 import dev.inkwell.conrad.impl.networking.util.ConfigValueSender;
@@ -49,6 +49,26 @@ import net.minecraft.util.Identifier;
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayConnectionEvents.Join.class)
 public class ConfigValueC2SChannel extends C2SChannel implements ServerPlayConnectionEvents.Disconnect {
     private static final Identifier ID = new Identifier("conrad", "channel/send_client_values");
+
+    @Environment(EnvType.CLIENT)
+    public static <R> void sendToServer(ConfigDefinition<R> configDefinition, ValueContainer valueContainer) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (!client.isIntegratedServerRunning() && client.getCurrentServerEntry() == null) return;
+        ClientPlayerEntity player = client.player;
+        SaveType saveType = configDefinition.getSaveType();
+
+        // If the player doesn't exist we can't check their permission level
+        // and if their permission level isn't high enough, we don't want them sending config values
+        if (player == null || (saveType == SaveType.LEVEL && !player.hasPermissionLevel(4))
+                // Also don't try and sync save types other than Conrad's builtin save types.
+                || saveType != SaveType.LEVEL && saveType != SaveType.USER) return;
+
+        PacketByteBuf buf = ConfigNetworking.toPacket(configDefinition, valueContainer);
+
+        if (buf != null) {
+            ClientPlayNetworking.send(ID, buf);
+        }
+    }
 
     @Override
     public Identifier getId() {
@@ -112,26 +132,6 @@ public class ConfigValueC2SChannel extends C2SChannel implements ServerPlayConne
             peerBuf.writeBytes(buf);
 
             ((ConfigValueSender) server).send(result.configDefinitionString, sender.getUuid(), peerBuf);
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static <R> void sendToServer(ConfigDefinition<R> configDefinition, ValueContainer valueContainer) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (!client.isIntegratedServerRunning() && client.getCurrentServerEntry() == null) return;
-        ClientPlayerEntity player = client.player;
-        SaveType saveType = configDefinition.getSaveType();
-
-        // If the player doesn't exist we can't check their permission level
-        // and if their permission level isn't high enough, we don't want them sending config values
-        if (player == null || (saveType == SaveType.LEVEL && !player.hasPermissionLevel(4))
-                // Also don't try and sync save types other than Conrad's builtin save types.
-                || saveType != SaveType.LEVEL && saveType != SaveType.USER) return;
-
-        PacketByteBuf buf = ConfigNetworking.toPacket(configDefinition, valueContainer);
-
-        if (buf != null) {
-            ClientPlayNetworking.send(ID, buf);
         }
     }
 }

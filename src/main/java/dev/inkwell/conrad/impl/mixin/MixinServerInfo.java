@@ -17,9 +17,9 @@
 package dev.inkwell.conrad.impl.mixin;
 
 import dev.inkwell.conrad.api.value.PlayerValueContainer;
-import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueContainerProvider;
+import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.impl.ConfigManagerImpl;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

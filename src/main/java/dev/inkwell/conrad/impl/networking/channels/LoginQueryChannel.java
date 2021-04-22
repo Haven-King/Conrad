@@ -37,7 +37,9 @@ import java.util.function.Consumer;
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientLoginNetworking.LoginQueryRequestHandler.class)
 public abstract class LoginQueryChannel implements Channel, ServerLoginConnectionEvents.QueryStart, ClientLoginNetworking.LoginQueryRequestHandler, ServerLoginNetworking.LoginQueryResponseHandler {
     protected abstract void sendQuery(ServerLoginNetworkHandler handler, MinecraftServer server, PacketSender packetSender, ServerLoginNetworking.LoginSynchronizer synchronizer);
+
     protected abstract CompletableFuture<PacketByteBuf> handleQuery(MinecraftClient client, ClientLoginNetworkHandler handler, PacketByteBuf buf, Consumer<GenericFutureListener<? extends Future<? super Void>>> listenerAdder);
+
     protected abstract void handleQueryResponse(MinecraftServer server, ServerLoginNetworkHandler handler, boolean understood, PacketByteBuf buf, ServerLoginNetworking.LoginSynchronizer synchronizer, PacketSender responseSender);
 
     @Override

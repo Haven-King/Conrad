@@ -17,23 +17,22 @@
 package dev.inkwell.conrad.impl.gui;
 
 import dev.inkwell.conrad.api.Config;
-import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
+import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.serialization.ConfigSerializer;
 import dev.inkwell.conrad.api.value.serialization.FlatOwenSerializer;
 import dev.inkwell.conrad.api.value.util.DataCollector;
 import dev.inkwell.conrad.api.value.util.Version;
-import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.owen.OwenElement;
+import dev.inkwell.vivian.api.screen.ScreenStyle;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ConradGuiConfig extends Config<OwenElement>  {
-    private static final ScreenStyle STYLE = new ScreenStyle(new Identifier("textures/block/cobblestone.png"));
-
+public class ConradGuiConfig extends Config<OwenElement> {
     public static final ValueKey<Boolean> SHOW_MODS_CONFIG_BUTTON = value(true);
+    private static final ScreenStyle STYLE = new ScreenStyle(new Identifier("textures/block/cobblestone.png"));
 
     @Override
     public @NotNull ConfigSerializer<OwenElement> getSerializer() {

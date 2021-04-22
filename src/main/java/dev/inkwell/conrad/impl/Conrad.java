@@ -16,15 +16,10 @@
 
 package dev.inkwell.conrad.impl;
 
-import dev.inkwell.conrad.api.value.ConfigDefinition;
-import dev.inkwell.conrad.api.value.ConfigManager;
-import dev.inkwell.conrad.api.value.ConfigPostInitializer;
-import dev.inkwell.conrad.api.value.SyncConfigValues;
+import dev.inkwell.conrad.api.value.*;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.lang.Translator;
-import dev.inkwell.conrad.api.value.ValueContainer;
-import dev.inkwell.conrad.api.value.ValueContainerProvider;
-import dev.inkwell.conrad.api.value.ValueKey;
+import dev.inkwell.conrad.impl.gui.ConfigScreenProviderImpl;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
@@ -40,6 +35,7 @@ import java.util.List;
 public class Conrad implements ConfigPostInitializer {
     private static final String FILE = "%s.%s.lang.json";
     private static final String VALUE = "  \"%s\": \"\"";
+
     public static void syncAndSave(ConfigDefinition<?> config) {
         ValueContainer valueContainer = ValueContainerProvider.getInstance(config.getSaveType()).getValueContainer(config.getSaveType());
         SyncConfigValues.sendConfigValues(config, valueContainer);

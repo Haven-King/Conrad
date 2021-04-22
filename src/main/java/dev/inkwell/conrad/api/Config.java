@@ -16,18 +16,16 @@
 
 package dev.inkwell.conrad.api;
 
-import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
 import dev.inkwell.conrad.api.value.ConfigInitializer;
+import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.util.Array;
 import dev.inkwell.conrad.api.value.util.Builders;
 import dev.inkwell.conrad.api.value.util.ConfigValueCollector;
 import dev.inkwell.conrad.api.value.util.ListView;
-import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.impl.exceptions.ConfigValueException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

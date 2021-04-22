@@ -19,9 +19,9 @@ package dev.inkwell.conrad.api.value.serialization;
 import com.google.common.collect.ImmutableCollection;
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.ConfigManager;
-import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueKey;
+import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.impl.util.ReflectionUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,6 +50,7 @@ public abstract class AbstractTreeSerializer<E, O extends E> implements ConfigSe
     @SuppressWarnings("rawtypes")
     private final Map<Class<?>, ValueSerializer> dataSerializeCache = new HashMap<>();
 
+    @SuppressWarnings("unchecked")
     protected AbstractTreeSerializer() {
         for (Map.Entry<Class<?>, ValueSerializer> entry : CLASS_DEFAULTS.computeIfAbsent(this.getClass(), c -> new HashMap<>()).entrySet()) {
             this.addSerializer(entry.getKey(), entry.getValue());
@@ -105,7 +106,7 @@ public abstract class AbstractTreeSerializer<E, O extends E> implements ConfigSe
 
     protected abstract <V> ValueSerializer<E, ?, V> getDataSerializer(Class<V> clazz);
 
-    protected abstract <V> ValueSerializer<E,?,V> getEnumSerializer(Class<V> valueClass);
+    protected abstract <V> ValueSerializer<E, ?, V> getEnumSerializer(Class<V> valueClass);
 
     private boolean isDataClass(Class<?> clazz) {
         for (Field field : clazz.getDeclaredFields()) {

@@ -16,9 +16,9 @@
 
 package dev.inkwell.conrad.impl.networking.channels;
 
-import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueContainerProvider;
+import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.impl.networking.ConfigNetworking;
 import dev.inkwell.conrad.impl.networking.util.ConfigValueCache;
 import dev.inkwell.conrad.impl.networking.util.Disconnector;

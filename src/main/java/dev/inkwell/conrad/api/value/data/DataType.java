@@ -16,13 +16,12 @@
 
 package dev.inkwell.conrad.api.value.data;
 
-import dev.inkwell.conrad.api.gui.screen.ScreenStyle;
-import dev.inkwell.conrad.api.gui.util.KeySuggestionProvider;
-import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
+import dev.inkwell.conrad.api.gui.ValueWidgetFactory;
 import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.value.util.ListView;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import dev.inkwell.vivian.api.screen.ScreenStyle;
+import dev.inkwell.vivian.api.util.KeySuggestionProvider;
+import dev.inkwell.vivian.api.util.SuggestionProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -47,7 +46,9 @@ public class DataType<T> extends StringIdentifiable {
     public static final DataType<ScreenStyle> SCREEN_STYLE = new DataType<>("screen_style");
 
     public static final DataType<SuggestionProvider> SUGGESTION_PROVIDER = new DataType<>("suggestion_provider");
-    public static final DataType<KeySuggestionProvider> KEY_SUGGESTION_PROVIDER = new DataType<KeySuggestionProvider>("key_suggestion_provider");
+    public static final DataType<KeySuggestionProvider> KEY_SUGGESTION_PROVIDER = new DataType<>("key_suggestion_provider");
+
+    public static final DataType<ValueWidgetFactory<?>> WIDGET = new DataType<>("widget");
 
     public DataType(@NotNull String name) {
         super(name);

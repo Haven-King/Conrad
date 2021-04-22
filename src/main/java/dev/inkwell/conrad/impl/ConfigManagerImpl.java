@@ -22,6 +22,7 @@ import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.serialization.ConfigSerializer;
 import dev.inkwell.conrad.api.value.util.ListView;
 import dev.inkwell.conrad.impl.exceptions.ConfigSerializationException;
+import dev.inkwell.conrad.impl.gui.ConfigScreenProviderImpl;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
@@ -67,54 +68,6 @@ public class ConfigManagerImpl implements PreLaunchEntrypoint {
     public static <R> @Nullable ConfigDefinition<R> getDefinition(String configKeyString) {
         //noinspection unchecked
         return (ConfigDefinition<R>) CONFIG_DEFINITIONS.get(configKeyString);
-    }
-
-    @Override
-    public void onPreLaunch() {
-        Map<String, Collection<ConfigInitializer<?>>> configInitializers = new HashMap<>();
-        Collection<ConfigPostInitializer> postInitializers = new ArrayList<>();
-        boolean client = FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
-
-        // We use one entrypoint to reduce the number of excess entrypoint keys
-        for (EntrypointContainer<Object> container : FabricLoader.getInstance().getEntrypointContainers("config", Object.class)) {
-            Object entrypoint = container.getEntrypoint();
-
-            if (entrypoint instanceof ConfigInitializer) {
-                String modId = container.getProvider().getMetadata().getId();
-                ConfigInitializer<?> initializer = (ConfigInitializer<?>) entrypoint;
-
-                configInitializers.computeIfAbsent(modId, m -> new LinkedHashSet<>()).add(initializer);
-            }
-
-            if (entrypoint instanceof ConfigProvider) {
-                ((ConfigProvider) entrypoint).addConfigs((modId, initializer) ->
-                        configInitializers.computeIfAbsent(modId, m -> new LinkedHashSet<>()).add(initializer));
-            }
-
-            if (entrypoint instanceof ConfigPostInitializer) {
-                postInitializers.add((ConfigPostInitializer) entrypoint);
-            }
-        }
-
-        for (String modId : configInitializers.keySet()) {
-            for (ConfigInitializer<?> initializer : configInitializers.get(modId)) {
-                ConfigDefinition<?> config = initialize(modId, initializer);
-
-                if (initializer instanceof Config && client) {
-                    ConfigScreenProviderImpl.register(modId, getValues(config));
-                }
-            }
-        }
-
-        CONFIG_DEFINITION_VIEW = new ListView<>(CONFIG_DEFINITIONS.values());
-
-        postInitializers.forEach(ConfigPostInitializer::onConfigsLoaded);
-
-        for (ConfigDefinition<?> configDefinition : CONFIG_DEFINITIONS.values()) {
-            doSerialization(configDefinition, ValueContainer.ROOT);
-        }
-
-        FINISHED = true;
     }
 
     private static <T1> @Nullable ConfigDefinition<T1> initialize(String modId, ConfigInitializer<T1> initializer) {
@@ -173,5 +126,53 @@ public class ConfigManagerImpl implements PreLaunchEntrypoint {
                 throw new ConfigSerializationException(String.format("Failed to serialize config '%s': %s", location, e.getMessage()));
             }
         }
+    }
+
+    @Override
+    public void onPreLaunch() {
+        Map<String, Collection<ConfigInitializer<?>>> configInitializers = new HashMap<>();
+        Collection<ConfigPostInitializer> postInitializers = new ArrayList<>();
+        boolean client = FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
+
+        // We use one entrypoint to reduce the number of excess entrypoint keys
+        for (EntrypointContainer<Object> container : FabricLoader.getInstance().getEntrypointContainers("config", Object.class)) {
+            Object entrypoint = container.getEntrypoint();
+
+            if (entrypoint instanceof ConfigInitializer) {
+                String modId = container.getProvider().getMetadata().getId();
+                ConfigInitializer<?> initializer = (ConfigInitializer<?>) entrypoint;
+
+                configInitializers.computeIfAbsent(modId, m -> new LinkedHashSet<>()).add(initializer);
+            }
+
+            if (entrypoint instanceof ConfigProvider) {
+                ((ConfigProvider) entrypoint).addConfigs((modId, initializer) ->
+                        configInitializers.computeIfAbsent(modId, m -> new LinkedHashSet<>()).add(initializer));
+            }
+
+            if (entrypoint instanceof ConfigPostInitializer) {
+                postInitializers.add((ConfigPostInitializer) entrypoint);
+            }
+        }
+
+        for (String modId : configInitializers.keySet()) {
+            for (ConfigInitializer<?> initializer : configInitializers.get(modId)) {
+                ConfigDefinition<?> config = initialize(modId, initializer);
+
+                if (initializer instanceof Config && client) {
+                    ConfigScreenProviderImpl.register(modId, getValues(config));
+                }
+            }
+        }
+
+        CONFIG_DEFINITION_VIEW = new ListView<>(CONFIG_DEFINITIONS.values());
+
+        postInitializers.forEach(ConfigPostInitializer::onConfigsLoaded);
+
+        for (ConfigDefinition<?> configDefinition : CONFIG_DEFINITIONS.values()) {
+            doSerialization(configDefinition, ValueContainer.ROOT);
+        }
+
+        FINISHED = true;
     }
 }

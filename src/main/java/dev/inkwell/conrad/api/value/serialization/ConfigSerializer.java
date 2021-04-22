@@ -17,11 +17,11 @@
 package dev.inkwell.conrad.api.value.serialization;
 
 import dev.inkwell.conrad.api.value.ConfigDefinition;
+import dev.inkwell.conrad.api.value.ValueContainer;
+import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.value.data.Constraint;
 import dev.inkwell.conrad.api.value.data.Flag;
 import dev.inkwell.conrad.api.value.util.Version;
-import dev.inkwell.conrad.api.value.ValueContainer;
-import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.impl.exceptions.ConfigSerializationException;
 import net.fabricmc.loader.api.VersionParsingException;
 import org.jetbrains.annotations.NotNull;

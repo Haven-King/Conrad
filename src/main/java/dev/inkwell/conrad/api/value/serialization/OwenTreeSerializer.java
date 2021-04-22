@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Haven King
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dev.inkwell.conrad.api.value.serialization;
 
 import dev.inkwell.conrad.api.value.data.Constraint;
@@ -20,17 +36,14 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, OwenElement> {
+    public static final OwenTreeSerializer INSTANCE = new OwenTreeSerializer(new Owen.Builder());
     private static final Pattern PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9./+:_-]*");
-
     public static final Constraint<String> KEY_CONSTRAINT = new Constraint<String>("owen_key") {
         @Override
         public boolean passes(String value) {
             return PATTERN.matcher(value).matches();
         }
     };
-
-    public static final OwenTreeSerializer INSTANCE = new OwenTreeSerializer(new Owen.Builder());
-
     private final Owen owen;
 
     public OwenTreeSerializer(Owen.Builder builder) {
@@ -196,6 +209,33 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
         }
     }
 
+    private static class EnumSerializer<T> implements OwenValueSerializer<T> {
+        private final Class<T> enumClass;
+        private final T[] values;
+
+        @SuppressWarnings("unchecked")
+        private EnumSerializer(Class<?> enumClass) {
+            this.enumClass = (Class<T>) enumClass;
+            this.values = (T[]) enumClass.getEnumConstants();
+        }
+
+        @Override
+        public OwenElement serialize(T value) {
+            return Owen.literal(((Enum<?>) value).name());
+        }
+
+        @Override
+        public T deserialize(OwenElement representation) {
+            for (T value : this.values) {
+                if (((Enum<?>) value).name().equals(representation.asString())) {
+                    return value;
+                }
+            }
+
+            throw new UnsupportedOperationException("Invalid value '" + representation.asString() + "' for enum '" + enumClass.getSimpleName());
+        }
+    }
+
     private class ArraySerializer<T> implements OwenValueSerializer<Array<T>> {
         private final Array<T> defaultValue;
 
@@ -268,33 +308,6 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
         }
     }
 
-    private static class EnumSerializer<T> implements OwenValueSerializer<T> {
-        private final Class<T> enumClass;
-        private final T[] values;
-
-        @SuppressWarnings("unchecked")
-        private EnumSerializer(Class<?> enumClass) {
-            this.enumClass = (Class<T>) enumClass;
-            this.values = (T[]) enumClass.getEnumConstants();
-        }
-
-        @Override
-        public OwenElement serialize(T value) {
-            return Owen.literal(((Enum<?>) value).name());
-        }
-
-        @Override
-        public T deserialize(OwenElement representation) {
-            for (T value : this.values) {
-                if (((Enum<?>) value).name().equals(representation.asString())) {
-                    return value;
-                }
-            }
-
-            throw new UnsupportedOperationException("Invalid value '" + representation.asString() + "' for enum '" + enumClass.getSimpleName());
-        }
-    }
-
     private class DataClassSerializer<T> implements OwenValueSerializer<T> {
         private final Class<T> valueClass;
 
@@ -313,6 +326,7 @@ public class OwenTreeSerializer extends AbstractTreeSerializer<OwenElement, Owen
             return element;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public T deserialize(OwenElement representation) {
             try {

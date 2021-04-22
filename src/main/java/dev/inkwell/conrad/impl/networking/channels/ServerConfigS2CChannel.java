@@ -18,9 +18,9 @@ package dev.inkwell.conrad.impl.networking.channels;
 
 import dev.inkwell.conrad.api.value.ConfigDefinition;
 import dev.inkwell.conrad.api.value.ConfigManager;
-import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.api.value.ValueContainer;
 import dev.inkwell.conrad.api.value.ValueContainerProvider;
+import dev.inkwell.conrad.api.value.data.SaveType;
 import dev.inkwell.conrad.impl.networking.ConfigNetworking;
 import dev.inkwell.conrad.impl.networking.util.Disconnector;
 import net.fabricmc.api.EnvType;
@@ -40,6 +40,14 @@ import net.minecraft.util.Identifier;
 @EnvironmentInterface(value = EnvType.CLIENT, itf = ClientPlayNetworking.PlayChannelHandler.class)
 public class ServerConfigS2CChannel extends S2CChannel {
     public static final Identifier ID = new Identifier("conrad", "channel/send_server_values");
+
+    public static void send(ConfigDefinition<?> configDefinition, ValueContainer valueContainer, ServerPlayerEntity player) {
+        PacketByteBuf buf = ConfigNetworking.toPacket(configDefinition, valueContainer);
+
+        if (buf != null) {
+            ServerPlayNetworking.send(player, ID, buf);
+        }
+    }
 
     @Override
     public Identifier getId() {
@@ -62,13 +70,5 @@ public class ServerConfigS2CChannel extends S2CChannel {
     public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         ValueContainer container = ValueContainerProvider.getInstance(SaveType.LEVEL).getValueContainer(SaveType.LEVEL);
         ConfigNetworking.read(buf, s -> container, (Disconnector) handler);
-    }
-
-    public static void send(ConfigDefinition<?> configDefinition, ValueContainer valueContainer, ServerPlayerEntity player) {
-        PacketByteBuf buf = ConfigNetworking.toPacket(configDefinition, valueContainer);
-
-        if (buf != null) {
-            ServerPlayNetworking.send(player, ID, buf);
-        }
     }
 }

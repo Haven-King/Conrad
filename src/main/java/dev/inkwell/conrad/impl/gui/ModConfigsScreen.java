@@ -1,13 +1,29 @@
+/*
+ * Copyright 2021 Haven King
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dev.inkwell.conrad.impl.gui;
 
-import dev.inkwell.conrad.api.gui.ConfigScreenProvider;
-import dev.inkwell.conrad.api.gui.builders.CategoryBuilder;
-import dev.inkwell.conrad.api.gui.builders.ConfigScreenBuilderImpl;
-import dev.inkwell.conrad.api.gui.builders.SectionBuilder;
-import dev.inkwell.conrad.api.gui.screen.ConfigScreen;
-import dev.inkwell.conrad.api.gui.widgets.*;
-import dev.inkwell.conrad.api.gui.widgets.containers.RowContainer;
 import dev.inkwell.conrad.impl.Conrad;
+import dev.inkwell.vivian.api.ConfigScreenProvider;
+import dev.inkwell.vivian.api.builders.CategoryBuilder;
+import dev.inkwell.vivian.api.builders.ConfigScreenBuilderImpl;
+import dev.inkwell.vivian.api.widgets.ImageWidget;
+import dev.inkwell.vivian.api.widgets.LabelComponent;
+import dev.inkwell.vivian.api.widgets.SpacerComponent;
+import dev.inkwell.vivian.api.widgets.TextButton;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
@@ -25,7 +41,6 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,6 +53,11 @@ public class ModConfigsScreen implements ClientModInitializer {
     private static final Identifier CONFIGS_ICON_TEXTURE = Conrad.id("textures/gui/configure_button.png");
 
     private ConfigScreenBuilderImpl configScreenBuilder;
+
+    private static boolean buttonHasText(AbstractButtonWidget button, String translationKey) {
+        Text text = button.getMessage();
+        return text instanceof TranslatableText && ((TranslatableText) text).getKey().equals(translationKey);
+    }
 
     @Override
     public void onInitializeClient() {
@@ -54,9 +74,6 @@ public class ModConfigsScreen implements ClientModInitializer {
         this.configScreenBuilder = new ConfigScreenBuilderImpl();
 
         CategoryBuilder category = this.configScreenBuilder.startCategory(new TranslatableText("conrad.mod_configs"));
-        SectionBuilder section = category.addSection(new LiteralText(""));
-
-        MutableInt i = new MutableInt();
 
         Iterator<Map.Entry<String, Function<Screen, ? extends Screen>>> it = ConfigScreenProvider.getFactories();
 
@@ -68,30 +85,9 @@ public class ModConfigsScreen implements ClientModInitializer {
             FabricLoader.getInstance().getModContainer(modId).ifPresent(container -> {
                 ModMetadata metadata = container.getMetadata();
 
-                section.add(((parent, width, x, y, index) -> {
-                    Identifier icon = IconHandler.getIcon(container, metadata);
+                Text name = new TranslatableText(metadata.getName().isEmpty() ? metadata.getId() : metadata.getName());
 
-                    WidgetComponent iconComponent = icon != null
-                            ? new ImageWidget(parent, 0, 0, 30, 30, icon)
-                            : new LabelComponent(parent, 0, 0, 30, 30, LiteralText.EMPTY);
-
-                    WidgetComponent dummy = new SpacerComponent(parent, 0, 0, 0, 30);
-                    WidgetComponent spacer = new SpacerComponent(parent, 0, 0, 10, 30);
-
-                    Text name = new TranslatableText(metadata.getName().isEmpty() ? metadata.getId() : metadata.getName());
-
-                    LabelComponent label = new LabelComponent(parent,
-                            0, 0, width - 80, 30,
-                            name
-                    );
-
-                    TextButton button = new TextButton(parent, 0, 0, 20, 20, 0, new LiteralText("▶"), b -> {
-                        MinecraftClient.getInstance().openScreen(screenBuilder.apply(parent));
-                        return true;
-                    });
-
-                    WidgetComponent component = new RowContainer(parent, x, y, i.getAndIncrement(), false, iconComponent, spacer, dummy, label, button);
-
+                category.add((parent, x, y, width, consumer) -> {
                     List<Text> tooltips = new ArrayList<>();
 
                     if (!metadata.getAuthors().isEmpty()) {
@@ -105,18 +101,27 @@ public class ModConfigsScreen implements ClientModInitializer {
 
                     if (!tooltips.isEmpty()) {
                         tooltips.add(0, name.copy().styled(style -> style.withBold(true)));
-                        component.addTooltips(tooltips);
                     }
 
-                    return component;
-                }));
+                    consumer.accept(new SpacerComponent(parent, x, y, width, 30).withTooltips(tooltips));
 
-//                if (it.hasNext()) {
-//                    section.add(((parent, width, x, y, index) -> new SpacerComponent(parent, x, y, 0, 10)));
-//                }
+                    Identifier icon = IconHandler.getIcon(container, metadata);
+
+                    if (icon != null) {
+                        consumer.accept(new ImageWidget(parent, x, y, 30, 30, icon));
+                    }
+
+                    consumer.accept(new LabelComponent(parent, x + 50, y, width - 85, 30, name));
+
+                    consumer.accept(new TextButton(parent, x + width - 20, y + 5, 20, 20, 0, new LiteralText("▶"), b -> {
+                        MinecraftClient.getInstance().openScreen(screenBuilder.apply(parent));
+                        return true;
+                    }));
+
+                    return 30;
+                });
             });
         }
-
     }
 
     private void modifyTitleScreen(Screen screen) {
@@ -139,9 +144,8 @@ public class ModConfigsScreen implements ClientModInitializer {
 
             buttons.add(new TexturedButtonWidget(
                     x, accessibilityButton.y, 20, 20,
-                    0, 0, 20, CONFIGS_ICON_TEXTURE, 32, 64, b -> this.onPress(screen), (button, matrices, mouseX, mouseY) -> {
-                screen.renderTooltip(matrices, new TranslatableText("conrad.mod_configs"), mouseX, mouseY);
-            }, new TranslatableText("conrad.mod_configs")));
+                    0, 0, 20, CONFIGS_ICON_TEXTURE, 32, 64, b -> this.onPress(screen), (button, matrices, mouseX, mouseY) ->
+                    screen.renderTooltip(matrices, new TranslatableText("conrad.mod_configs"), mouseX, mouseY), new TranslatableText("conrad.mod_configs")));
         }
     }
 
@@ -150,17 +154,11 @@ public class ModConfigsScreen implements ClientModInitializer {
 
         buttons.add(new TexturedButtonWidget(
                 screen.width - 25, 5, 20, 20,
-                0, 0, 20, CONFIGS_ICON_TEXTURE, 32, 64, b -> this.onPress(screen), (button, matrices, mouseX, mouseY) -> {
-            screen.renderTooltip(matrices, new TranslatableText("conrad.mod_configs"), mouseX, mouseY);
-        }, new TranslatableText("conrad.mod_configs")));
-    }
-
-    private static boolean buttonHasText(AbstractButtonWidget button, String translationKey) {
-        Text text = button.getMessage();
-        return text instanceof TranslatableText && ((TranslatableText) text).getKey().equals(translationKey);
+                0, 0, 20, CONFIGS_ICON_TEXTURE, 32, 64, b -> this.onPress(screen), (button, matrices, mouseX, mouseY) ->
+                screen.renderTooltip(matrices, new TranslatableText("conrad.mod_configs"), mouseX, mouseY), new TranslatableText("conrad.mod_configs")));
     }
 
     public void onPress(Screen parent) {
-        MinecraftClient.getInstance().openScreen(new ConfigScreen(parent, this.configScreenBuilder, LiteralText.EMPTY));
+        MinecraftClient.getInstance().openScreen(this.configScreenBuilder.build(parent));
     }
 }

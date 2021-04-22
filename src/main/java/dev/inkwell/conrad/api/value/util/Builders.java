@@ -16,12 +16,12 @@
 
 package dev.inkwell.conrad.api.value.util;
 
-import dev.inkwell.conrad.api.gui.util.KeySuggestionProvider;
-import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
 import dev.inkwell.conrad.api.value.ValueKey;
 import dev.inkwell.conrad.api.value.data.Bounds;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.data.Matches;
+import dev.inkwell.vivian.api.util.KeySuggestionProvider;
+import dev.inkwell.vivian.api.util.SuggestionProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;

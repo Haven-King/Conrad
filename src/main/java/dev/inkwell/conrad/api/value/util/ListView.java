@@ -34,6 +34,11 @@ public final class ListView<T> implements Iterable<T> {
         this.list = new ArrayList<>(collection);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <D> ListView<D> empty() {
+        return EMPTY;
+    }
+
     public int size() {
         return this.list.size();
     }
@@ -54,11 +59,5 @@ public final class ListView<T> implements Iterable<T> {
     @Override
     public Iterator<T> iterator() {
         return this.list.iterator();
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public static <D> ListView<D> empty() {
-        return EMPTY;
     }
 }

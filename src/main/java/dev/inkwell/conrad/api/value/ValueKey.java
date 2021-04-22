@@ -16,15 +16,18 @@
 
 package dev.inkwell.conrad.api.value;
 
-import dev.inkwell.conrad.api.gui.util.SuggestionProvider;
 import dev.inkwell.conrad.api.value.data.Constraint;
 import dev.inkwell.conrad.api.value.data.DataType;
 import dev.inkwell.conrad.api.value.data.Flag;
-import dev.inkwell.conrad.api.value.util.*;
+import dev.inkwell.conrad.api.value.util.ListView;
+import dev.inkwell.conrad.api.value.util.StronglyTypedImmutableCollection;
+import dev.inkwell.conrad.api.value.util.Table;
+import dev.inkwell.conrad.api.value.util.TriConsumer;
 import dev.inkwell.conrad.impl.ConfigManagerImpl;
 import dev.inkwell.conrad.impl.data.KeyView;
 import dev.inkwell.conrad.impl.exceptions.ConfigIdentifierException;
 import dev.inkwell.conrad.impl.exceptions.ConfigValueException;
+import dev.inkwell.vivian.api.util.SuggestionProvider;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

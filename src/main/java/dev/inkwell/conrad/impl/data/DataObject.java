@@ -21,8 +21,6 @@ import dev.inkwell.conrad.api.value.data.Flag;
 import dev.inkwell.conrad.api.value.util.ListView;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-
 public interface DataObject {
     DataObject EMPTY = new DataObject() {
         @Override

@@ -1,0 +1,81 @@
+/*
+ * Copyright 2021 Haven King
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package dev.inkwell.vivian.api.widgets.value;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import dev.inkwell.vivian.api.screen.ConfigScreen;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.widget.AbstractButtonWidget;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+public class ToggleComponent extends ValueWidgetComponent<Boolean> {
+    private final Function<Boolean, Text> text;
+
+    public ToggleComponent(ConfigScreen parent, int x, int y, int width, int height, Supplier<@NotNull Boolean> defaultValueSupplier, Consumer<Boolean> changedListener, Consumer<Boolean> saveConsumer, @NotNull Boolean value, Function<Boolean, Text> text) {
+        super(parent, x, y, width, height, defaultValueSupplier, changedListener, saveConsumer, value);
+        this.text = text;
+    }
+
+    @Override
+    public @Nullable Text getDefaultValueAsText() {
+        return new LiteralText(this.getDefaultValue().toString());
+    }
+
+    @Override
+    public void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
+        MinecraftClient minecraftClient = MinecraftClient.getInstance();
+        minecraftClient.getTextureManager().bindTexture(AbstractButtonWidget.WIDGETS_LOCATION);
+        int textureOffset = this.isMouseOver(mouseX, mouseY) ? 2 : 1;
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        DrawableHelper.drawTexture(matrixStack, this.x, this.y, 0, 0, 46 + textureOffset * 20, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x + this.width / 2, this.y, 0, 200 - this.width / 2F, 46 + textureOffset * 20, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x, this.y + this.height / 2, 0, 0, 46 + textureOffset * 20 + 20 - this.height / 2F, this.width / 2, this.height / 2, 256, 256);
+        DrawableHelper.drawTexture(matrixStack, this.x + this.width / 2, this.y + this.height / 2, 0, 200 - this.width / 2F, 46 + textureOffset * 20 + 20 - this.height / 2F, this.width / 2, this.height / 2, 256, 256);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.isMouseOver(mouseX, mouseY) && button == 0) {
+            this.setValue(!this.getValue());
+            MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void renderContents(MatrixStack matrixStack, int mouseX, int mouseY, float delta) {
+        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+        drawCenteredText(matrixStack, textRenderer, this.text.apply(this.getValue()), this.x + this.width / 2F, this.textYPos(), 0xFFFFFFFF);
+    }
+}
