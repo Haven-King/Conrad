@@ -110,6 +110,8 @@ public class ConfigScreen extends Screen {
         int categoryButtonsSpan = ((categoryWidth + 5) * this.categories.length);
         int x = this.width / 2 - categoryButtonsSpan / 2;
 
+        this.scrollAmount = 0;
+
         for (int i = 0; i < this.categories.length; ++i) {
             int categoryId = i;
             Text name = this.categories[i].getName();
@@ -126,7 +128,7 @@ public class ConfigScreen extends Screen {
 
             if (i == activeCategory) {
                 button.active = false;
-                this.contentHeight = categories[i].build(this, this.margin, CONTENT_WIDTH, HEADER_SIZE + this.scrollAmount, this.children::add);
+                this.contentHeight = categories[i].build(this, this.margin, CONTENT_WIDTH, HEADER_SIZE, this.children::add);
             }
 
             this.addButton(button);

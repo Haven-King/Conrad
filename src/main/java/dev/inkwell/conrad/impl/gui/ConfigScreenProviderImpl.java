@@ -151,8 +151,8 @@ public final class ConfigScreenProviderImpl {
                 List<Text> tooltips = Translator.getComments(parent).stream().map(LiteralText::new).collect(Collectors.toList());
 
                 category.add((screen, x, y, width, consumer) -> {
-                    consumer.accept(new LabelComponent(screen, 0, y, width - 20, 20, new TranslatableText(parent)).withTooltips(tooltips));
-                    consumer.accept(new TextButton(screen, width - 20, y, 20, 20, 0, new LiteralText("▶"), Alignment.CENTER, button -> {
+                    consumer.accept(new LabelComponent(screen, x, y, width - 20, 20, new TranslatableText(parent)).withTooltips(tooltips));
+                    consumer.accept(new TextButton(screen, x + width - 20, y, 20, 20, 0, new LiteralText("▶"), Alignment.CENTER, button -> {
                         MinecraftClient.getInstance().openScreen(builder.build(button.parent));
                         return true;
                     }).withTooltips(tooltips));

@@ -19,9 +19,9 @@ package dev.inkwell.vivian.api.builders;
 import dev.inkwell.vivian.api.context.WidgetComponentFactory;
 import dev.inkwell.vivian.api.screen.ConfigScreen;
 import dev.inkwell.vivian.api.util.Group;
+import dev.inkwell.vivian.api.widgets.LabelComponent;
 import dev.inkwell.vivian.api.widgets.SpacerComponent;
 import dev.inkwell.vivian.api.widgets.WidgetComponent;
-import dev.inkwell.vivian.api.widgets.value.SectionHeaderComponent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
@@ -47,17 +47,17 @@ public class CategoryBuilder extends Group<WidgetComponentFactory> {
 
     public void addSection(Text name, List<Text> tooltips) {
         this.add((screen, x, y, width, consumer) -> {
-            WidgetComponent component = new SectionHeaderComponent(screen, x, y, width, 25, name).withTooltips(tooltips);
+            WidgetComponent component = new LabelComponent(screen, x, y + 20, width, 20, name.copy().styled(style -> style.withUnderline(true))).withTooltips(tooltips);
             consumer.accept(component);
-            return component.getHeight();
+            return component.getHeight() + 20;
         });
     }
 
     public void addSection(Text name, Text... tooltips) {
         this.add((screen, x, y, width, consumer) -> {
-            WidgetComponent component = new SectionHeaderComponent(screen, x, y, width, 25, name).withTooltips(tooltips);
+            WidgetComponent component = new LabelComponent(screen, x, y + 20, width, 20, name.copy().styled(style -> style.withUnderline(true))).withTooltips(tooltips);
             consumer.accept(component);
-            return component.getHeight();
+            return component.getHeight() + 20;
         });
     }
 
