@@ -35,6 +35,9 @@ import dev.inkwell.vivian.api.widgets.TextButton;
 import dev.inkwell.vivian.api.widgets.WidgetComponent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
@@ -59,7 +62,8 @@ public final class ConfigScreenProviderImpl {
 
     public static void init() {
         for (String modId : CONFIGS.keySet()) {
-            ConfigScreenBuilderImpl builder = new ConfigScreenBuilderImpl();
+            ConfigScreenBuilderImpl builder = new ConfigScreenBuilderImpl(FabricLoader.getInstance().getModContainer(modId).map(ModContainer::getMetadata).map(ModMetadata::getName).map(string -> (Text) new TranslatableText(string))
+                    .orElse(new LiteralText(modId)));
 
             FACTORIES.put(modId, builder::build);
 
@@ -139,7 +143,9 @@ public final class ConfigScreenProviderImpl {
                     currentSectionName = parent;
                 }
 
-                ConfigScreenBuilderImpl builder = new ConfigScreenBuilderImpl();
+                ConfigScreenBuilderImpl builder = new ConfigScreenBuilderImpl(FabricLoader.getInstance().getModContainer(config.getNamespace()).map(ModContainer::getMetadata).map(ModMetadata::getName).map(string -> (Text) new TranslatableText(string))
+                        .orElse(new LiteralText(config.getNamespace())));
+
                 CategoryBuilder innerCategory = builder.startCategory(new TranslatableText(parent));
 
                 addEntry(category, value);

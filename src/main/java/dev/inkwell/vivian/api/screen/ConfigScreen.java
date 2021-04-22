@@ -121,7 +121,7 @@ public class ConfigScreen extends Screen {
                     categoryWidth,
                     20,
                     name,
-                    (b) -> this.tryLeave(() -> client.openScreen(new ConfigScreen(this.parent, style, categoryId, name, this.categories))),
+                    (b) -> this.tryLeave(() -> client.openScreen(new ConfigScreen(this.parent, style, categoryId, this.title, this.categories))),
                     (b, matrices, mouseX, mouseY) -> this.renderTooltip(matrices, this.categories[categoryId].getTooltips(), mouseX, mouseY),
                     categories.length > 1
             );
@@ -239,6 +239,10 @@ public class ConfigScreen extends Screen {
         if (element instanceof Mutable) {
             this.changes += ((Mutable) element).hasChanged() ? 1 : 0;
             this.errors += ((Mutable) element).hasError() ? 1 : 0;
+        }
+
+        if (this.categories.length > 1) {
+            drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 0xFFFFFF);
         }
     }
 

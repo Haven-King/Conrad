@@ -22,6 +22,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +30,13 @@ import java.util.List;
 @Environment(EnvType.CLIENT)
 public class ConfigScreenBuilderImpl implements ConfigScreenBuilder {
     private final List<CategoryBuilder> categories = new ArrayList<>();
+    private final Text name;
 
     private ScreenStyle style = ScreenStyle.DEFAULT;
+
+    public ConfigScreenBuilderImpl(Text name) {
+        this.name = name;
+    }
 
     public CategoryBuilder startCategory(MutableText name) {
         CategoryBuilder category = new CategoryBuilder(name);
@@ -50,6 +56,6 @@ public class ConfigScreenBuilderImpl implements ConfigScreenBuilder {
 
     @Override
     public ConfigScreen build(Screen parent) {
-        return new ConfigScreen(parent, style, 0, this.categories.get(0).getName(), this.categories.toArray(new CategoryBuilder[0]));
+        return new ConfigScreen(parent, style, 0, this.name, this.categories.toArray(new CategoryBuilder[0]));
     }
 }

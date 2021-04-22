@@ -71,7 +71,7 @@ public class ModConfigsScreen implements ClientModInitializer {
             }
         });
 
-        this.configScreenBuilder = new ConfigScreenBuilderImpl();
+        this.configScreenBuilder = new ConfigScreenBuilderImpl(new TranslatableText("conrad.mod_configs"));
 
         CategoryBuilder category = this.configScreenBuilder.startCategory(new TranslatableText("conrad.mod_configs"));
 
